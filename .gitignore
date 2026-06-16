@@ -1,0 +1,49 @@
+# Secrets
+.env
+.secrets.toml
+.streamlit/secrets.toml
+*.pem
+*.key
+credentials.json
+service-account.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Données runtime
+sessions/*.json
+sessions/*_backup.json
+logs/*.jsonl
+data/chroma/
+data/sqlite/
+archive/
+
+# Garder les .gitkeep
+!sessions/.gitkeep
+!logs/.gitkeep
+!data/chroma/.gitkeep
+!data/sqlite/.gitkeep
+
+# Outils
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

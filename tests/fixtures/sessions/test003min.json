@@ -1,0 +1,22 @@
+{
+  "session_id": "test003min",
+  "status": "created",
+  "config": {
+    "mode": "fast",
+    "dry_run": true,
+    "secteur": "autre",
+    "token_budget": 100000,
+    "cost_budget": 1.0
+  },
+  "keyword": "test minimal",
+  "site_url": null,
+  "objectif": null,
+  "contraintes": [],
+  "agent_results": {},
+  "total_tokens": 0,
+  "total_cost": 0.0,
+  "error_count": 0,
+  "warnings": [],
+  "created_at": "2026-06-16T09:00:00",
+  "updated_at": "2026-06-16T09:00:00"
+}

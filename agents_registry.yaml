@@ -1,0 +1,328 @@
+# HERMES SEO v3 — Registre central des agents
+# Version: 1.0 | Date: 2026-06-16
+# Ce fichier est la source de vérité pour tous les agents.
+
+agents:
+  - id: agent_00
+    name: Superviseur central
+    file: hermes/agents/agent_00_supervisor.py
+    prompt_version: v1
+    dependencies: []
+    skippable: false
+    skippable_reason: "Agent critique — vérifie l'intégrité du pipeline"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: none
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_01
+    name: Brief Entreprise
+    file: hermes/agents/agent_01_brief_entreprise.py
+    prompt_version: v1
+    dependencies: []
+    skippable: false
+    skippable_reason: "Fondation du pipeline — données entreprise requises"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_02
+    name: Persona / Lecteur cible
+    file: hermes/agents/agent_02_persona.py
+    prompt_version: v1
+    dependencies: [agent_01]
+    skippable: true
+    skippable_reason: "Peut être ignoré si le persona est déjà connu"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_03
+    name: Analyse SERP
+    file: hermes/agents/agent_03_analyse_serp.py
+    prompt_version: v1
+    dependencies: []
+    skippable: true
+    skippable_reason: "Pas de budget API SERP ou mot-clé sans concurrence"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: gpt
+    conditional_mandatory: true
+    conditional_trigger: "actualité, comparatif, pilier"
+
+  - id: agent_04
+    name: Intention & Type de page
+    file: hermes/agents/agent_04_intention.py
+    prompt_version: v1
+    dependencies: [agent_03]
+    skippable: false
+    skippable_reason: "Détermine tout le reste du pipeline"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_05
+    name: Offre & Conversion
+    file: hermes/agents/agent_05_offre_conversion.py
+    prompt_version: v1
+    dependencies: [agent_01, agent_02, agent_04]
+    skippable: true
+    skippable_reason: "Non essentiel pour contenu informatif pur"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_06
+    name: Différenciation concurrentielle
+    file: hermes/agents/agent_06_differenciation.py
+    prompt_version: v1
+    dependencies: [agent_03, agent_05]
+    skippable: true
+    skippable_reason: "Sujet niche sans concurrence"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_07
+    name: Template
+    file: hermes/agents/agent_07_template.py
+    prompt_version: v1
+    dependencies: [agent_04]
+    skippable: false
+    skippable_reason: "Structure obligatoire pour la rédaction"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_08
+    name: Anti-cannibalisation avancé
+    file: hermes/agents/agent_08_anti_cannibalisation.py
+    prompt_version: v1
+    dependencies: [agent_03, agent_06]
+    skippable: true
+    skippable_reason: "Site sans contenu existant"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: true
+    conditional_trigger: "site avec contenus existants dans la mémoire Hermes"
+
+  - id: agent_09
+    name: Rédaction
+    file: hermes/agents/agent_09_redaction.py
+    prompt_version: v1
+    dependencies: [agent_01, agent_02, agent_03, agent_04, agent_05, agent_06, agent_07, agent_08]
+    skippable: false
+    skippable_reason: "Cœur du pipeline — produit le brouillon"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: sonnet
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_10
+    name: SEO
+    file: hermes/agents/agent_10_seo.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: false
+    skippable_reason: "Essentiel pour le référencement"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: gpt
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_11
+    name: AEO
+    file: hermes/agents/agent_11_aeo.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: false
+    skippable_reason: "Essentiel pour l'Answer Engine Optimization"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_12
+    name: GEO
+    file: hermes/agents/agent_12_geo.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_03]
+    skippable: true
+    skippable_reason: "GEO moins critique pour contenu hors actualité"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_13
+    name: EEAT
+    file: hermes/agents/agent_13_eeat.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_01]
+    skippable: true
+    skippable_reason: "Contenu non-YMYL"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_14
+    name: Conformité sectorielle
+    file: hermes/agents/agent_14_conformite.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_01]
+    skippable: false
+    skippable_reason: "Obligatoire pour les secteurs réglementés"
+    mode_required: [premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: true
+    conditional_trigger: "droit, finance, santé, RH, données_personnelles, cybersécurité, enfants, véhicules, produits_réglementés"
+
+  - id: agent_15
+    name: Fact-checking
+    file: hermes/agents/agent_15_fact_checking.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_03]
+    skippable: false
+    skippable_reason: "Critique pour la fiabilité du contenu"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_16
+    name: Maillage interne
+    file: hermes/agents/agent_16_maillage_interne.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: true
+    skippable_reason: "Nécessite une mémoire de contenus existants"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_17
+    name: Maillage externe / Netlinking
+    file: hermes/agents/agent_17_maillage_externe.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_03]
+    skippable: true
+    skippable_reason: "Stratégie netlinking non activée"
+    mode_required: [premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_18
+    name: Multiformat / Recyclage
+    file: hermes/agents/agent_18_multiformat.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: true
+    skippable_reason: "Seul l'article web est nécessaire"
+    mode_required: [premium, compliance, debug]
+    model_preference: sonnet
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_19
+    name: Test A/B titre & meta
+    file: hermes/agents/agent_19_test_ab.py
+    prompt_version: v1
+    dependencies: [agent_10]
+    skippable: true
+    skippable_reason: "Tests A/B non activés"
+    mode_required: [premium, compliance, debug]
+    model_preference: gpt
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_20
+    name: Localisation / Internationalisation
+    file: hermes/agents/agent_20_localisation.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: true
+    skippable_reason: "Contenu monolingue/mono-région"
+    mode_required: [premium, compliance, debug]
+    model_preference: sonnet
+    conditional_mandatory: true
+    conditional_trigger: "cible régionale ou internationale"
+
+  - id: agent_21
+    name: Schema.org avancé
+    file: hermes/agents/agent_21_schema_org.py
+    prompt_version: v1
+    dependencies: [agent_04, agent_09]
+    skippable: true
+    skippable_reason: "Contenu sans rich snippet visé"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: gpt
+    conditional_mandatory: true
+    conditional_trigger: "fiche_produit, FAQ, service_local, article"
+
+  - id: agent_22
+    name: Images
+    file: hermes/agents/agent_22_images.py
+    prompt_version: v1
+    dependencies: [agent_09]
+    skippable: true
+    skippable_reason: "Visuels gérés manuellement"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_23
+    name: CMS / Export
+    file: hermes/agents/agent_23_cms_export.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_10, agent_11, agent_21]
+    skippable: true
+    skippable_reason: "Export manuel"
+    mode_required: [standard, premium, compliance, debug]
+    model_preference: none
+    conditional_mandatory: true
+    conditional_trigger: "publication directe vers CMS"
+
+  - id: agent_24
+    name: Mise à jour / Fraîcheur
+    file: hermes/agents/agent_24_mise_a_jour.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_15]
+    skippable: true
+    skippable_reason: "Pas de stratégie de mise à jour planifiée"
+    mode_required: [premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_25
+    name: Critique Qualité
+    file: hermes/agents/agent_25_critique_qualite.py
+    prompt_version: v1
+    dependencies: [agent_09, agent_10, agent_11, agent_12, agent_13, agent_14, agent_15]
+    skippable: false
+    skippable_reason: "Dernier rempart avant publication"
+    mode_required: [fast, standard, premium, compliance, debug]
+    model_preference: haiku
+    conditional_mandatory: false
+    conditional_trigger: null
+
+  - id: agent_26
+    name: Audit post-publication
+    file: hermes/agents/agent_26_audit_post_publication.py
+    prompt_version: v1
+    dependencies: []
+    skippable: true
+    skippable_reason: "GSC non configuré ou contenu non encore publié"
+    mode_required: [premium, compliance, debug]
+    model_preference: deepseek
+    conditional_mandatory: false
+    conditional_trigger: null

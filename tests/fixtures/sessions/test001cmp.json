@@ -1,0 +1,159 @@
+{
+  "session_id": "test001cmp",
+  "status": "completed",
+  "config": {
+    "mode": "premium",
+    "dry_run": true,
+    "secteur": "saas",
+    "token_budget": 2000000,
+    "cost_budget": 10.0,
+    "target_url": "https://example.com",
+    "target_cms": null,
+    "target_locales": [],
+    "user_skipped_agents": [],
+    "skip_confirmed": false
+  },
+  "keyword": "logiciel seo entreprise",
+  "site_url": "https://example.com",
+  "objectif": "Guide complet SEO entreprise",
+  "contraintes": [],
+  "agent_results": {
+    "agent_00": {
+      "agent_id": "agent_00",
+      "agent_name": "Superviseur",
+      "status": "completed",
+      "duration_ms": 5,
+      "tokens_input": 0,
+      "tokens_output": 0,
+      "cost_estimated": 0.0,
+      "model_used": null
+    },
+    "agent_01": {
+      "agent_id": "agent_01",
+      "agent_name": "Brief Entreprise",
+      "status": "completed",
+      "duration_ms": 234,
+      "tokens_input": 1500,
+      "tokens_output": 800,
+      "cost_estimated": 0.0012,
+      "model_used": "deepseek-v4-flash",
+      "prompt_version": "v1"
+    },
+    "agent_02": {
+      "agent_id": "agent_02",
+      "agent_name": "Persona",
+      "status": "completed",
+      "duration_ms": 198,
+      "tokens_input": 1200,
+      "tokens_output": 650,
+      "cost_estimated": 0.0010,
+      "model_used": "deepseek-v4-flash"
+    },
+    "agent_03": {
+      "agent_id": "agent_03",
+      "agent_name": "Analyse SERP",
+      "status": "completed",
+      "duration_ms": 890,
+      "tokens_input": 4500,
+      "tokens_output": 2200,
+      "cost_estimated": 0.0150,
+      "model_used": "gpt-5.4"
+    },
+    "agent_04": {
+      "agent_id": "agent_04",
+      "agent_name": "Intention & Type",
+      "status": "completed",
+      "duration_ms": 145,
+      "tokens_input": 900,
+      "tokens_output": 500,
+      "cost_estimated": 0.0008,
+      "model_used": "deepseek-v4-flash"
+    },
+    "agent_09": {
+      "agent_id": "agent_09",
+      "agent_name": "Redaction",
+      "status": "completed",
+      "duration_ms": 3500,
+      "tokens_input": 8000,
+      "tokens_output": 15000,
+      "cost_estimated": 0.2300,
+      "model_used": "claude-sonnet-4-6",
+      "prompt_version": "v1"
+    },
+    "agent_10": {
+      "agent_id": "agent_10",
+      "agent_name": "SEO",
+      "status": "completed",
+      "duration_ms": 1200,
+      "tokens_input": 3000,
+      "tokens_output": 1500,
+      "cost_estimated": 0.0150,
+      "model_used": "gpt-5.4"
+    },
+    "agent_11": {
+      "agent_id": "agent_11",
+      "agent_name": "AEO",
+      "status": "completed",
+      "duration_ms": 450,
+      "tokens_input": 2000,
+      "tokens_output": 1200,
+      "cost_estimated": 0.0020,
+      "model_used": "claude-haiku-4-5"
+    },
+    "agent_25": {
+      "agent_id": "agent_25",
+      "agent_name": "Critique Qualite",
+      "status": "completed",
+      "duration_ms": 55,
+      "tokens_input": 1000,
+      "tokens_output": 500,
+      "cost_estimated": 0.0,
+      "model_used": null
+    }
+  },
+  "fiche_entreprise": {
+    "nom": "Acme SEO",
+    "secteur": "SaaS",
+    "positionnement": "Leader marche",
+    "offres": ["Outil SEO", "Consulting"],
+    "ton_marque": "Professionnel et confiant",
+    "preuves": ["+500 clients", "Note 4.8/5"],
+    "contraintes_legales": [],
+    "mots_cles_interdits": []
+  },
+  "brouillon_html": "<h1>Logiciel SEO entreprise : le guide complet</h1><p>Introduction au SEO d'entreprise...</p><h2>Pourquoi choisir un logiciel SEO ?</h2><p>Les logiciels SEO permettent de...</p>",
+  "seo_data": {
+    "title_optimise": "Logiciel SEO entreprise : guide complet 2026",
+    "meta_description_optimise": "Decouvrez les meilleurs logiciels SEO pour entreprise. Comparatif, prix et fonctionnalites.",
+    "hn_structure": [{"tag": "h1", "text": "Logiciel SEO entreprise : le guide complet"}],
+    "densite_mots_cles": {"logiciel seo": 2.5, "entreprise": 1.8},
+    "suggestions_maillage": []
+  },
+  "scores": {
+    "score_total": 82,
+    "seuil_publication": 75,
+    "seuil_atteint": true,
+    "scores": {
+      "lisibilite": 8,
+      "densite_semantique": 12,
+      "reponse_paa": 16,
+      "originalite": 12,
+      "fraicheur": 8,
+      "respect_aeo": 8,
+      "respect_geo": 8,
+      "absence_erreurs": 5,
+      "naturalite": 5
+    },
+    "verifications_humaines": ["Verifier les prix a jour"],
+    "blocages": []
+  },
+  "score_eeat": {"score_global": 13},
+  "fact_check_data": {"score_fiabilite": 8},
+  "ld_json": {"ld_json": "{\"@type\": \"Article\"}"},
+  "total_tokens": 22600,
+  "total_cost": 0.265,
+  "error_count": 0,
+  "warnings": [],
+  "created_at": "2026-06-15T10:00:00",
+  "updated_at": "2026-06-15T10:05:30"
+}

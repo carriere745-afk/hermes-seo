@@ -1,0 +1,59 @@
+{
+  "session_id": "test002err",
+  "status": "failed",
+  "config": {
+    "mode": "standard",
+    "dry_run": false,
+    "secteur": "finance",
+    "token_budget": 1000000,
+    "cost_budget": 5.0
+  },
+  "keyword": "assurance vie temporaire",
+  "site_url": null,
+  "objectif": "",
+  "contraintes": [],
+  "agent_results": {
+    "agent_00": {
+      "agent_id": "agent_00",
+      "agent_name": "Superviseur",
+      "status": "completed",
+      "duration_ms": 3
+    },
+    "agent_01": {
+      "agent_id": "agent_01",
+      "agent_name": "Brief Entreprise",
+      "status": "completed",
+      "duration_ms": 180,
+      "tokens_input": 1200,
+      "tokens_output": 600,
+      "cost_estimated": 0.0010
+    },
+    "agent_04": {
+      "agent_id": "agent_04",
+      "agent_name": "Intention & Type",
+      "status": "completed",
+      "duration_ms": 120
+    },
+    "agent_07": {
+      "agent_id": "agent_07",
+      "agent_name": "Template",
+      "status": "completed",
+      "duration_ms": 80
+    },
+    "agent_09": {
+      "agent_id": "agent_09",
+      "agent_name": "Redaction",
+      "status": "failed",
+      "duration_ms": 2000,
+      "error_message": "Budget token depasse",
+      "tokens_input": 5000,
+      "tokens_output": 200
+    }
+  },
+  "total_tokens": 7200,
+  "total_cost": 0.045,
+  "error_count": 1,
+  "warnings": [],
+  "created_at": "2026-06-14T14:00:00",
+  "updated_at": "2026-06-14T14:02:30"
+}
