@@ -2,11 +2,24 @@
 
 Supporte Claude, GPT, DeepSeek, et Ollama (fallback local).
 Chaque type de tâche a un modèle principal et un fallback.
+Timeout + retry automatique pour éviter les coupures.
 """
 
+import asyncio
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional, Protocol
+
+from tenacity import (
+    AsyncRetrying,
+    before_sleep_log,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
+
+logger = logging.getLogger("hermes.llm")
 
 
 class ModelProvider(str, Enum):
@@ -236,9 +249,11 @@ class LLMFactory:
         max_tokens: int = 4096,
         budget_tight: bool = False,
     ) -> tuple[str, int, int, str]:
-        """Route l'appel vers le modèle approprié.
+        """Route l'appel vers le modèle approprié avec retry automatique.
 
         Returns (texte, tokens_input, tokens_output, model_used).
+        Retente jusqu'a 3 fois avec backoff exponentiel + jitter
+        sur les erreurs transitoires (429, 5xx, timeout, connexion).
         """
         if self.dry_run:
             return self._dry_run_response(agent_id)
@@ -251,27 +266,48 @@ class LLMFactory:
         if temperature is None:
             temperature = config.temperature
 
-        try:
-            text, ti, to = await self._call_provider(
-                config, system_prompt, user_message, temperature, max_tokens
-            )
-            return text, ti, to, model_name
-        except Exception as e:
-            # Essayer le fallback
-            task_type = AGENT_TASK_TYPE.get(agent_id, TaskType.LIGHT)
-            fallbacks = list(TASK_ROUTING[task_type])[1:]
-            available = self._get_available_models()
-            for fallback in fallbacks:
-                if fallback in available and fallback != model_name:
-                    try:
-                        fb_config = MODELS[fallback]
-                        text, ti, to = await self._call_provider(
-                            fb_config, system_prompt, user_message, temperature, max_tokens
+        retryer = AsyncRetrying(
+            stop=stop_after_attempt(3),
+            wait=wait_exponential_jitter(initial=1, max=30, jitter=2),
+            retry=retry_if_exception(_is_retryable),
+            before_sleep=before_sleep_log(logger, logging.WARNING),
+            reraise=True,
+        )
+
+        last_error = None
+        async for attempt in retryer:
+            with attempt:
+                try:
+                    text, ti, to = await self._call_provider(
+                        config, system_prompt, user_message, temperature, max_tokens
+                    )
+                    return text, ti, to, model_name
+                except Exception as e:
+                    if _is_retryable(e):
+                        logger.warning(
+                            f"[{agent_id}] {config.model_id} erreur retryable "
+                            f"(tentative {attempt.retry_state.attempt_number}/3): {e}"
                         )
-                        return text, ti, to, fallback
-                    except Exception:
-                        continue
-            raise  # Aucun fallback n'a fonctionné
+                    raise
+
+        # Tous les retries ont echoue — essayer les fallbacks
+        task_type = AGENT_TASK_TYPE.get(agent_id, TaskType.LIGHT)
+        fallbacks = list(TASK_ROUTING[task_type])[1:]
+        available = self._get_available_models()
+        for fallback in fallbacks:
+            if fallback in available and fallback != model_name:
+                try:
+                    fb_config = MODELS[fallback]
+                    text, ti, to = await self._call_provider(
+                        fb_config, system_prompt, user_message, temperature, max_tokens
+                    )
+                    logger.info(
+                        f"[{agent_id}] Fallback vers {fallback} (echec de {model_name})"
+                    )
+                    return text, ti, to, fallback
+                except Exception:
+                    continue
+        raise last_error or RuntimeError(f"Tous les modeles ont echoue pour {agent_id}")
 
     async def _call_provider(
         self,
@@ -297,7 +333,12 @@ class LLMFactory:
         temperature: float, max_tokens: int,
     ) -> tuple[str, int, int]:
         import anthropic
-        client = anthropic.AsyncAnthropic(api_key=self._anthropic_key)
+        # Timeout : 5 min connexion + 10 min lecture pour les longues generations
+        client = anthropic.AsyncAnthropic(
+            api_key=self._anthropic_key,
+            timeout=anthropic.Timeout(connect=300.0, read=600.0),
+            max_retries=0,  # On gere le retry nous-memes via tenacity
+        )
         response = await client.messages.create(
             model=config.model_id,
             max_tokens=max_tokens,
@@ -316,7 +357,7 @@ class LLMFactory:
         self, config: ModelConfig, system: str, user: str,
         temperature: float, max_tokens: int,
     ) -> tuple[str, int, int]:
-        from openai import AsyncOpenAI
+        from openai import AsyncOpenAI, AsyncTimeout
 
         if config.provider == ModelProvider.DEEPSEEK:
             base_url = "https://api.deepseek.com"
@@ -325,7 +366,12 @@ class LLMFactory:
             base_url = None
             api_key = self._openai_key
 
-        client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+        client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=AsyncTimeout(connect=300.0, read=600.0),
+            max_retries=0,  # On gere le retry nous-memes
+        )
         response = await client.chat.completions.create(
             model=config.model_id,
             temperature=temperature,
@@ -381,7 +427,7 @@ class LLMFactory:
             f"https://generativelanguage.googleapis.com/v1beta/models/"
             f"{config.model_id}:generateContent"
         )
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=300.0) as client:
             resp = await client.post(
                 url,
                 params={"keyProviders": self._gemini_key},
@@ -418,3 +464,65 @@ class LLMFactory:
             f'{{"message": "Dry-run response for {agent_id}", "status": "simulated"}}',
             0, 0, "dry-run",
         )
+
+
+def _is_retryable(exception: Exception) -> bool:
+    """Determine si une erreur merite un retry.
+
+    Retry : rate limits (429), erreurs serveur (5xx),
+    timeouts, connexion reset, DNS temporaire.
+    Pas de retry : erreurs client (4xx sauf 429), auth, validation.
+    """
+    msg = str(exception).lower()
+
+    # Marqueurs textuels d'erreurs retryables
+    retryable_markers = [
+        "rate limit",
+        "rate_limit",
+        "too many requests",
+        "429",
+        "server error",
+        "internal server error",
+        "503",
+        "502",
+        "504",
+        "timeout",
+        "timed out",
+        "connection reset",
+        "connection error",
+        "connection refused",
+        "temporarily unavailable",
+        "overloaded",
+        "service unavailable",
+        "try again",
+        "retry",
+    ]
+    for marker in retryable_markers:
+        if marker in msg:
+            return True
+
+    # Codes HTTP retryables
+    try:
+        status = getattr(exception, 'status_code', None)
+        if status is not None:
+            return status in (429, 500, 502, 503, 504)
+    except Exception:
+        pass
+
+    # httpx.TimeoutException et variantes
+    try:
+        import httpx
+        if isinstance(exception, httpx.TimeoutException):
+            return True
+        if isinstance(exception, httpx.NetworkError):
+            return True
+        if isinstance(exception, httpx.RemoteProtocolError):
+            return True
+    except ImportError:
+        pass
+
+    # asyncio.TimeoutError
+    if isinstance(exception, asyncio.TimeoutError):
+        return True
+
+    return False

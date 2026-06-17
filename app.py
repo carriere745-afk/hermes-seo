@@ -16,7 +16,11 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent))
 
 from hermes.core.session_manager import SessionManager
-from hermes.core.workflow import get_active_agents
+from hermes.core.workflow import (
+    AGENT_ORDER,
+    get_active_agents,
+)
+from hermes.models.common import AgentStatus as AgentStatusEnum
 from hermes.models.common import AgentStatus, QualityMode
 from hermes.models.session import AgentResult, SessionConfig, SessionState
 from hermes.agents import AGENT_REGISTRY
@@ -65,8 +69,15 @@ if "selected_session_id" not in st.session_state:
     st.session_state.selected_session_id = None
 
 
-async def _run_pipeline(session: SessionState, progress_bar, status_text) -> SessionState:
-    """Execute le pipeline complet avec feedback temps reel."""
+async def _run_pipeline(
+    session: SessionState, progress_bar, status_text,
+    session_manager: SessionManager | None = None,
+    resume_from: str | None = None,
+) -> SessionState:
+    """Execute le pipeline complet avec feedback temps reel et sauvegarde apres chaque agent.
+
+    Si resume_from est fourni, reprend depuis cet agent (les precedents sont preserves).
+    """
     active = get_active_agents(
         mode=session.config.mode,
         secteur=session.config.secteur,
@@ -106,7 +117,24 @@ async def _run_pipeline(session: SessionState, progress_bar, status_text) -> Ses
         "agent_26": "Audit",
     }
 
+    # Reprise : sauter les agents deja completes
+    start_index = 0
+    if resume_from:
+        try:
+            start_index = AGENT_ORDER.index(resume_from)
+        except ValueError:
+            pass
+
     for i, agent_id in enumerate(active):
+        if agent_id not in AGENT_ORDER:
+            continue
+        agent_order_idx = AGENT_ORDER.index(agent_id)
+        if agent_order_idx < start_index:
+            # Agent deja execute dans une session precedente
+            progress = (i + 1) / total
+            progress_bar.progress(progress, text=f"{agent_names.get(agent_id, agent_id)} (deja fait)")
+            continue
+
         name = agent_names.get(agent_id, agent_id)
         progress = (i + 1) / total
         progress_bar.progress(progress, text=f"{name}...")
@@ -117,17 +145,38 @@ async def _run_pipeline(session: SessionState, progress_bar, status_text) -> Ses
                 session.current_agent_id = agent_id
                 session = await AGENT_REGISTRY[agent_id](session)
                 result = session.agent_results.get(agent_id)
+                session.last_completed_agent_id = agent_id
                 st.session_state.agent_results[agent_id] = (
                     result.status.value if result else "?"
                 )
+
+                # Sauvegarder apres chaque agent (resilience)
+                if session_manager:
+                    session_manager.save(session)
+
             except Exception as e:
                 st.session_state.agent_results[agent_id] = f"❌ {e}"
+                # Sauvegarder avant de quitter pour pouvoir reprendre
+                session.error_count += 1
+                session.status = "failed"
+                if session_manager:
+                    session_manager.save(session)
+                status_text.error(f"Échec a {name}: {e}")
+                return session
 
+    session.status = "completed"
+    if session_manager:
+        session_manager.save(session)
     return session
 
 
-def run_pipeline_sync(session, progress_bar, status_text):
-    return asyncio.run(_run_pipeline(session, progress_bar, status_text))
+def run_pipeline_sync(session, progress_bar, status_text,
+                     session_manager=None, resume_from=None):
+    return asyncio.run(_run_pipeline(
+        session, progress_bar, status_text,
+        session_manager=session_manager,
+        resume_from=resume_from,
+    ))
 
 
 # ─── Sidebar ──────────────────────────────────────────────────────────
@@ -210,6 +259,29 @@ with st.sidebar:
             if st.button("📋 Copier l'ID"):
                 st.code(st.session_state.session_id)
 
+        # Detection de sessions interrompues
+        sess_mgr = SessionManager(Path("sessions"))
+        all_sessions = sess_mgr.list_sessions()
+        interrupted = [
+            s for s in all_sessions
+            if s.get("status") in ("failed", "running")
+            and s.get("agent_count", 0) > 0
+        ]
+        if interrupted:
+            st.markdown("---")
+            st.warning(f"🔴 {len(interrupted)} session(s) interrompue(s)")
+            for s in interrupted[:5]:
+                last = s.get("session_id", "")[:12]
+                kw = s.get("keyword", "?")
+                agents = s.get("agent_count", 0)
+                if st.button(
+                    f"🔄 Reprendre '{kw}' ({agents} agents faits)",
+                    key=f"resume_{last}",
+                    use_container_width=True,
+                ):
+                    st.session_state.resume_session_id = last
+                    st.rerun()
+
     else:
         # Sidebar minimale pour Archive et Session Detail
         st.markdown("---")
@@ -272,6 +344,72 @@ else:
                 use_container_width=True,
             )
 
+    # ─── Reprise de session interrompue ──────────────────────────────
+
+    if st.session_state.get("resume_session_id"):
+        rid = st.session_state.pop("resume_session_id")
+        try:
+            mgr = SessionManager(Path("sessions"))
+            session = mgr.load(rid)
+
+            # Trouver le dernier agent termine
+            from hermes.core.workflow import AGENT_ORDER as AO
+            last_completed = None
+            for aid in AO:
+                result = session.agent_results.get(aid)
+                if result and str(result.status.value) in ("completed", "skipped_auto", "skipped_user"):
+                    last_completed = aid
+                else:
+                    break
+
+            resume_from = None
+            if last_completed:
+                idx = AO.index(last_completed)
+                if idx + 1 < len(AO):
+                    resume_from = AO[idx + 1]
+
+            # Reconfigurer la sidebar
+            st.session_state.sidebar_mode = session.config.mode.value if hasattr(session.config.mode, 'value') else str(session.config.mode)
+            st.session_state.sidebar_secteur = session.config.secteur or "autre"
+            st.session_state.sidebar_dry_run = session.config.dry_run
+            st.session_state.sidebar_url = session.config.target_url or ""
+            st.session_state.sidebar_objectif = session.objectif or ""
+            st.session_state.session_id = session.session_id
+            st.session_state.agent_results = {}
+
+            progress_bar = st.progress(0, text="Reprise...")
+            status_text = st.empty()
+            status_text.info(
+                f"Reprise depuis {resume_from or 'le debut'} "
+                f"(dernier agent termine: {last_completed or 'aucun'})"
+            )
+
+            with st.spinner(""):
+                start_time = datetime.now()
+                session = run_pipeline_sync(
+                    session, progress_bar, status_text,
+                    session_manager=mgr,
+                    resume_from=resume_from,
+                )
+                elapsed = (datetime.now() - start_time).total_seconds()
+
+            progress_bar.progress(1.0, text="Termine !")
+            status_text.success(f"Session reprise en {elapsed:.1f}s")
+
+            st.session_state.pipeline_done = True
+            st.session_state.content = {
+                "html": session.brouillon_html or "",
+                "title": (session.seo_data or {}).get("title_optimise", session.keyword),
+                "meta": (session.seo_data or {}).get("meta_description_optimise", ""),
+                "schema": (session.ld_json or {}).get("ld_json", ""),
+            }
+            st.session_state.scores = session.scores
+            st.session_state.session = session
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"Impossible de reprendre la session {rid}: {e}")
+
     # ─── Génération ─────────────────────────────────────────────────
 
     if generate and keyword:
@@ -307,7 +445,10 @@ else:
 
         with st.spinner(""):
             start_time = datetime.now()
-            session = run_pipeline_sync(session, progress_bar, status_text)
+            mgr = SessionManager(Path("sessions"))
+            session = run_pipeline_sync(
+                session, progress_bar, status_text, session_manager=mgr
+            )
             elapsed = (datetime.now() - start_time).total_seconds()
 
         progress_bar.progress(1.0, text="Terminé !")
@@ -339,7 +480,10 @@ else:
         session.config.dry_run = True
         progress_bar = st.progress(0, text="Replay...")
         status_text = st.empty()
-        session = run_pipeline_sync(session, progress_bar, status_text)
+        session = run_pipeline_sync(
+            session, progress_bar, status_text,
+            session_manager=SessionManager(Path("sessions")),
+        )
         st.rerun()
 
     # ─── Résultats ──────────────────────────────────────────────────
