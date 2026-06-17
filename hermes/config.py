@@ -2,6 +2,8 @@
 
 Charge les variables d'environnement et expose les constantes de l'application.
 Compatible .env (local) et Streamlit Secrets (cloud).
+Utilise un chargement lazy pour les cles API afin d'eviter les
+problemes d'initialisation sur Streamlit Cloud.
 """
 
 from pathlib import Path
@@ -15,20 +17,81 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # Charger .env (local uniquement) via lecture directe du fichier
 _env = dotenv_values(PROJECT_ROOT / ".env")
 
-# ─── Helper ─────────────────────────────────────────────────────────
+
+class _LazyConfig:
+    """Wrapper lazy qui evalue les cles API a la premiere lecture.
+
+    Sur Streamlit Cloud, st.secrets n'est pret qu'apres st.set_page_config().
+    En local, le .env est lu des l'import.
+    """
+
+    def _resolve(self, key: str, default: str = "") -> str:
+        # 1. .env (local prioritaire)
+        val = _env.get(key)
+        if val:
+            return val
+
+        # 2. Streamlit Secrets (cloud) — evalue a chaque appel
+        try:
+            import streamlit as st
+            val = st.secrets.get(key)
+            if val:
+                return str(val)
+        except (ImportError, RuntimeError, FileNotFoundError):
+            pass
+
+        return default
+
+    @property
+    def ANTHROPIC_API_KEY(self) -> str:
+        return self._resolve("ANTHROPIC_API_KEY")
+
+    @property
+    def OPENAI_API_KEY(self) -> str:
+        return self._resolve("OPENAI_API_KEY")
+
+    @property
+    def DEEPSEEK_API_KEY(self) -> str:
+        return self._resolve("DEEPSEEK_API_KEY")
+
+    @property
+    def GEMINI_API_KEY(self) -> str:
+        return self._resolve("GEMINI_API_KEY")
+
+    @property
+    def TALORDATA_API_KEY(self) -> str:
+        return self._resolve("TALORDATA_API_KEY")
+
+    @property
+    def SCRAPEDO_API_KEY(self) -> str:
+        return self._resolve("SCRAPEDO_API_KEY")
+
+    @property
+    def SERPSTACK_API_KEY(self) -> str:
+        return self._resolve("SERPSTACK_API_KEY")
+
+    @property
+    def GSC_CLIENT_ID(self) -> str:
+        return self._resolve("GSC_CLIENT_ID")
+
+    @property
+    def GSC_CLIENT_SECRET(self) -> str:
+        return self._resolve("GSC_CLIENT_SECRET")
+
+
+_cfg = _LazyConfig()
+
+# ─── Helper pour les valeurs non-API ────────────────────────────────────
 
 def _get(key: str, default: str = "") -> str:
-    """Lit une variable : .env > Streamlit Secrets > default.
+    """Resout une valeur de config : .env > st.secrets > default.
 
-    Sur Streamlit Cloud, les secrets sont la source unique (.env n'existe pas).
-    En local, .env est prioritaire pour eviter les placeholders du secrets.toml.
+    Pour les cles API, utilisez _cfg._resolve() qui est lazy.
+    Pour le reste (chemins, budgets...), resolution immediate.
     """
-    # D'abord .env (local prioritaire)
     val = _env.get(key)
     if val:
         return val
-
-    # Puis Streamlit Secrets (cloud)
     try:
         import streamlit as st
         val = st.secrets.get(key)
@@ -36,22 +99,25 @@ def _get(key: str, default: str = "") -> str:
             return str(val)
     except (ImportError, RuntimeError, FileNotFoundError):
         pass
-
     return default
 
-# ─── Clés API ───────────────────────────────────────────────────────
 
-ANTHROPIC_API_KEY = _get("ANTHROPIC_API_KEY")
-OPENAI_API_KEY = _get("OPENAI_API_KEY")
-DEEPSEEK_API_KEY = _get("DEEPSEEK_API_KEY")
-GEMINI_API_KEY = _get("GEMINI_API_KEY")
-# SERP APIs (priorite: TalorData > Scrape.do > Serpstack)
-TALORDATA_API_KEY = _get("TALORDATA_API_KEY")
-SCRAPEDO_API_KEY = _get("SCRAPEDO_API_KEY")
-SERPSTACK_API_KEY = _get("SERPSTACK_API_KEY")
-# Google
-GSC_CLIENT_ID = _get("GSC_CLIENT_ID")
-GSC_CLIENT_SECRET = _get("GSC_CLIENT_SECRET")
+# ─── APIs lazy — resolues a chaque acces ────────────────────────────
+# Accedees via config.ANTHROPIC_API_KEY, resolues par __getattr__.
+
+_LAZY_KEYS: set[str] = {
+    "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "DEEPSEEK_API_KEY",
+    "GEMINI_API_KEY", "TALORDATA_API_KEY", "SCRAPEDO_API_KEY",
+    "SERPSTACK_API_KEY", "GSC_CLIENT_ID", "GSC_CLIENT_SECRET",
+}
+
+
+def __getattr__(name: str) -> str:
+    """Resolution lazy des cles API — evalue st.secrets a chaque acces."""
+    if name in _LAZY_KEYS:
+        return _cfg._resolve(name)
+    raise AttributeError(f"module 'hermes.config' has no attribute '{name}'")
+
 
 # ─── Base de données ────────────────────────────────────────────────
 
