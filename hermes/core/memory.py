@@ -9,8 +9,16 @@ Deux couches :
 from pathlib import Path
 from typing import Any, Optional
 
-import chromadb
-from chromadb.config import Settings
+_chromadb = None
+
+
+def _get_chromadb():
+    """Import lazy de chromadb — evite l'import au startup sur Streamlit Cloud."""
+    global _chromadb
+    if _chromadb is None:
+        import chromadb
+        _chromadb = chromadb
+    return _chromadb
 
 
 class MemoryStore:
@@ -23,9 +31,10 @@ class MemoryStore:
     """
 
     def __init__(self, persist_directory: str = "./data/chroma"):
+        chromadb = _get_chromadb()
         self._client = chromadb.PersistentClient(
             path=persist_directory,
-            settings=Settings(anonymized_telemetry=False),
+            settings=chromadb.config.Settings(anonymized_telemetry=False),
         )
         self._ensure_collections()
 
