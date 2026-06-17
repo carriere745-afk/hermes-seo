@@ -333,10 +333,10 @@ class LLMFactory:
         temperature: float, max_tokens: int,
     ) -> tuple[str, int, int]:
         import anthropic
-        # Timeout : 5 min connexion + 10 min lecture pour les longues generations
+        import httpx
         client = anthropic.AsyncAnthropic(
             api_key=self._anthropic_key,
-            timeout=anthropic.Timeout(connect=300.0, read=600.0),
+            timeout=httpx.Timeout(600.0),
             max_retries=0,  # On gere le retry nous-memes via tenacity
         )
         response = await client.messages.create(
@@ -357,7 +357,8 @@ class LLMFactory:
         self, config: ModelConfig, system: str, user: str,
         temperature: float, max_tokens: int,
     ) -> tuple[str, int, int]:
-        from openai import AsyncOpenAI, AsyncTimeout
+        from openai import AsyncOpenAI
+        import httpx
 
         if config.provider == ModelProvider.DEEPSEEK:
             base_url = "https://api.deepseek.com"
@@ -369,7 +370,7 @@ class LLMFactory:
         client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
-            timeout=AsyncTimeout(connect=300.0, read=600.0),
+            timeout=httpx.Timeout(600.0),
             max_retries=0,  # On gere le retry nous-memes
         )
         response = await client.chat.completions.create(

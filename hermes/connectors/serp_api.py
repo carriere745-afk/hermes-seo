@@ -63,15 +63,18 @@ class SerpAPIClient:
     ) -> dict:
         """Appelle l'API TalorData — compatible SerpApi, multi-engine."""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.get(
-                "https://api.talordata.com/v1/search",
-                params={
-                    "api_key": config.TALORDATA_API_KEY,
+            resp = await client.post(
+                "https://api.talordata.com/v1/serp",
+                headers={
+                    "Authorization": f"Bearer {config.TALORDATA_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
                     "q": keyword,
                     "engine": "google",
-                    "location": location,
                     "hl": language,
                     "gl": location,
+                    "num": 10,
                 },
             )
             resp.raise_for_status()

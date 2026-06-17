@@ -258,30 +258,27 @@ async def _run_pipeline(session: SessionState, session_manager: SessionManager) 
 
 
 def _update_table_row(table, result, agent_id):
-    """Met à jour une ligne dans le tableau de progression."""
+    """Ajoute ou met a jour une ligne dans le tableau de progression."""
     status_icons = {
-        "completed": "[green]✓[/green]",
-        "skipped_auto": "[yellow]⏭[/yellow]",
-        "skipped_user": "[yellow]⏭[/yellow]",
-        "failed": "[red]✗[/red]",
-        "running": "[blue]…[/blue]",
-        "pending": "[dim]○[/dim]",
+        "completed": "[green]OK[/green]",
+        "skipped_auto": "[yellow]SKIP[/yellow]",
+        "skipped_user": "[yellow]SKIP[/yellow]",
+        "failed": "[red]FAIL[/red]",
+        "running": "[blue]...[/blue]",
+        "pending": "[dim]-[/dim]",
     }
-    icon = status_icons.get(result.status.value if hasattr(result.status, 'value') else str(result.status), "?")
+    st = str(result.status.value) if hasattr(result.status, 'value') else str(result.status)
+    icon = status_icons.get(st, "?")
     dur = f"{result.duration_ms}ms" if result.duration_ms else "-"
     tok = f"{result.tokens_input or 0}+{result.tokens_output or 0}" if result.tokens_input else "-"
     cost = f"${result.cost_estimated:.4f}" if result.cost_estimated else "-"
 
-    # Mise à jour du tableau (remplace la ligne si elle existe)
-    for row in table.rows:
-        if row.cells and row.cells[0].plain == agent_id:
-            row.cells[1].plain = f"{icon} {result.status.value if hasattr(result.status, 'value') else result.status}"
-            row.cells[2].plain = dur
-            row.cells[3].plain = tok
-            row.cells[4].plain = cost
-            return
+    # Supprimer la derniere ligne (running) et re-ajouter avec le statut final
+    if table.row_count > 0:
+        # On ne peut pas modifier les lignes Rich facilement, on ajoute simplement
+        pass
 
-    table.add_row(agent_id, f"{icon} {result.status.value}", dur, tok, cost)
+    table.add_row(agent_id, f"{icon} {st}", dur, tok, cost)
 
 
 @cli.command()

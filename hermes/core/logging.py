@@ -1,5 +1,6 @@
 """Configuration Loguru pour logs JSON structurés."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -7,30 +8,10 @@ from loguru import logger
 
 from hermes.config import LOG_DIRECTORY, LOG_LEVEL
 
-LOG_FORMAT = (
-    "{"
-    '"timestamp": "{time:YYYY-MM-DDTHH:mm:ss.SSSZ}",'
-    '"level": "{level}",'
-    '"session_id": "{extra[session_id]}",'
-    '"agent_id": "{extra[agent_id]}",'
-    '"agent_name": "{extra[agent_name]}",'
-    '"event": "{extra[event]}",'
-    '"message": "{message}",'
-    '"duration_ms": {extra[duration_ms]},'
-    '"status": "{extra[status]}",'
-    '"tokens_input": {extra[tokens_input]},'
-    '"tokens_output": {extra[tokens_output]},'
-    '"cost_estimated": {extra[cost_estimated]},'
-    '"prompt_version": "{extra[prompt_version]}",'
-    '"model_used": "{extra[model_used]}",'
-    '"error": "{extra[error]}"'
-    "}"
-)
-
 
 def configure_logging(session_id: str) -> None:
     """Configure les logs pour une session."""
-    logger.remove()  # Retire le handler par défaut
+    logger.remove()
 
     # Console : format lisible
     logger.add(
@@ -41,14 +22,33 @@ def configure_logging(session_id: str) -> None:
         colorize=True,
     )
 
-    # Fichier : JSON structuré
+    # Fichier JSONL : sink custom
     log_path = LOG_DIRECTORY / f"hermes_{session_id}.jsonl"
-    logger.add(
-        str(log_path),
-        format=LOG_FORMAT,
-        level="DEBUG",
-        serialize=False,  # On formate déjà en JSON-like
-    )
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(str(log_path), "a", encoding="utf-8")
+
+    def _write_jsonl(message):
+        record = message.record
+        fh.write(json.dumps({
+            "timestamp": record["time"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "level": record["level"].name,
+            "session_id": record["extra"].get("session_id", ""),
+            "agent_id": record["extra"].get("agent_id", ""),
+            "agent_name": record["extra"].get("agent_name", ""),
+            "event": record["extra"].get("event", ""),
+            "message": record["message"],
+            "duration_ms": record["extra"].get("duration_ms", 0),
+            "status": record["extra"].get("status", ""),
+            "tokens_input": record["extra"].get("tokens_input", 0),
+            "tokens_output": record["extra"].get("tokens_output", 0),
+            "cost_estimated": record["extra"].get("cost_estimated", 0.0),
+            "prompt_version": record["extra"].get("prompt_version", ""),
+            "model_used": record["extra"].get("model_used", ""),
+            "error": record["extra"].get("error", ""),
+        }, ensure_ascii=False) + "\n")
+        fh.flush()
+
+    logger.add(_write_jsonl, level="DEBUG")
 
     # Lier le session_id au logger
     logger.configure(extra={
