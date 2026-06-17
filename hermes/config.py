@@ -4,32 +4,40 @@ Charge les variables d'environnement et expose les constantes de l'application.
 Compatible .env (local) et Streamlit Secrets (cloud).
 """
 
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
-# Charger .env (local uniquement)
-load_dotenv()
+# ─── Racine du projet ───────────────────────────────────────────────
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Charger .env (local uniquement) via lecture directe du fichier
+_env = dotenv_values(PROJECT_ROOT / ".env")
 
 # ─── Helper ─────────────────────────────────────────────────────────
 
 def _get(key: str, default: str = "") -> str:
-    """Lit une variable : Streamlit Secrets > .env > default."""
+    """Lit une variable : .env > Streamlit Secrets > default.
+
+    Sur Streamlit Cloud, les secrets sont la source unique (.env n'existe pas).
+    En local, .env est prioritaire pour eviter les placeholders du secrets.toml.
+    """
+    # D'abord .env (local prioritaire)
+    val = _env.get(key)
+    if val:
+        return val
+
+    # Puis Streamlit Secrets (cloud)
     try:
         import streamlit as st
-        # Streamlit Cloud utilise st.secrets
         val = st.secrets.get(key)
-        if val is not None:
+        if val:
             return str(val)
     except (ImportError, RuntimeError, FileNotFoundError):
         pass
-    return os.getenv(key, default)
 
-
-# ─── Racine du projet ───────────────────────────────────────────────
-
-PROJECT_ROOT = Path(__file__).parent.parent
+    return default
 
 # ─── Clés API ───────────────────────────────────────────────────────
 

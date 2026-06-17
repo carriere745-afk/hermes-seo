@@ -38,7 +38,7 @@ class StartupReport:
             icon = "OK" if r.passed else "FAIL"
             lines.append(f"  [{icon}] {r.name}")
             if not r.passed:
-                lines.append(f"       → {r.message}")
+                lines.append(f"       -> {r.message}")
                 if r.fix:
                     lines.append(f"       Fix: {r.fix}")
         return "\n".join(lines)
