@@ -42,6 +42,7 @@ st.markdown("""
     .score-orange { color: #fd7e14; }
     .score-red { color: #dc3545; }
     .agent-row { padding: 0.3rem 0; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+    .fc-footer { text-align: center; color: #999; font-size: 0.8rem; padding: 2rem 0 1rem 0; border-top: 1px solid #eee; margin-top: 3rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -239,8 +240,8 @@ else:
     with col1:
         st.markdown('<p class="main-header">Hermes SEO</p>', unsafe_allow_html=True)
         st.markdown(
-            '<p class="sub-header">Usine éditoriale intelligente — '
-            'Contenus SEO, AEO et GEO en un clic</p>',
+            '<p class="sub-header">Usine editoriale intelligente — '
+            'Contenus SEO, AEO et GEO en un clic | Par FC Solutions</p>',
             unsafe_allow_html=True,
         )
     with col2:
@@ -490,3 +491,11 @@ else:
         Par défaut, vous êtes en **mode essai** — tout fonctionne sans appel API.
         Quand vous êtes prêt, décochez le mode essai et configurez vos clés API dans `.env`.
         """)
+
+
+# ─── Footer ─────────────────────────────────────────────────────────
+
+st.markdown(
+    '<div class="fc-footer">© 2026 FC Solutions — Hermes SEO v3. Tous droits reserves.</div>',
+    unsafe_allow_html=True,
+)
