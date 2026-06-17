@@ -15,6 +15,12 @@ import streamlit as st
 # S'assurer que le projet est dans le path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from hermes.core.guard import (
+    sanitize_input,
+    validate_keyword,
+    validate_objectif,
+    validate_url,
+)
 from hermes.core.session_manager import SessionManager
 from hermes.core.workflow import (
     AGENT_ORDER,
@@ -413,6 +419,30 @@ else:
     # ─── Génération ─────────────────────────────────────────────────
 
     if generate and keyword:
+        # Guardrails — validation securite
+        kw_clean = sanitize_input(keyword)
+        kw_check = validate_keyword(kw_clean)
+        if not kw_check.passed:
+            st.error(f"Mot-cle refuse : {kw_check.reason}")
+            st.stop()
+
+        obj_clean = sanitize_input(
+            st.session_state.get("sidebar_objectif", ""),
+            max_length=500,
+        )
+        obj_check = validate_objectif(obj_clean)
+        if not obj_check.passed:
+            st.error(f"Objectif refuse : {obj_check.reason}")
+            st.stop()
+
+        url_clean = sanitize_input(
+            st.session_state.get("sidebar_url", ""),
+        )
+        url_check = validate_url(url_clean)
+        if not url_check.passed:
+            st.error(f"URL refusee : {url_check.reason}")
+            st.stop()
+
         st.session_state.pipeline_done = False
         st.session_state.session_id = None
         st.session_state.content = None
@@ -427,9 +457,9 @@ else:
         obj = st.session_state.get("sidebar_objectif", "")
 
         session = SessionState(
-            keyword=keyword,
-            site_url=su or None,
-            objectif=obj or None,
+            keyword=kw_clean,
+            site_url=url_clean or None,
+            objectif=obj_clean or None,
             config=SessionConfig(
                 mode=QualityMode(m),
                 dry_run=dr,
