@@ -15,7 +15,6 @@ import streamlit as st
 # S'assurer que le projet est dans le path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from hermes.config import configure_logging
 from hermes.core.session_manager import SessionManager
 from hermes.core.workflow import get_active_agents
 from hermes.models.common import AgentStatus, QualityMode
