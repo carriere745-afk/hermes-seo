@@ -76,6 +76,8 @@ class SerpData(BaseModel):
     mots_cles_associes: list[str] = Field(default_factory=list)
     search_volume: Optional[int] = None
     keyword_difficulty: Optional[int] = None
+    total_results: Optional[int] = None
+    snack_pack: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # ─── Agent 04 — Intention & Type ──────────────────────────────────────

@@ -8,12 +8,22 @@ Sources :
 - https://scrape.do/blog/google-serp-api/
 """
 
+import json
 from typing import Optional
+from urllib.parse import urlparse
 
 import httpx
 
 from hermes import config
 from hermes.core.exceptions import SerpAPIError
+
+
+def _extract_domain_static(url: str) -> str:
+    """Extrait le domaine net d'une URL."""
+    try:
+        return urlparse(url).netloc.lower().replace("www.", "")
+    except Exception:
+        return url.lower()
 
 
 class SerpAPIClient:
@@ -61,27 +71,110 @@ class SerpAPIClient:
     async def _search_talordata(
         self, keyword: str, location: str, language: str
     ) -> dict:
-        """Appelle l'API TalorData — compatible SerpApi, multi-engine."""
+        """Appelle l'API TalorData et normalise la reponse en format Hermes.
+
+        L'API retourne du JSON structure (json=2) avec:
+        - organic: resultats organiques (title, link, description)
+        - related: questions "People Also Ask" (text, link)
+        - snack_pack: entreprises locales (Google Maps)
+        - search_information: infos de recherche
+        """
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(
-                "https://api.talordata.com/v1/serp",
+                "https://serpapi.talordata.net/serp/v1/request",
                 headers={
                     "Authorization": f"Bearer {config.TALORDATA_API_KEY}",
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                json={
+                data={
                     "q": keyword,
                     "engine": "google",
                     "hl": language,
                     "gl": location,
-                    "num": 10,
+                    "num": "10",
+                    "json": "2",
                 },
             )
             resp.raise_for_status()
-            data = resp.json()
-            if data.get("error"):
-                raise SerpAPIError(f"TalorData error: {data['error']}")
-            return data
+            wrapper = resp.json()
+
+        if wrapper.get("code") != 0:
+            raise SerpAPIError(
+                f"TalorData error {wrapper.get('code')}: {wrapper.get('data', '')}"
+            )
+
+        raw = json.loads(wrapper["data"]["json"])
+        return self._normalize_talordata(raw, keyword)
+
+    def _normalize_talordata(self, raw: dict, keyword: str) -> dict:
+        """Convertit le format TalorData vers le format Hermes standard.
+
+        TalorData: {organic: [{title, link, description, display_link}],
+                     related: [{text, link}],
+                     snack_pack: [{name, address, reviews, ...}]}
+        Hermes:    {organic_results: [{position, title, url, snippet}],
+                     related_questions: [str],
+                     featured_snippet: dict,
+                     ai_overview: dict}
+        """
+        # Resultats organiques
+        organic_results = []
+        for i, item in enumerate(raw.get("organic", [])[:10]):
+            url = item.get("link", "")
+            organic_results.append({
+                "position": i + 1,
+                "title": item.get("title", ""),
+                "url": url,
+                "snippet": item.get("description", item.get("snippet", "")),
+                "domain": _extract_domain_static(url),
+                "display_link": item.get("display_link", ""),
+            })
+
+        # People Also Ask
+        related = [
+            q.get("text", q.get("question", ""))
+            for q in raw.get("related", [])[:10]
+            if q.get("text") or q.get("question")
+        ]
+
+        # Featured snippet (via answer_box TalorData)
+        fs = raw.get("answer_box") or {}
+        featured_snippet = {}
+        if fs.get("title") or fs.get("snippet"):
+            featured_snippet = {
+                "title": fs.get("title", ""),
+                "content": fs.get("snippet", fs.get("answer", "")),
+            }
+
+        # AI Overview
+        ai = raw.get("ai_overview") or {}
+        ai_overview = {}
+        if ai.get("text") or ai.get("snippet"):
+            ai_overview = {
+                "content": ai.get("text", ai.get("snippet", "")),
+            }
+
+        # Search info
+        search_info = raw.get("search_information") or {}
+        total = search_info.get("total_results")
+        total_results = None
+        if isinstance(total, int):
+            total_results = total
+        elif isinstance(total, str) and total.isdigit():
+            total_results = int(total)
+
+        # Snack pack (local)
+        snack_pack = raw.get("snack_pack") or []
+
+        return {
+            "keyword": keyword,
+            "organic_results": organic_results,
+            "related_questions": related,
+            "featured_snippet": featured_snippet,
+            "ai_overview": ai_overview,
+            "total_results": total_results,
+            "snack_pack": snack_pack,
+        }
 
     async def _search_scrapedo(
         self, keyword: str, location: str, language: str
