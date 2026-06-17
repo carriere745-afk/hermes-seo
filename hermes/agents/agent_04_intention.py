@@ -29,7 +29,7 @@ INTENT_KEYWORDS: dict[str, list[str]] = {
     "transactionnelle": [
         "acheter", "prix", "tarif", "devis", "souscrire", "commander",
         "pas cher", "promo", "livraison", "en ligne", "abonnement",
-        "offre", "forfait", "reserver",
+        "offre", "forfait", "reserver", "cout", "budget",
     ],
     "comparative": [
         "comparatif", "comparer", "meilleur", "vs", "versus",
@@ -42,6 +42,48 @@ INTENT_KEYWORDS: dict[str, list[str]] = {
         "agence", "boutique", "magasin", "rdv", "rendez-vous",
     ],
 }
+
+# Villes francaises et regions pour detection locale
+FRENCH_CITIES: set[str] = {
+    "paris", "lyon", "marseille", "toulouse", "nice", "nantes", "strasbourg",
+    "montpellier", "bordeaux", "lille", "rennes", "reims", "toulon", "grenoble",
+    "dijon", "angers", "nimes", "clermont", "lemans", "aix", "amiens", "limoges",
+    "tours", "metz", "besancon", "perpignan", "orleans", "rouen", "mulhouse",
+    "caen", "nancy", "avignon", "poitiers", "dunkerque", "pau", "calais",
+    "beziers", "bourges", "chambery", "larochelle", "antibes", "cannes",
+    "valence", "colmar", "frejus", "hyeres", "arles", "ales", "bayonne",
+    "belfort", "blois", "chartres", "gap", "laval", "niort", "saintmalo",
+    "saintetienne", "saintnazaire", "sete", "valence", "vannes",
+}
+
+REGIONS: set[str] = {
+    "ile-de-france", "paca", "auvergne", "rhone-alpes", "aquitaine",
+    "bretagne", "normandie", "alsace", "lorraine", "picardie", "champagne",
+    "bourgogne", "centre", "limousin", "poitou", "midi-pyrenees",
+    "languedoc", "roussillon", "corse", "guadeloupe", "martinique",
+    "guyane", "reunion", "mayotte",
+    "indre", "indre-et-loire", "loire", "loiret", "cher", "loir-et-cher",
+    "eure", "eure-et-loir", "seine", "marne", "oise", "ain", "ardeche",
+    "drome", "isere", "savoie", "haute-savoie", "vaucluse", "var", "alpes",
+    "hautes-alpes", "alpes-maritimes", "bouches-du-rhone", "gard", "herault",
+    "aude", "pyrenees", "haute-garonne", "gers", "landes", "lot", "tarn",
+    "aveyron", "lozere", "cantal", "puy-de-dome", "allier", "haute-loire",
+    "creuse", "correze", "haute-vienne", "vienne", "deux-sevres", "vendee",
+    "morbihan", "cotes-darmor", "finistere", "ille-et-vilaine", "mayenne",
+    "sarthe", "maine-et-loire", "orne", "manche", "calvados", "seine-maritime",
+    "paris", "yvelines", "essonne", "hauts-de-seine", "seine-saint-denis",
+    "val-de-marne", "val-doise", "seine-et-marne", "nord", "pas-de-calais",
+    "somme", "aisne", "ardennes", "marne", "aube", "haute-marne", "meuse",
+    "meurthe-et-moselle", "moselle", "vosges", "bas-rhin", "haut-rhin",
+    "doubs", "jura", "haute-saone", "territoire-de-belfort", "yonne",
+    "cote-dor", "nievre", "saone-et-loire",
+}
+
+# Patterns pour "entreprise de X [ville]" → service local
+_ENTREPRISE_PATTERN = re.compile(
+    r"(entreprise|societe|agence|cabinet|bureau|artisan|professionnel)s?\s+(de\s+)?[\w\s]+",
+    re.IGNORECASE,
+)
 
 TYPE_BY_INTENT: dict[str, str] = {
     "informative": "article",
@@ -68,44 +110,77 @@ TYPE_OVERRIDES: dict[str, str] = {
 
 
 def _classify_intent_heuristic(keyword: str) -> str:
-    """Classification heuristique de l'intention (sans LLM)."""
+    """Classification heuristique de l'intention (sans LLM).
+
+    Gere les cas :
+    - locale : ville/region dans le mot-cle, ou "entreprise + ville"
+    - transactionnelle : signaux d'achat (prix, devis, etc.)
+    - comparative : comparatif, meilleur, top, etc.
+    - informative : defaut
+    """
     kw_lower = keyword.lower()
     scores: dict[str, int] = {}
     for intent, tokens in INTENT_KEYWORDS.items():
         score = sum(1 for t in tokens if t in kw_lower)
         scores[intent] = score
+
+    # Boost locale si ville ou region detectee
+    words = set(kw_lower.split())
+    if words & FRENCH_CITIES or words & REGIONS:
+        scores["locale"] = scores.get("locale", 0) + 3
+
+    # "entreprise/societe/artisan + [mot] + ville" → tres probablement local
+    if _ENTREPRISE_PATTERN.search(kw_lower) and (words & FRENCH_CITIES):
+        scores["locale"] = scores.get("locale", 0) + 5
+        scores["transactionnelle"] = scores.get("transactionnelle", 0) + 2  # commercial
+
+    # "entreprise de [metier]" sans ville → commercial
+    if re.match(r"entreprise\s+(de\s+)?\w+", kw_lower) and not (words & FRENCH_CITIES):
+        scores["transactionnelle"] = scores.get("transactionnelle", 0) + 2
+
     best = max(scores, key=lambda k: scores[k])
     return best if scores[best] > 0 else "informative"
 
 
 def _classify_type_heuristic(keyword: str, intent: str, serp_data: Optional[dict] = None) -> str:
-    """Classification heuristique du type de page."""
+    """Classification heuristique du type de page.
+
+    Prend en compte le mot-cle, l'intention, et les donnees SERP si dispo.
+    """
     kw_lower = keyword.lower()
+    words = set(kw_lower.split())
+
+    # "entreprise/societe/artisan" + ville → page de service local
+    if _ENTREPRISE_PATTERN.search(kw_lower) and (words & FRENCH_CITIES):
+        return "service_local"
 
     # Verifier les overrides explicites dans le mot-cle
     for token, page_type in TYPE_OVERRIDES.items():
         if token in kw_lower:
             if page_type == "pilier" and intent == "transactionnelle":
-                return "landing"  # Un pilier n'est pas transactionnel
+                return "landing"
             return page_type
 
-    # Deduire du type de SERP
+    # Intent → type mapping, avec ajustements
+    # locale → service_local (pas article)
+    if intent == "locale":
+        return "service_local"
+    if intent == "transactionnelle":
+        return "landing"
+
+    # Deduire du SERP
     if serp_data:
         top10 = serp_data.get("top10", [])
-        # Si le top 3 contient beaucoup de pages produits → fiche_produit
         product_signals = sum(
             1 for r in top10[:5]
             if any(t in r.get("title", "").lower() for t in ["prix", "acheter", "boutique"])
         )
         if product_signals >= 3:
             return "fiche_produit"
-
-        # Si PAA abondant → article long / pilier
         paa = serp_data.get("paa", [])
         if len(paa) >= 5:
             return "pilier"
 
-    # Fallback : mapping intention → type
     return TYPE_BY_INTENT.get(intent, "article")
 
 
