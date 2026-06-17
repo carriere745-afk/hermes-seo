@@ -291,17 +291,39 @@ def render_session_detail(session_id: str) -> None:
         st.caption("Aucun log trouve pour cette session.")
 
     # ─── Contenu ───────────────────────────────────────────────────
-    if detail.has_content and detail.content_preview:
+    # ─── Contenu ───────────────────────────────────────────────────
+    raw = _load_raw_session(session_id)
+    html_content = (raw or {}).get("brouillon_html", "") if raw else ""
+    if not html_content:
+        html_content = detail.content_preview or ""
+
+    if html_content:
         st.markdown("---")
-        st.markdown("### Contenu genere (apercu)")
-        with st.expander("Voir l'apercu", expanded=False):
-            clean = detail.content_preview
-            clean = clean.replace("<h1>", "\n# ").replace("</h1>", "\n")
-            clean = clean.replace("<h2>", "\n## ").replace("</h2>", "\n")
-            clean = clean.replace("<h3>", "\n### ").replace("</h3>", "\n")
-            clean = clean.replace("<p>", "\n").replace("</p>", "\n")
-            clean = clean.replace("<strong>", "**").replace("</strong>", "**")
-            clean = clean.replace("<li>", "- ").replace("</li>", "")
-            clean = clean.replace("<ul>", "").replace("</ul>", "")
-            clean = clean.replace("<blockquote>", "> ").replace("</blockquote>", "")
-            st.markdown(clean[:5000])
+        st.markdown("### Contenu genere")
+
+        # Option 1: Rendu HTML direct dans le navigateur
+        st.html(html_content)
+
+        # Option 2: Telechargement en 1 clic
+        seo = (raw or {}).get("seo_data") or {}
+        title = seo.get("title_optimise", detail.keyword)
+        meta = seo.get("meta_description_optimise", "")
+        full_html = (
+            f'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
+            f'<title>{title}</title>'
+            f'<meta name="description" content="{meta}">'
+            f'<style>body{{max-width:800px;margin:auto;padding:20px;'
+            f'font-family:Georgia,serif;font-size:18px;line-height:1.8;color:#222}}'
+            f'h1{{font-size:2rem;margin:1em 0 .5em}}h2{{font-size:1.4rem;margin:1.5em 0 .5em}}'
+            f'h3{{font-size:1.1rem;margin:1em 0 .3em}}'
+            f'blockquote{{border-left:4px solid #ddd;padding-left:1em;color:#555}}'
+            f'ul{{padding-left:1.5em}}li{{margin:.3em 0}}'
+            f'</style></head><body>{html_content}</body></html>'
+        )
+        st.download_button(
+            "Telecharger l'article HTML",
+            data=full_html,
+            file_name=f"{detail.keyword.replace(' ', '-') or 'article'}.html",
+            mime="text/html",
+            use_container_width=True,
+        )

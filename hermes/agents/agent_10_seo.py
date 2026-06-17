@@ -13,7 +13,7 @@ from html.parser import HTMLParser
 
 from hermes import config
 from hermes.core.llm import LLMFactory
-from hermes.core.logging import log_agent_start, log_agent_completed
+from hermes.core.logging import log_agent_start, log_agent_completed, log_agent_failed
 from hermes.models.agent_data import SeoData
 from hermes.models.common import AgentStatus
 from hermes.models.session import AgentResult, SessionState

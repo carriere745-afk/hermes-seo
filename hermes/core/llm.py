@@ -346,7 +346,13 @@ class LLMFactory:
             system=system,
             messages=[{"role": "user", "content": user}],
         )
-        text = response.content[0].text if response.content else ""
+        # Claude peut renvoyer TextBlock ou ThinkingBlock
+        text = ""
+        for block in response.content:
+            if hasattr(block, 'text'):
+                text += block.text
+        if not text and response.content:
+            text = str(response.content[0])
         return (
             text,
             response.usage.input_tokens if response.usage else 0,
@@ -373,15 +379,20 @@ class LLMFactory:
             timeout=httpx.Timeout(600.0),
             max_retries=0,  # On gere le retry nous-memes
         )
-        response = await client.chat.completions.create(
-            model=config.model_id,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            messages=[
+        # OpenAI utilise max_completion_tokens, DeepSeek utilise max_tokens
+        params = {
+            "model": config.model_id,
+            "temperature": temperature,
+            "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-        )
+        }
+        if config.provider == ModelProvider.DEEPSEEK:
+            params["max_tokens"] = max_tokens
+        else:
+            params["max_completion_tokens"] = max_tokens
+        response = await client.chat.completions.create(**params)
         choice = response.choices[0]
         return (
             choice.message.content or "",

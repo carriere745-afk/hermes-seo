@@ -813,17 +813,19 @@ else:
         st.markdown("### 📄 Contenu généré")
         html_content = st.session_state.content.get("html", "")
         if html_content:
-            with st.expander("Voir le contenu HTML", expanded=True):
-                clean = html_content.replace("<h1>", "\n# ").replace("</h1>", "\n")
-                clean = clean.replace("<h2>", "\n## ").replace("</h2>", "\n")
-                clean = clean.replace("<h3>", "\n### ").replace("</h3>", "\n")
-                clean = clean.replace("<p>", "\n").replace("</p>", "\n")
-                clean = clean.replace("<strong>", "**").replace("</strong>", "**")
-                clean = clean.replace("<li>", "- ").replace("</li>", "")
-                clean = clean.replace("<ul>", "").replace("</ul>", "")
-                clean = clean.replace("<ol>", "").replace("</ol>", "")
-                clean = clean.replace("<blockquote>", "> ").replace("</blockquote>", "")
-                st.markdown(clean[:10000])
+            st.html(html_content)
+            st.download_button(
+                "📥 Telecharger l'article HTML",
+                data=(
+                    f'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
+                    f'<title>{st.session_state.content.get("title", "Article")}</title>'
+                    f'<meta name="description" content="{st.session_state.content.get("meta", "")}">'
+                    f'</head><body>{html_content}</body></html>'
+                ),
+                file_name=f"{keyword.replace(' ', '-') or 'article'}.html",
+                mime="text/html",
+                use_container_width=True,
+            )
 
         st.markdown("### 🔎 Métadonnées SEO")
         seo_col1, seo_col2 = st.columns(2)
