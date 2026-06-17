@@ -209,19 +209,31 @@ def _extract_json(text: str) -> dict:
 
 
 def _extract_html(text: str) -> str:
-    """Extrait le HTML meme si le LLM l'a mis hors du JSON.
+    """Extrait le HTML meme si le LLM l'a mis en dehors du JSON.
 
-    Cherche une balise <h1> et recupere tout ce qui suit jusqu'a la fin du texte
-    ou la derniere balise fermante significative.
+    Cherche du contenu HTML structurel et le recupere.
     """
-    match = re.search(r"<h1[ >].*?</h1>", text, re.DOTALL | re.IGNORECASE)
+    # 1. Bloc HTML dans un code fence markdown ```html ... ```
+    match = re.search(r"```html?\s*\n(.*?)```", text, re.DOTALL | re.IGNORECASE)
     if match:
-        debut = match.start()
-        # Prendre tout depuis le <h1> jusqu'a la fin du texte
-        # (le HTML devrait etre la derniere chose dans la reponse)
-        reste = text[debut:].strip()
-        if len(reste) > 100:
-            return reste
+        html = match.group(1).strip()
+        if len(html) > 200:
+            return html
+
+    # 2. Premiere balise structurelle (h1, h2, article, section, div, main)
+    for tag in ("h1", "h2", "article", "section", "div", "main"):
+        match = re.search(rf"<{tag}[ >].*?</{tag}>", text, re.DOTALL | re.IGNORECASE)
+        if match:
+            reste = text[match.start():].strip()
+            if len(reste) > 200:
+                return reste
+
+    # 3. Dernier recours : chercher tout bloc commencant par <
+    for part in reversed(text.split("\n\n")):
+        part = part.strip()
+        if part.startswith("<") and len(part) > 200:
+            return part
+
     return ""
 
 
@@ -420,24 +432,16 @@ async def run(state: SessionState) -> SessionState:
         result.status = AgentStatus.COMPLETED
 
     except Exception as e:
-        # En cas d'echec, tenter le fallback mock
-        try:
-            brouillon = _mock_brouillon(state)
-            state.brouillon_html = brouillon.html
-            result.data = brouillon.model_dump()
-            result.status = AgentStatus.COMPLETED
-            result.model_used = result.model_used or "fallback"
-            if not result.error_message:
-                result.error_message = str(e)
-        except Exception:
-            result.status = AgentStatus.FAILED
-            result.error_message = str(e)
-            result.error_traceback = str(e)
-            log_agent_failed(agent_id, agent_name, str(e))
-            state.status = "failed"
-            state.error_count += 1
-            result.finished_at = datetime.now()
-            return state
+        # NE PAS faire de fallback silencieux vers le mock.
+        # Un echec de redaction = pipeline arrete, pas de placeholder.
+        result.status = AgentStatus.FAILED
+        result.error_message = str(e)
+        result.error_traceback = str(e)
+        log_agent_failed(agent_id, agent_name, str(e))
+        state.status = "failed"
+        state.error_count += 1
+        result.finished_at = datetime.now()
+        return state
 
     result.finished_at = datetime.now()
     result.duration_ms = int((result.finished_at - start_time).total_seconds() * 1000)

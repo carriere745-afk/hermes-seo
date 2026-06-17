@@ -224,12 +224,14 @@ async def run(state: SessionState) -> SessionState:
         result.status = AgentStatus.COMPLETED
 
     except Exception as e:
-        seo = _mock_seo(state)
-        state.seo_data = seo.model_dump()
-        result.data = state.seo_data
-        result.status = AgentStatus.COMPLETED
-        result.model_used = result.model_used or "fallback"
+        result.status = AgentStatus.FAILED
         result.error_message = str(e)
+        result.error_traceback = str(e)
+        log_agent_failed(agent_id, agent_name, str(e))
+        state.status = "failed"
+        state.error_count += 1
+        result.finished_at = datetime.now()
+        return state
 
     result.finished_at = datetime.now()
     result.duration_ms = int((result.finished_at - start_time).total_seconds() * 1000)

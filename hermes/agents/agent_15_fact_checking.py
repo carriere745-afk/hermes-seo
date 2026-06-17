@@ -281,17 +281,14 @@ async def run(state: SessionState) -> SessionState:
         result.status = AgentStatus.COMPLETED
 
     except Exception as e:
-        fc = FactCheckData(score_fiabilite=5,
-                           erreurs=[ErreurFactuelle(
-                               emplacement="Global",
-                               texte_original="Erreur d'analyse",
-                               correction=f"Fact-checking interrompu: {e}",
-                               source="Systeme",
-                               gravite="moderee",
-                           )])
-        state.fact_check_data = fc.model_dump()
-        result.data = state.fact_check_data
-        result.status = AgentStatus.COMPLETED
+        result.status = AgentStatus.FAILED
+        result.error_message = str(e)
+        result.error_traceback = str(e)
+        log_agent_failed(agent_id, agent_name, str(e))
+        state.status = "failed"
+        state.error_count += 1
+        result.finished_at = datetime.now()
+        return state
         result.model_used = result.model_used or "fallback"
         result.error_message = str(e)
 
