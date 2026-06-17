@@ -1,15 +1,34 @@
 """Page Session Detail — Vue detaillee d'une session Hermes SEO.
 
-Affiche scores, agents, contenu, logs et budget pour une session.
+Affiche scores, strategie editoriale, contenu, logs et budget.
 """
 
+import json
 from datetime import datetime
+from pathlib import Path
 
 import streamlit as st
 
 from hermes.core.archive_service import ArchiveService
 from hermes.core.exceptions import SessionNotFoundError
+from hermes.config import SESSION_DIRECTORY
 from hermes.models.archive import ExportFormat
+from pages.strategy_panel import render_strategy_panel
+
+
+def _load_raw_session(session_id: str) -> dict | None:
+    """Charge la session JSON brute pour les donnees strategiques."""
+    path = SESSION_DIRECTORY / f"{session_id}.json"
+    if not path.exists():
+        archive_path = SESSION_DIRECTORY.parent / "archive" / "sessions" / f"{session_id}.json.gz"
+        if archive_path.exists():
+            import gzip
+            return json.loads(gzip.decompress(archive_path.read_bytes()))
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def render_session_detail(session_id: str) -> None:
@@ -94,6 +113,11 @@ def render_session_detail(session_id: str) -> None:
                 st.rerun()
             else:
                 st.error("Echec de la suppression.")
+
+    # ─── Strategie Editoriale ──────────────────────────────────────
+    raw = _load_raw_session(session_id)
+    if raw:
+        render_strategy_panel(raw)
 
     st.markdown("---")
 
