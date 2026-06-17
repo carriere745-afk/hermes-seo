@@ -29,6 +29,11 @@ from hermes.core.workflow import (
 from hermes.models.common import AgentStatus as AgentStatusEnum
 from hermes.models.common import AgentStatus, QualityMode
 from hermes.models.session import AgentResult, SessionConfig, SessionState
+from hermes.core.pipeline_guard import (
+    build_error_summary,
+    get_failure_severity,
+    get_upstream_failures,
+)
 from hermes.agents import AGENT_REGISTRY
 from pages.archive_page import render_archive_page
 from pages.session_detail_page import render_session_detail
@@ -73,16 +78,21 @@ if "nav_page" not in st.session_state:
     st.session_state.nav_page = "Generator"
 if "selected_session_id" not in st.session_state:
     st.session_state.selected_session_id = None
+if "pipeline_error" not in st.session_state:
+    st.session_state.pipeline_error = None
 
 
 async def _run_pipeline(
     session: SessionState, progress_bar, status_text,
     session_manager: SessionManager | None = None,
     resume_from: str | None = None,
-) -> SessionState:
+) -> tuple[SessionState, dict | None]:
     """Execute le pipeline complet avec feedback temps reel et sauvegarde apres chaque agent.
 
     Si resume_from est fourni, reprend depuis cet agent (les precedents sont preserves).
+
+    Returns (session, error_summary).
+    error_summary est None si tout s'est bien passe.
     """
     active = get_active_agents(
         mode=session.config.mode,
@@ -131,12 +141,12 @@ async def _run_pipeline(
         except ValueError:
             pass
 
+    critical_failures = []
     for i, agent_id in enumerate(active):
         if agent_id not in AGENT_ORDER:
             continue
         agent_order_idx = AGENT_ORDER.index(agent_id)
         if agent_order_idx < start_index:
-            # Agent deja execute dans une session precedente
             progress = (i + 1) / total
             progress_bar.progress(progress, text=f"{agent_names.get(agent_id, agent_id)} (deja fait)")
             continue
@@ -148,32 +158,101 @@ async def _run_pipeline(
 
         if agent_id in AGENT_REGISTRY:
             try:
+                # Verification des donnees d'entree pour les agents qui en dependent
+                upstream = get_upstream_failures(agent_id, session.agent_results)
+                if upstream:
+                    severity = get_failure_severity(agent_id)
+                    if severity == "critical":
+                        status_text.warning(
+                            f"⚠️ {name} non execute — "
+                            f"donnees manquantes: {', '.join(upstream)}"
+                        )
+                        st.session_state.agent_results[agent_id] = (
+                            f"⏭️ Donnees manquantes: {', '.join(upstream)}"
+                        )
+                        # Marquer comme skipped pour le resume
+                        session.agent_results[agent_id] = AgentResult(
+                            agent_id=agent_id,
+                            agent_name=name,
+                            status=AgentStatus.SKIPPED_AUTO,
+                            skip_reason=f"Donnees manquantes: {', '.join(upstream)}",
+                        )
+                        if session_manager:
+                            session_manager.save(session)
+                        continue
+                    else:
+                        status_text.warning(
+                            f"⚠️ {name}: donnees amont degradees, tentative quand meme..."
+                        )
+
                 session.current_agent_id = agent_id
                 session = await AGENT_REGISTRY[agent_id](session)
                 result = session.agent_results.get(agent_id)
                 session.last_completed_agent_id = agent_id
-                st.session_state.agent_results[agent_id] = (
-                    result.status.value if result else "?"
+
+                # Verifier si l'agent a echoue (status failed)
+                agent_status = result.status if result else None
+                status_val = (
+                    agent_status.value if hasattr(agent_status, 'value')
+                    else str(agent_status) if agent_status else "?"
                 )
 
-                # Sauvegarder apres chaque agent (resilience)
+                if status_val == "failed":
+                    severity = get_failure_severity(agent_id)
+                    if severity == "critical":
+                        critical_failures.append(agent_id)
+                        st.session_state.agent_results[agent_id] = "❌ Critique"
+                        session.error_count += 1
+                        session.status = "blocked"
+                        if session_manager:
+                            session_manager.save(session)
+                        status_text.error(
+                            f"⛔ {name} : echec critique. "
+                            f"Le pipeline s'arrete pour eviter un resultat degrade."
+                        )
+                        break
+                    else:
+                        st.session_state.agent_results[agent_id] = (
+                            f"⚠️ Degrade: {result.error_message or 'Erreur inconnue'}"
+                        )
+                else:
+                    st.session_state.agent_results[agent_id] = (
+                        result.status.value if result else "?"
+                    )
+
+                # Sauvegarder apres chaque agent
                 if session_manager:
                     session_manager.save(session)
 
             except Exception as e:
+                severity = get_failure_severity(agent_id)
                 st.session_state.agent_results[agent_id] = f"❌ {e}"
-                # Sauvegarder avant de quitter pour pouvoir reprendre
                 session.error_count += 1
                 session.status = "failed"
                 if session_manager:
                     session_manager.save(session)
-                status_text.error(f"Échec a {name}: {e}")
-                return session
+
+                if severity == "critical":
+                    status_text.error(
+                        f"⛔ {name} : erreur critique — "
+                        f"pipeline arrete pour eviter un resultat degrade."
+                    )
+                    break
+                else:
+                    status_text.warning(
+                        f"⚠️ {name} : erreur non-critique, le pipeline continue."
+                    )
+
+    if critical_failures:
+        session.status = "blocked"
+        if session_manager:
+            session_manager.save(session)
+        return session, build_error_summary(session)
 
     session.status = "completed"
     if session_manager:
         session_manager.save(session)
-    return session
+    return session, None
 
 
 def run_pipeline_sync(session, progress_bar, status_text,
@@ -183,6 +262,111 @@ def run_pipeline_sync(session, progress_bar, status_text,
         session_manager=session_manager,
         resume_from=resume_from,
     ))
+
+
+# ─── Composant Erreur Pipeline ────────────────────────────────────────
+
+def _render_pipeline_error(error_summary: dict) -> None:
+    """Affiche une page d'erreur claire quand le pipeline s'arrete.
+
+    Montre ce qui a reussi, ce qui a echoue, et propose de reprendre.
+    """
+    st.markdown("---")
+    st.markdown("## Pipeline Interrompu")
+
+    critical = error_summary.get("critical_failed", [])
+    succeeded = error_summary.get("succeeded", [])
+    not_run = error_summary.get("not_run", [])
+    last_ok = error_summary.get("last_successful", "")
+
+    st.warning(
+        "Le pipeline s'est arrete automatiquement pour eviter "
+        "de produire un contenu de qualite insuffisante. "
+        "Les donnees deja analysees sont preservees."
+    )
+
+    # Resume
+    c1, c2, c3 = st.columns([1, 1, 1])
+    with c1:
+        st.metric("Agents reussis", len(succeeded))
+    with c2:
+        st.metric("Echecs critiques", len(critical))
+    with c3:
+        st.metric("Non executes", len(not_run))
+
+    names = {
+        "agent_01": "Brief Entreprise",
+        "agent_02": "Persona",
+        "agent_03": "Analyse SERP",
+        "agent_04": "Intention",
+        "agent_05": "Offre & Conversion",
+        "agent_06": "Differenciation",
+        "agent_07": "Template",
+        "agent_08": "Anti-cannibalisation",
+        "agent_09": "Redaction",
+        "agent_10": "SEO",
+        "agent_11": "AEO",
+        "agent_12": "GEO",
+        "agent_13": "EEAT",
+        "agent_14": "Conformite",
+        "agent_15": "Fact-checking",
+        "agent_16": "Maillage interne",
+        "agent_17": "Maillage externe",
+        "agent_18": "Multiformat",
+        "agent_19": "Test A/B",
+        "agent_20": "Localisation",
+        "agent_21": "Schema.org",
+        "agent_22": "Images",
+        "agent_23": "CMS Export",
+        "agent_24": "Mise a jour",
+        "agent_25": "Critique Qualite",
+        "agent_26": "Audit",
+    }
+
+    # Detaille
+    st.markdown("---")
+    st.markdown("### Ce qui a fonctionne")
+    if succeeded:
+        for aid in succeeded:
+            nm = names.get(aid, aid)
+            st.markdown(f"✅ {nm}")
+    else:
+        st.caption("Aucun agent n'a abouti.")
+
+    st.markdown("---")
+    st.markdown("### Ce qui a echoue")
+    for aid in critical:
+        nm = names.get(aid, aid)
+        st.error(f"⛔ {nm} — Cet agent est critique pour la qualite du contenu.")
+
+    if not_run:
+        st.markdown("### En attente")
+        for aid in not_run[:10]:
+            nm = names.get(aid, aid)
+            st.markdown(f"⏭️ {nm}")
+
+    # Actions
+    st.markdown("---")
+    resume_from = error_summary.get("resume_from", "")
+    session_id = st.session_state.get("session_id", "")
+
+    ac1, ac2 = st.columns(2)
+    with ac1:
+        if resume_from and session_id:
+            if st.button("🔄 Reprendre le pipeline", type="primary", use_container_width=True):
+                st.session_state.resume_session_id = session_id
+                st.rerun()
+        else:
+            st.info(
+                "La reprise automatique n'est pas disponible. "
+                "Relancez le pipeline avec un nouveau mot-cle."
+            )
+    with ac2:
+        if session_id:
+            if st.button("📋 Voir le detail de session", use_container_width=True):
+                st.session_state.nav_page = "Session Detail"
+                st.session_state.selected_session_id = session_id
+                st.rerun()
 
 
 # ─── Sidebar ──────────────────────────────────────────────────────────
@@ -392,7 +576,7 @@ else:
 
             with st.spinner(""):
                 start_time = datetime.now()
-                session = run_pipeline_sync(
+                session, _ = run_pipeline_sync(
                     session, progress_bar, status_text,
                     session_manager=mgr,
                     resume_from=resume_from,
@@ -476,15 +660,25 @@ else:
         with st.spinner(""):
             start_time = datetime.now()
             mgr = SessionManager(Path("sessions"))
-            session = run_pipeline_sync(
+            session, error_summary = run_pipeline_sync(
                 session, progress_bar, status_text, session_manager=mgr
             )
             elapsed = (datetime.now() - start_time).total_seconds()
 
         progress_bar.progress(1.0, text="Terminé !")
-        status_text.success(f"Contenu généré en {elapsed:.1f}s — Session: `{session.session_id}`")
+
+        if error_summary:
+            status_text.warning(
+                f"Pipeline partiellement termine en {elapsed:.1f}s — "
+                f"Session: `{session.session_id}`"
+            )
+        else:
+            status_text.success(
+                f"Contenu genere en {elapsed:.1f}s — Session: `{session.session_id}`"
+            )
 
         st.session_state.pipeline_done = True
+        st.session_state.pipeline_error = error_summary
         st.session_state.content = {
             "html": session.brouillon_html or "",
             "title": (session.seo_data or {}).get("title_optimise", keyword),
@@ -510,15 +704,22 @@ else:
         session.config.dry_run = True
         progress_bar = st.progress(0, text="Replay...")
         status_text = st.empty()
-        session = run_pipeline_sync(
+        session, error_summary = run_pipeline_sync(
             session, progress_bar, status_text,
             session_manager=SessionManager(Path("sessions")),
         )
+        st.session_state.pipeline_error = error_summary
         st.rerun()
 
     # ─── Résultats ──────────────────────────────────────────────────
 
-    if st.session_state.pipeline_done and st.session_state.scores:
+    error_summary = st.session_state.get("pipeline_error")
+
+    if st.session_state.pipeline_done and error_summary:
+        # ─── Pipeline arrete avec erreurs ──────────────────────────
+        _render_pipeline_error(error_summary)
+
+    elif st.session_state.pipeline_done and st.session_state.scores:
         st.markdown("---")
         st.markdown("## 📊 Résultats")
 
