@@ -15,6 +15,7 @@ from hermes.models.agent_data import GrilleScores, ScoresFinaux
 from hermes.models.common import AgentStatus, QualityMode
 from hermes.models.session import AgentResult, SessionState
 from hermes.utils.text import flesch_francais, densite_semantique, compter_mots
+from hermes.core.content_guard import run_quality_checks
 
 
 # Seuils de publication par mode qualite
@@ -227,6 +228,11 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
     else:
         reco = f"Insuffisant. Score {score_total}/{seuil}. Corrections obligatoires avant publication."
 
+    # Garde-fous qualite enrichis (content_guard)
+    html = state.brouillon_html or ""
+    type_page = state.type_page or "article"
+    quality = run_quality_checks(html, type_page)
+
     # Blocages
     blocages: list[str] = []
     if absence_erreurs == 0:
@@ -236,6 +242,12 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
     if state.conformite_data:
         if state.conformite_data.get("risque_juridique") == "critique":
             blocages.append("Risque juridique critique — validation juridique obligatoire.")
+    # Blocages du content guard
+    for b in quality.get("blocking", []):
+        blocages.append(b)
+    # Placeholders = penalite score
+    if quality.get("placeholders"):
+        score_total -= len(quality["placeholders"]) * 3
 
     # Verifications humaines recommandees
     verifications: list[str] = []
@@ -250,7 +262,19 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
     if state.config.user_skipped_agents:
         verifications.append(
             f"Agents ignores : {', '.join(state.config.user_skipped_agents)}. "
-            f"Verifications humaines recommandees pour ces etapes."
+            f"Verifications humaines recommandees pour ces etapes.")
+    # Verifications du content guard
+    for w in quality.get("warnings", []):
+        verifications.append(w)
+    for ic in quality.get("internal_content", []):
+        verifications.append(
+            f"Contenu interne expose : '{ic['pattern']}' — "
+            f"\"{ic['match'][:60]}...\" — a supprimer du contenu public"
+        )
+    for uc in quality.get("unsourced_claims", []):
+        verifications.append(
+            f"Affirmation non sourcee : '{uc['pattern']}' — "
+            f"ajouter une source ou supprimer le superlatif"
         )
 
     return ScoresFinaux(

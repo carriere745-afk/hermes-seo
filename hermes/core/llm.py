@@ -336,7 +336,7 @@ class LLMFactory:
         import httpx
         client = anthropic.AsyncAnthropic(
             api_key=self._anthropic_key,
-            timeout=httpx.Timeout(600.0),
+            timeout=httpx.Timeout(_adaptive_timeout(max_tokens)),
             max_retries=0,  # On gere le retry nous-memes via tenacity
         )
         response = await client.messages.create(
@@ -376,7 +376,7 @@ class LLMFactory:
         client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
-            timeout=httpx.Timeout(600.0),
+            timeout=httpx.Timeout(_adaptive_timeout(max_tokens)),
             max_retries=0,  # On gere le retry nous-memes
         )
         # OpenAI utilise max_completion_tokens, DeepSeek utilise max_tokens
@@ -476,6 +476,57 @@ class LLMFactory:
             f'{{"message": "Dry-run response for {agent_id}", "status": "simulated"}}',
             0, 0, "dry-run",
         )
+
+
+def _adaptive_timeout(max_tokens: int) -> float:
+    """Timeout adaptatif base sur la formule : max(45, maxTokens/50 + 30).
+
+    Pour 8000 tokens → 190s. Pour 500 tokens → 45s.
+    Evite les timeout trop courts sur les longues generations.
+    """
+    return max(45.0, max_tokens / 50.0 + 30.0)
+
+
+def _repair_json(text: str) -> dict:
+    """Repare le JSON mal forme des LLMs (3 niveaux de defense).
+
+    1. Strict parse
+    2. Regex extract from markdown fences
+    3. jsonrepair (si installe)
+    """
+    import json as _json
+    import re as _re
+
+    # Niveau 1 : parse strict
+    try:
+        return _json.loads(text.strip())
+    except _json.JSONDecodeError:
+        pass
+
+    # Niveau 2 : extraction depuis markdown fences
+    match = _re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, _re.DOTALL)
+    if match:
+        try:
+            return _json.loads(match.group(1))
+        except _json.JSONDecodeError:
+            pass
+
+    match = _re.search(r"\{.*\}", text, _re.DOTALL)
+    if match:
+        try:
+            return _json.loads(match.group(0))
+        except _json.JSONDecodeError:
+            pass
+
+    # Niveau 3 : jsonrepair (si disponible)
+    try:
+        from jsonrepair import repair_json
+        repaired = repair_json(text)
+        return _json.loads(repaired)
+    except (ImportError, Exception):
+        pass
+
+    return {}
 
 
 def _is_retryable(exception: Exception) -> bool:
