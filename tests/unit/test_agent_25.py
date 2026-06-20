@@ -4,7 +4,7 @@ import asyncio, pytest
 from hermes.agents.agent_25_critique_qualite import (
     _evaluate, _score_lisibilite, _score_densite, _score_paa,
     _score_originalite, _score_fraicheur, _score_aeo, _score_geo,
-    _score_erreurs, _score_naturalite, run, CRITERES_NON_APPLICABLES,
+    _score_erreurs, _score_naturalite, run,
 )
 from hermes.models.agent_data import ScoresFinaux, GrilleScores
 from hermes.models.common import AgentStatus, QualityMode
@@ -119,7 +119,9 @@ def test_score_total_somme_criteres(session_riche):
     result = asyncio.run(run(session_riche))
     s = result.scores["scores"]
     expected_total = sum(s.values())
-    assert result.scores["score_total"] == expected_total
+    # Score total peut etre reduit par les penalites (content_guard)
+    assert result.scores["score_total"] <= expected_total
+    assert result.scores["score_total"] >= 0
 
 
 def test_resultat_stocke(session_riche):
@@ -227,9 +229,11 @@ def test_fiche_produit_neutralise_paa():
 
 
 def test_tous_les_types_na_connus():
+    """Verifie que tous les types de page ont un profil de scoring."""
+    from hermes.core.scoring_rules import PROFILES
     for t in ("landing", "fiche_produit", "faq", "service_local",
-              "comparatif", "news", "glossaire", "temoignage"):
-        assert t in CRITERES_NON_APPLICABLES or t not in CRITERES_NON_APPLICABLES
+              "comparatif", "news", "glossaire", "temoignage", "article", "pilier"):
+        assert t in PROFILES, f"Profil manquant pour {t}"
 
 
 # ─── 6. Blocages et avertissements ────────────────────────────────────

@@ -150,6 +150,7 @@ class Brouillon(BaseModel):
     titre: str = ""
     meta_description: str = ""
     sections: list[str] = Field(default_factory=list)
+    card_excerpt: str = ""  # Extrait optimise clic pour listings (50-160 car.)
 
 
 # ─── Agent 10 — SEO ───────────────────────────────────────────────────

@@ -16,6 +16,7 @@ from hermes.models.common import AgentStatus, QualityMode
 from hermes.models.session import AgentResult, SessionState
 from hermes.utils.text import flesch_francais, densite_semantique, compter_mots
 from hermes.core.content_guard import run_quality_checks
+from hermes.core.scoring_rules import get_profile, ScoreWeight, get_word_range
 
 
 # Seuils de publication par mode qualite
@@ -190,12 +191,28 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
     absence_erreurs = _score_erreurs(state)
     naturalite = _score_naturalite(state, text)
 
-    # Neutraliser les criteres non-applicables
-    na = CRITERES_NON_APPLICABLES.get(type_page, set())
-    if "reponse_paa" in na: reponse_paa = 20
-    if "respect_aeo" in na: respect_aeo = 10
-    if "respect_geo" in na: respect_geo = 10
-    if "originalite" in na: originalite = 15
+    # Neutraliser les criteres non-applicables via scoring_rules
+    profile = get_profile(type_page)
+
+    def _apply_weight(dim_key: str, score: int, max_val: int) -> int:
+        weight_type, multiplier = profile.get_weight(dim_key)
+        if weight_type == ScoreWeight.NEUTRAL:
+            return max_val  # Neutralise
+        if weight_type == ScoreWeight.REQUIRED:
+            return min(max_val, int(score * multiplier))
+        if weight_type == ScoreWeight.PENALTY:
+            return min(max_val, max(0, int(score * -multiplier)))
+        return min(max_val, int(score * multiplier))
+
+    lisibilite = _apply_weight("lisibilite", lisibilite, 10)
+    densite = _apply_weight("densite_semantique", densite, 15)
+    reponse_paa = _apply_weight("reponse_paa", reponse_paa, 20)
+    originalite = _apply_weight("originalite", originalite, 15)
+    fraicheur = _apply_weight("fraicheur", fraicheur, 10)
+    respect_aeo = _apply_weight("respect_aeo", respect_aeo, 10)
+    respect_geo = _apply_weight("respect_geo", respect_geo, 10)
+    absence_erreurs = _apply_weight("absence_erreurs", absence_erreurs, 6)
+    naturalite = _apply_weight("naturalite", naturalite, 4)
 
     scores = GrilleScores(
         lisibilite=lisibilite,
