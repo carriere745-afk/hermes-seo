@@ -274,7 +274,8 @@ class MultiformatData(BaseModel):
 class VariantAB(BaseModel):
     title: str
     meta_description: str
-    ctr_predit: float = 0.0
+    ctr_potentiel: float = 0.0  # Potentiel CTR estime (indicatif, pas une prediction)
+    ctr_predit: float = 0.0  # Retrocompatibilite — deprecated, utiliser ctr_potentiel
 
 
 class VariantsAB(BaseModel):
@@ -358,6 +359,8 @@ class ScoresFinaux(BaseModel):
     recommandation: str = ""
     blocages: list[str] = Field(default_factory=list)
     verifications_humaines: list[str] = Field(default_factory=list)
+    score_confidence: str = "indicatif"  # Score indicatif, pas une verite absolue
+    intervalle_confiance: str = ""  # Ex: "87 ± 5"
 
 
 # ─── Agent 26 — Audit post-publication ────────────────────────────────

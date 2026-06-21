@@ -33,6 +33,7 @@ from hermes.agents.agent_23_cms_export import run as agent_23
 from hermes.agents.agent_24_mise_a_jour import run as agent_24
 from hermes.agents.agent_25_critique_qualite import run as agent_25
 from hermes.agents.agent_26_audit_post_publication import run as agent_26
+from hermes.agents.agent_27_coherence import run as agent_27
 
 AGENT_REGISTRY: dict[str, callable] = {
     "agent_00": agent_00,
@@ -62,6 +63,7 @@ AGENT_REGISTRY: dict[str, callable] = {
     "agent_24": agent_24,
     "agent_25": agent_25,
     "agent_26": agent_26,
+    "agent_27": agent_27,
 }
 
 __all__ = ["AGENT_REGISTRY"]

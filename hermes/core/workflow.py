@@ -44,6 +44,7 @@ AGENT_ORDER: list[str] = [
     "agent_24",
     "agent_25",
     "agent_26",
+    "agent_27",
 ]
 
 
@@ -163,7 +164,7 @@ def get_agents_for_mode(mode: QualityMode) -> set[str]:
     }
     premium = standard | {
         "agent_14", "agent_17", "agent_18", "agent_19",
-        "agent_20", "agent_24", "agent_26",
+        "agent_20", "agent_24", "agent_26", "agent_27",
     }
     compliance = premium  # Mêmes agents, comportement renforcé
     debug = set(AGENT_ORDER)

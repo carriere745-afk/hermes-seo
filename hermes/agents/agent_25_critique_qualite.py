@@ -294,6 +294,10 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
             f"ajouter une source ou supprimer le superlatif"
         )
 
+    # Calculer l'intervalle de confiance (± 5 points)
+    marge = 5
+    intervalle = f"{max(0, score_total - marge)} – {min(100, score_total + marge)}"
+
     return ScoresFinaux(
         scores=scores,
         score_total=score_total,
@@ -302,6 +306,8 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
         recommandation=reco,
         blocages=blocages,
         verifications_humaines=verifications,
+        score_confidence="indicatif",
+        intervalle_confiance=intervalle,
     )
 
 
