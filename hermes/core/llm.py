@@ -518,9 +518,9 @@ def _repair_json(text: str) -> dict:
         except _json.JSONDecodeError:
             pass
 
-    # Niveau 3 : jsonrepair (si disponible)
+    # Niveau 3 : json-repair (si disponible)
     try:
-        from jsonrepair import repair_json
+        from json_repair import repair_json
         repaired = repair_json(text)
         return _json.loads(repaired)
     except (ImportError, Exception):
