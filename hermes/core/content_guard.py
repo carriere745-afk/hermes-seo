@@ -158,7 +158,11 @@ def check_structure(html: str, type_page: str) -> dict:
             warnings.append("Date non trouvee dans le contenu")
 
     if "cta" in required:
-        has_cta = bool(re.search(r"(?i)(contactez|appelez|devis|demandez|rendez.vous|gratuit)", html[-300:]))
+        # Pour landing/commerce: CTA peut etre n'importe ou dans le contenu
+        if type_page in ("landing", "fiche_produit", "service_local"):
+            has_cta = bool(re.search(r"(?i)(contactez|appelez|devis|demandez|rendez.vous|gratuit|reserver|commandez|achetez|profitez)", html))
+        else:
+            has_cta = bool(re.search(r"(?i)(contactez|appelez|devis|demandez|rendez.vous|gratuit)", html[-300:]))
         if not has_cta:
             warnings.append("CTA absent en fin d'article")
 

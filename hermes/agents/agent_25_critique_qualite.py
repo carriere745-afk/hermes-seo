@@ -146,19 +146,28 @@ def _score_geo(state: SessionState) -> int:
 
 
 def _score_erreurs(state: SessionState) -> int:
-    """Score absence erreurs factuelles (0-6)."""
+    """Score absence erreurs factuelles (0-6). Type-aware."""
     fact = state.fact_check_data or {}
     erreurs = fact.get("erreurs", [])
+    type_page = state.type_page or "article"
     score = 6
     for e in erreurs:
         gravite = e.get("gravite", "mineure") if isinstance(e, dict) else getattr(e, "gravite", "mineure")
-        if gravite == "critique":
-            score = 0
-            break
-        if gravite == "majeure":
-            score -= 2
-        elif gravite == "moderee":
-            score -= 1
+        # Landing/commercial : ne penaliser que les contradictions, pas le marketing
+        if type_page in ("landing", "fiche_produit", "service_local"):
+            if gravite == "critique":
+                score -= 2  # Pas de blocage, juste penalite legere
+            elif gravite == "majeure":
+                score -= 1
+            # mineure/moderee ignorees (marketing normal)
+        else:
+            if gravite == "critique":
+                score = 0
+                break
+            if gravite == "majeure":
+                score -= 2
+            elif gravite == "moderee":
+                score -= 1
     return max(0, min(6, score))
 
 

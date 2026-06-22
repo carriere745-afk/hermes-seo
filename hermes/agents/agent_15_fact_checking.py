@@ -147,10 +147,34 @@ def _build_user_message(state: SessionState, text: str, facts: list[dict]) -> st
         for f in facts[:20]
     ) if facts else "Aucune affirmation factuelle detectee"
 
+    type_page = state.type_page or "article"
+
+    # Instructions type-aware
+    type_instructions = {
+        "landing": (
+            "**ATTENTION : landing/commercial.** Les affirmations marketing "
+            "(prix, nombre clients, notes, garanties) sont NORMALES pour ce type. "
+            "Ne les signale PAS comme erreurs sauf si contradictoires avec le meme article. "
+            "Seuil de tolerance : ELEVE. Signale uniquement les contradictions evidentes."
+        ),
+        "fiche_produit": (
+            "**ATTENTION : fiche produit.** Les caracteristiques, prix et disponibilite "
+            "sont des donnees produits normales. Signale uniquement les incoherences "
+            "entre le prix annonce et le prix detaille, ou les specifications contradictoires."
+        ),
+        "service_local": (
+            "**ATTENTION : page service local.** Les affirmations de proximite, "
+            "de qualification et d'experience sont normales. Signale uniquement "
+            "les contradictions manifestes (ex: '10 ans d'experience' mais 'cree en 2020')."
+        ),
+    }
+    type_note = type_instructions.get(type_page, "")
+
     return (
         f"Verifie les affirmations factuelles du contenu.\n\n"
         f"**Mot-cle :** {state.keyword or 'N/A'}\n"
-        f"**Type de page :** {state.type_page or 'N/A'}\n\n"
+        f"**Type de page :** {type_page}\n"
+        f"{type_note}\n"
         f"**Affirmations factuelles detectees :**\n{facts_text}\n\n"
         f"Retourne UNIQUEMENT un objet JSON avec :\n"
         f'- erreurs: [{{"emplacement": "...", "texte_original": "...", '
