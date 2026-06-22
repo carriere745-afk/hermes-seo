@@ -15,6 +15,7 @@ AC10 : Roadmap + Export + Connecteur
 
 from hermes.agents.audit.ac00_supervisor import run as ac00
 from hermes.agents.audit.ac01_crawler import run as ac01
+from hermes.agents.audit.ac01b_serp_context import run as ac01b
 from hermes.agents.audit.ac02_seo_quality import run as ac02
 from hermes.agents.audit.ac03_aeo import run as ac03
 from hermes.agents.audit.ac04_geo import run as ac04
@@ -28,6 +29,7 @@ from hermes.agents.audit.ac09_delta_dom import run as ac10
 AUDIT_REGISTRY: dict[str, callable] = {
     "ac00": ac00,
     "ac01": ac01,
+    "ac01b": ac01b,
     "ac02": ac02,
     "ac03": ac03,
     "ac04": ac04,
@@ -40,7 +42,7 @@ AUDIT_REGISTRY: dict[str, callable] = {
 }
 
 AUDIT_ORDER: list[str] = [
-    "ac00", "ac01", "ac02", "ac03", "ac04", "ac05",
+    "ac00", "ac01", "ac01b", "ac02", "ac03", "ac04", "ac05",
     "ac06", "ac10", "ac07", "ac08", "ac09",
 ]
 

@@ -85,6 +85,9 @@ class CrawledPage(BaseModel):
     has_noindex: bool = False
     robots_blocked: bool = False
 
+    # SERP context (ajoute par AC01b)
+    serp_context: Optional[dict[str, Any]] = None
+
     def to_dict(self) -> dict:
         return self.model_dump()
 

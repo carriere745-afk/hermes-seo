@@ -517,6 +517,22 @@ elif nav == "Session Detail":
 else:
     # ─── Page Generator (existante) ─────────────────────────────────
 
+    # ─── Mode Reecriture (depuis Audit) ──────────────────────────
+    rewrite_brief = st.session_state.pop("rewrite_brief", None)
+    rewrite_url = st.session_state.pop("rewrite_url", None)
+    if rewrite_brief:
+        st.success(f"Mode Reecriture active depuis l'audit")
+        st.info(f"Page source : {rewrite_url} | Score actuel : {rewrite_brief.get('scores', {}).get('global', '?')}/100")
+        with st.expander("Voir les recommandations d'audit"):
+            for r in rewrite_brief.get("recommandations", [])[:5]:
+                st.markdown(f"- **{r.get('action', '?')}** : {r.get('description', '?')} (impact: +{r.get('impact', {}).get('global', 0)} pts)")
+        # Pre-remplir l'objectif avec les recommandations
+        audit_objectif = "; ".join(r.get("description", "") for r in rewrite_brief.get("recommandations", [])[:3])
+        if audit_objectif:
+            st.session_state.sidebar_objectif = audit_objectif
+
+    keyword_default = rewrite_brief.get("current_content", "")[:80] if rewrite_brief else ""
+
     col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown('<p class="main-header">Hermes SEO</p>', unsafe_allow_html=True)
@@ -533,6 +549,7 @@ else:
         "Mot-clé",
         placeholder="Ex: assurance vie temporaire, guide comptabilité, meilleur aspirateur...",
         key="keyword_input",
+        value=keyword_default if keyword_default else "",
     )
 
     col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
@@ -659,10 +676,19 @@ else:
         su = st.session_state.get("sidebar_url", "")
         obj = st.session_state.get("sidebar_objectif", "")
 
+        # Si on est en mode reecriture, injecter l'audit_brief comme contrainte
+        import json as _json
+        contraintes = []
+        if rewrite_brief:
+            contraintes.append(_json.dumps(rewrite_brief, ensure_ascii=False))
+            if rewrite_brief.get("page_url") and not url_clean:
+                url_clean = rewrite_brief["page_url"]
+
         session = SessionState(
             keyword=kw_clean,
             site_url=url_clean or None,
             objectif=obj_clean or None,
+            contraintes=contraintes,
             config=SessionConfig(
                 mode=QualityMode(m),
                 dry_run=dr,
