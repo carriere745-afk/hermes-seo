@@ -75,6 +75,7 @@ AGENT_OUTPUT_SPEC: dict[str, tuple[str, type, list[str]]] = {
     "agent_24": ("plan_refresh", RefreshPlan, ["date_prochaine_revision"]),
     "agent_25": ("scores", ScoresFinaux, ["score_total", "seuil_atteint"]),
     "agent_26": ("feedback_data", FeedbackData, ["data_gsc"]),
+    "agent_27": ("agent_results.agent_27.data", dict, ["score_coherence"]),
 }
 
 # ─── Dépendances : ce dont chaque agent a besoin produit par les agents précédents ───
@@ -109,6 +110,7 @@ AGENT_DEPENDENCIES: dict[str, list[str]] = {
     "agent_25": ["agent_09", "agent_10", "agent_11", "agent_12",
                  "agent_13", "agent_14", "agent_15"],           # besoin contenu + optimisations
     "agent_26": [],                                            # independant, post-publication
+    "agent_27": ["agent_09", "agent_08"],                      # besoin brouillon, anti-cannib (ChromaDB)
 }
 
 

@@ -11,6 +11,7 @@ import json, re
 from datetime import datetime, timedelta
 
 from hermes import config
+from hermes.connectors.gsc_connector import gsc as gsc_client
 from hermes.core.llm import LLMFactory
 from hermes.core.logging import log_agent_start, log_agent_completed
 from hermes.core.memory import MemoryStore
@@ -153,11 +154,9 @@ async def run(state: SessionState) -> SessionState:
         else:
             # Tenter de recuperer les donnees GSC si l'API est configuree
             gsc = {}
-            try:
-                if config.GSC_CLIENT_ID:
-                    from hermes.connectors import gsc
-                    gsc = await _get_gsc_data(state)
-            except Exception:
+            if gsc_client.is_configured and state.site_url:
+                gsc = await _get_gsc_data(state)
+            if not gsc:
                 gsc = _mock_gsc_data(state)
 
             correlation = _correlate(state, gsc)
@@ -262,10 +261,37 @@ async def run(state: SessionState) -> SessionState:
 
 
 async def _get_gsc_data(state: SessionState) -> dict:
-    """Tente de recuperer les vraies donnees GSC."""
-    # Placeholder : l'implementation reelle depend de l'API GSC
-    # Pour l'instant, on retourne les donnees simulees
-    return _mock_gsc_data(state)
+    """Recupere les vraies donnees GSC via le connecteur OAuth.
+
+    Retourne les metriques de performance post-publication ou {} si indisponible.
+    """
+    try:
+        site_url = state.site_url
+        if not site_url:
+            return _mock_gsc_data(state)
+
+        # Utiliser le mot-cle comme requete pour trouver l'URL concernee
+        keyword = state.keyword or ""
+        url = state.site_url or ""
+
+        # Recuperer les performances pour l'URL du site
+        perf = await gsc_client.get_url_performance(
+            site_url=site_url if "://" in site_url else f"sc-domain:{site_url.replace('https://', '').replace('http://', '').rstrip('/')}",
+            page_url=url if url.startswith("http") else site_url,
+            days=30,
+        )
+
+        return {
+            "clics": perf.get("clicks", 0),
+            "impressions": perf.get("impressions", 0),
+            "ctr": perf.get("ctr", 0),
+            "position_moyenne": perf.get("position_moyenne", 0),
+            "top_queries": perf.get("top_queries", []),
+            "source": "gsc_api",
+            "period_days": perf.get("period_days", 30),
+        }
+    except Exception:
+        return _mock_gsc_data(state)
 
 
 def _estimate_cost(model: str, tokens_input: int, tokens_output: int) -> float:
