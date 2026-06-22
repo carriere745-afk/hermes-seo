@@ -16,11 +16,18 @@ from hermes.models.audit import (
 )
 
 
-def _generate_heuristic_recommendations(scores: AuditScores) -> list[AuditRecommendation]:
-    """Genere des recommandations basees sur les scores (sans LLM)."""
+def _generate_heuristic_recommendations(scores: AuditScores, page_url: str = "", page_h1: str = "") -> list[AuditRecommendation]:
+    """Genere des recommandations type-aware (pas de FAQ pour une homepage, etc.)."""
     recos = []
 
-    if scores.aeo.score < 50:
+    # Detection type de page (heuristique simple depuis l'URL)
+    url_lower = page_url.lower()
+    h1_lower = (page_h1 or "").lower()
+    is_homepage = url_lower.rstrip("/").endswith((".fr", ".com", ".org", ".net", ".io")) or "/" in url_lower[url_lower.index("://") + 3:] == ""
+    is_homepage = is_homepage and ("accueil" in h1_lower or "home" in h1_lower or not h1_lower or "/" == url_lower.split("/")[-1])
+    is_legal = any(w in url_lower for w in ("/mentions", "/cgv", "/cgu", "/privacy", "/legal"))
+
+    if scores.aeo.score < 50 and not is_homepage:
         recos.append(AuditRecommendation(
             action="ajouter_faq",
             description="Ajouter une section FAQ avec 5 questions (+ structurees pour les rich snippets)",
@@ -31,12 +38,12 @@ def _generate_heuristic_recommendations(scores: AuditScores) -> list[AuditRecomm
     if scores.geo.score < 50:
         recos.append(AuditRecommendation(
             action="ajouter_sources",
-            description="Ajouter 2-3 sources institutionnelles (tier A ou B) avec liens",
+            description="Ajouter 2-3 sources externes de qualite (tier A ou B) avec liens",
             impact={"geo": 20, "global": 8},
             effort_estime="15 min",
             priorite=1,
         ))
-    if scores.eea_t.score < 8:
+    if scores.eea_t.score < 8 and not is_homepage:
         recos.append(AuditRecommendation(
             action="renforcer_eeat",
             description="Ajouter auteur identifie avec bio + page A propos + mentions legales",
@@ -53,15 +60,20 @@ def _generate_heuristic_recommendations(scores: AuditScores) -> list[AuditRecomm
             priorite=2,
         ))
     if scores.ux.score < 60:
+        reco_text = "Ameliorer la lisibilite, ajouter CTA et verifier la structure visuelle"
+        if is_homepage:
+            reco_text = "Ajouter du contenu textuel visible (votre homepage est trop codee). Simplifier le HTML, ajouter un hero visuel avec texte."
         recos.append(AuditRecommendation(
             action="ameliorer_ux",
-            description="Ameliorer la lisibilite, ajouter CTA et verifier la structure visuelle",
+            description=reco_text,
             impact={"ux": 15, "global": 5},
             effort_estime="20 min",
             priorite=3,
         ))
 
     return recos
+
+# ─── Detection type page URL ──────────────────────────────────────────
 
 
 def _determine_action(scores: AuditScores) -> str:
@@ -95,8 +107,12 @@ async def run(state: AuditSessionState) -> AuditSessionState:
             all_forces.extend(dim.strengths)
             all_faiblesses.extend(dim.weaknesses)
 
-        # Recommandations (heuristiques + LLM optionnel)
-        recos = _generate_heuristic_recommendations(scores)
+        # Recommandations (heuristiques + LLM optionnel) — type-aware
+        recos = _generate_heuristic_recommendations(
+            scores,
+            page_url=page.url,
+            page_h1=getattr(page, 'h1', ''),
+        )
 
         # Tentative LLM pour enrichir les recommandations
         try:

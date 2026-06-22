@@ -14,6 +14,68 @@ from hermes.core.audit_entry import resolve_entry_urls
 from hermes.core.audit_workflow import run_audit_pipeline
 
 
+# ─── Helpers "Pourquoi ce score" ──────────────────────────────────────────
+
+def _explain_seo_score(s, page) -> None:
+    """Explique le score SEO en langage clair."""
+    score = s.seo_onpage.score
+    issues = s.seo_onpage.weaknesses or []
+    strengths = s.seo_onpage.strengths or []
+    st.caption(f"**SEO ({score}/100) :** {' '.join(strengths) if strengths else 'Evaluation technique de la page.'}")
+    if issues:
+        for iss in issues[:3]:
+            st.caption(f"  • {iss}")
+    st.caption(f"  _La page a {getattr(page, 'word_count', 0) or '?'} mots, {len(getattr(page, 'h2_list', []))} H2, {getattr(page, 'images_total', 0)} images ({getattr(page, 'images_with_alt', 0)} avec alt)_")
+
+def _explain_quality_score(s, page) -> None:
+    score = s.quality.score
+    issues = s.quality.weaknesses or []
+    st.caption(f"**Qualite editoriale ({score}/100)**")
+    for iss in issues[:3]:
+        st.caption(f"  • {iss}")
+    wc = getattr(page, 'word_count', 0) or 0
+    if wc < 300: st.caption(f"  _Contenu tres court ({wc} mots). Minimum recommande : 300 pour une page standard, 800 pour un article._")
+    elif wc < 800: st.caption(f"  _Contenu leger ({wc} mots). En dessous de 800 mots, la page peine a demontrer son expertise._")
+
+def _explain_aeo_score(s, page) -> None:
+    score = s.aeo.score
+    issues = s.aeo.weaknesses or []
+    h2s = getattr(page, 'h2_list', []) or []
+    faq_h2 = any('faq' in h.lower() or 'question' in h.lower() for h in h2s)
+    st.caption(f"**AEO ({score}/100) :** Optimisation pour les moteurs de reponse IA (ChatGPT, Google AI Overviews)")
+    for iss in issues[:3]: st.caption(f"  • {iss}")
+    if not faq_h2 and score < 40:
+        tp = s.aeo.strengths or []
+        if any('FAQ' in t for t in tp):
+            st.caption(f"  _Note : l'absence de FAQ est moins penalisante car les concurrents n'en ont pas non plus (source SERP)_")
+
+def _explain_geo_score(s, page) -> None:
+    score = s.geo.score
+    issues = s.geo.weaknesses or []
+    ext_links = getattr(page, 'external_links', 0) or 0
+    st.caption(f"**GEO ({score}/100) :** Capacite a etre cite par les IA generatives")
+    for iss in issues[:3]: st.caption(f"  • {iss}")
+    st.caption(f"  _La page a {ext_links} liens sortants. Au-dela de 3 liens vers des sources d'autorite, le score GEO augmente._")
+
+def _explain_eeat_score(s, page) -> None:
+    score = s.eea_t.score
+    issues = s.eea_t.weaknesses or []
+    has_author = getattr(page, 'author_detected', False)
+    st.caption(f"**EEAT ({score}/16) :** Expertise, Experience, Autorite, Fiabilite — criteres Google pour les sujets sensibles")
+    for iss in issues[:3]: st.caption(f"  • {iss}")
+    if not has_author: st.caption(f"  _Auteur non identifie. Ajouter un nom + bio ameliore le score de 2-3 points._")
+
+def _explain_ux_score(s, page) -> None:
+    score = s.ux.score
+    issues = s.ux.weaknesses or []
+    has_viewport = getattr(page, 'has_viewport', False)
+    has_cta = getattr(page, 'has_cta', False)
+    st.caption(f"**UX ({score}/100) :** Lisibilite, experience utilisateur, accessibilite")
+    for iss in issues[:3]: st.caption(f"  • {iss}")
+    if not has_viewport: st.caption(f"  _Pas de viewport detecte — la page n'est probablement pas responsive._")
+    if not has_cta: st.caption(f"  _Aucun CTA detecte. Un appel a l'action (bouton, formulaire) ameliore l'experience utilisateur._")
+
+
 def _run_audit_sync(urls, site_url, mode):
     return asyncio.run(run_audit_pipeline(urls=urls, site_url=site_url, mode=mode))
 
@@ -168,6 +230,27 @@ def render_audit_page():
                 fig.add_trace(go.Scatterpolar(r=vals, theta=cats, fill='toself', line=dict(color='#1E88E5', width=2), fillcolor='rgba(30,136,229,0.2)'))
                 fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100], showticklabels=False)), showlegend=False, height=250, margin=dict(l=20, r=20, t=20, b=20))
                 st.plotly_chart(fig, use_container_width=True)
+                # Pourquoi ce score ? — breakdown detaille
+                with st.expander("Pourquoi ces scores ?"):
+                    _explain_seo_score(s, page)
+                    _explain_quality_score(s, page)
+                    _explain_aeo_score(s, page)
+                    _explain_geo_score(s, page)
+                    _explain_eeat_score(s, page)
+                    _explain_ux_score(s, page)
+                # Contexte SERP (RankParse DA, volume)
+                serp = getattr(page, 'serp_context', None) or {}
+                feas = serp.get('feasibility', {}) if serp else {}
+                if feas and feas.get('score'):
+                    st.markdown("---")
+                    st.markdown("### Faisabilite SEO (vs concurrence)")
+                    fea1, fea2, fea3 = st.columns(3)
+                    with fea1: st.metric("DA du site", f"{feas.get('site_da', '?')}/100")
+                    with fea2: st.metric("DA moyen top 10", f"{feas.get('avg_top_da', '?')}/100")
+                    with fea3: st.metric("Faisabilite", f"{feas.get('score', '?')}%", delta=feas.get('label', ''))
+                    st.caption(feas.get('reco', ''))
+                    if feas.get('top_das'):
+                        st.caption(f"DA concurrents: {', '.join(str(d) for d in feas['top_das'][:5])}")
                 if brief:
                     cf1, cf2 = st.columns(2)
                     with cf1:
