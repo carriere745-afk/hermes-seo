@@ -375,6 +375,11 @@ def _render_pipeline_error(error_summary: dict) -> None:
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/document.png", width=60)
 
+    # Parametre session_id dans l'URL — force Session Detail (AVANT le widget)
+    params = st.query_params
+    if "session_id" in params and "nav_page" not in st.session_state:
+        st.session_state.nav_page = "Session Detail"
+
     # Navigation
     st.markdown("## Navigation")
     nav = st.radio(
@@ -384,12 +389,9 @@ with st.sidebar:
         key="nav_page",
     )
 
-    # Parametre session_id dans l'URL — force Session Detail
-    params = st.query_params
+    # Stocker le session_id APRES le widget
     if "session_id" in params:
-        sid = params["session_id"]
-        st.session_state.selected_session_id = sid
-        st.session_state.nav_page = "Session Detail"  # Force navigation auto
+        st.session_state.selected_session_id = params["session_id"]
 
     # Sidebar specifique a la page Generator
     if nav == "Generator":
