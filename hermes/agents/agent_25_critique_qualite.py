@@ -231,21 +231,7 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
         + respect_aeo + respect_geo + absence_erreurs + naturalite
     )
 
-    # Seuil selon mode
-    mode = state.config.mode
-    seuil = SEUILS_PAR_MODE.get(mode.value if hasattr(mode, 'value') else str(mode), 75)
-
-    seuil_atteint = score_total >= seuil
-
-    # Recommandation
-    if score_total >= 90:
-        reco = "Excellent. Contenu publiable en l'etat."
-    elif score_total >= seuil:
-        reco = f"Bon. Score {score_total}/{seuil}. Publiable avec corrections mineures."
-    else:
-        reco = f"Insuffisant. Score {score_total}/{seuil}. Corrections obligatoires avant publication."
-
-    # Garde-fous qualite enrichis (content_guard)
+    # ── Content guard AVANT le seuil (penalites appliquees au score) ──
     html = state.brouillon_html or ""
     type_page = state.type_page or "article"
     quality = run_quality_checks(html, type_page)
@@ -254,17 +240,36 @@ def _evaluate(state: SessionState) -> ScoresFinaux:
     blocages: list[str] = []
     if absence_erreurs == 0:
         blocages.append("Erreur factuelle critique detectee — contenu non publiable.")
-    if score_total < seuil:
-        blocages.append(f"Score {score_total} < seuil {seuil}. {seuil - score_total} points manquants.")
     if state.conformite_data:
         if state.conformite_data.get("risque_juridique") == "critique":
             blocages.append("Risque juridique critique — validation juridique obligatoire.")
-    # Blocages du content guard
     for b in quality.get("blocking", []):
         blocages.append(b)
-    # Placeholders = penalite score
+
+    # Placeholders = penalite score (AVANT le calcul du seuil)
     if quality.get("placeholders"):
-        score_total -= len(quality["placeholders"]) * 3
+        penalty = len(quality["placeholders"]) * 3
+        score_total = max(0, score_total - penalty)
+        blocages.append(
+            f"Placeholders generiques : {len(quality['placeholders'])} occurrence(s)"
+        )
+
+    # Seuil selon mode (APRES penalites)
+    mode = state.config.mode
+    seuil = SEUILS_PAR_MODE.get(mode.value if hasattr(mode, 'value') else str(mode), 75)
+
+    seuil_atteint = score_total >= seuil
+
+    if score_total < seuil:
+        blocages.append(f"Score {score_total} < seuil {seuil}. {seuil - score_total} points manquants.")
+
+    # Recommandation (APRES penalites)
+    if score_total >= 90:
+        reco = "Excellent. Contenu publiable en l'etat."
+    elif score_total >= seuil:
+        reco = f"Bon. Score {score_total}/{seuil}. Publiable avec corrections mineures."
+    else:
+        reco = f"Insuffisant. Score {score_total}/{seuil}. Corrections obligatoires avant publication."
 
     # Verifications humaines recommandees
     verifications: list[str] = []

@@ -238,94 +238,143 @@ def _extract_html(text: str) -> str:
 
 
 def _mock_brouillon(state: SessionState) -> Brouillon:
-    """Genere un brouillon simule realiste pour le dry-run."""
+    """Genere un brouillon simule REALISTE pour le dry-run.
+
+    N'utilise PLUS de texte placeholder. Produit un contenu credible
+    qui reflete le mot-cle, le type de page et le persona.
+    """
     keyword = state.keyword or "le sujet"
     entreprise = state.fiche_entreprise or {}
     nom = entreprise.get("nom", "L'entreprise")
     template = state.template_data or {}
     structure = template.get("structure", [])
     intention = state.intention or "informative"
+    type_page = state.type_page or "article"
+    persona = state.fiche_persona or {}
+    offre = state.offre_conversion_data or {}
+    diff = state.angles_differenciants or {}
+    serp = state.serp_data or {}
 
-    # Si pas de structure, utiliser un template article minimal
-    if not structure:
-        structure = [
-            {"type": "h1", "titre": f"Guide {keyword}", "contenu_guide": "Titre", "obligatoire": True, "ordre": 0},
-            {"type": "intro", "titre": "Introduction", "contenu_guide": "Intro", "obligatoire": True, "ordre": 1},
-            {"type": "h2", "titre": f"Tout savoir sur {keyword}", "contenu_guide": "Corps", "obligatoire": True, "ordre": 2},
-            {"type": "conclusion", "titre": "Conclusion", "contenu_guide": "Fin", "obligatoire": True, "ordre": 3},
-        ]
+    # Construire du contenu varie et contextuel
+    kw_clean = keyword.replace("-", " ").strip()
 
-    # Construire le HTML a partir du template
     sections_html = []
     section_titles = []
 
+    h2_demos = {
+        "article": [
+            (f"Comprendre {kw_clean}", f"{kw_clean} est un domaine qui merite une exploration approfondie. Dans cette section, nous posons les bases essentielles pour bien apprehender ce sujet complexe et ses multiples facettes."),
+            (f"Les enjeux de {kw_clean} en 2026", f"Le paysage de {kw_clean} a considerablement evolue ces dernieres annees. Les professionnels du secteur constatent une acceleration des tendances et une complexification des attentes des utilisateurs."),
+            (f"Comment choisir la bonne approche pour {kw_clean}", f"Face a la diversite des solutions disponibles, il est crucial de definir vos priorites. Cette section vous guide a travers les criteres essentiels pour faire un choix eclaire et adapte a votre situation."),
+            (f"Les erreurs a eviter avec {kw_clean}", f"De nombreuses personnes commettent des erreurs evitables lorsqu'elles abordent {kw_clean}. Voici les pieges les plus frequents et comment les contourner efficacement."),
+        ],
+        "service_local": [
+            (f"Pourquoi choisir {nom} pour {kw_clean} ?", f"{nom} met a votre disposition une expertise reconnue et un savoir-faire eprouve dans le domaine de {kw_clean}. Notre equipe de professionnels qualites vous accompagne de A a Z."),
+            (f"Nos prestations {kw_clean}", f"Nous proposons une gamme complete de services adaptes a vos besoins specifiques. Chaque prestation est personnalisee pour garantir votre entiere satisfaction et des resultats a la hauteur de vos attentes."),
+            (f"Zone d'intervention — {kw_clean} pres de chez vous", f"Nous intervenons rapidement sur l'ensemble du territoire. Notre proximite geographique est un atout majeur pour vous offrir un service reactif et de qualite."),
+            (f"Temoignages clients sur {kw_clean}", f"Nos clients temoignent de leur satisfaction. Leur confiance renouvelee est la plus belle reconnaissance de notre engagement et de notre professionnalisme au quotidien."),
+        ],
+        "comparatif": [
+            (f"Tableau comparatif {kw_clean}", f"Nous avons analyse les principales options disponibles pour {kw_clean}. Ce tableau vous permet de comparer objectivement les differentes solutions selon des criteres transparents et pertinents."),
+            (f"Analyse detaillee des options {kw_clean}", f"Chaque option presente des forces et des faiblesses. Notre analyse vous aide a comprendre les nuances et a identifier la solution la plus adaptee a votre profil et a votre budget."),
+            (f"Notre verdict sur {kw_clean}", f"Apres avoir passe en revue les differentes alternatives, nous vous livrons notre analyse objective. Ce verdict est base sur des criteres factuels et une methodologie transparente."),
+        ],
+        "landing": [
+            (f"La solution {kw_clean} qu'il vous faut", f"Vous cherchez la meilleure solution pour {kw_clean} ? Ne cherchez plus. Notre offre combine performance, simplicite et accompagnement personnalise pour des resultats concrets."),
+            (f"Ce que nos clients disent de {kw_clean}", f"Plus de 500 clients nous font confiance. Leurs retours d'experience confirment la qualite de notre accompagnement et l'efficacite de nos solutions."),
+        ],
+    }
+
+    demos = h2_demos.get(type_page, h2_demos["article"])
+
+    # Parcourir la structure
+    h2_index = 0
     for s in structure:
         stype = s.get("type", "h2")
         titre = s.get("titre", "").replace("[", "").replace("]", "")
-        contenu_guide = s.get("contenu_guide", "")
 
         if stype == "h1":
             sections_html.append(
-                f'<h1>Guide Complet {keyword.replace("-", " ").title()} — '
-                f'Conseils d\'Experts {nom}</h1>'
+                f'<h1>{kw_clean.title()} — Guide Complet par {nom}</h1>'
             )
             section_titles.append(titre)
         elif stype == "intro":
+            audience = persona.get("nom_persona", "le lecteur")
+            objectif = persona.get("objectif_lecture", "s'informer")
+            angle = diff.get("angle_principal", f"une analyse approfondie de {kw_clean}")
             sections_html.append(
-                f'<p><strong>{keyword.replace("-", " ").title()}</strong> est un sujet '
-                f'essentiel pour les professionnels et les particuliers. '
-                f'Dans ce guide complet, nous abordons tous les aspects importants : '
-                f'definition, fonctionnement, avantages, et conseils pratiques '
-                f'pour faire le bon choix.</p>\n'
-                f'<p>Que vous soyez debutant ou expert, ce guide vous apportera '
-                f'des informations verificables et des exemples concrets.</p>'
+                f'<p><strong>{kw_clean.title()}</strong> est une question centrale '
+                f'pour {audience} qui cherche a {objectif}.</p>\n'
+                f'<p>Dans cet article, nous vous proposons {angle}. '
+                f'Notre objectif : vous donner les cles pour comprendre, comparer et agir.</p>'
             )
         elif stype in ("h2", "h3"):
-            titre_clean = titre.replace(f"{keyword} ", "").replace(f" {keyword}", "")
-            sections_html.append(f'<h2>{titre_clean}</h2>')
-            section_titles.append(titre_clean)
-            paragraphs = max(1, min(3, int(len(contenu_guide) / 80)))
-            for _ in range(paragraphs):
-                sections_html.append(
-                    f'<p>Contenu detaille sur {titre_clean.lower()} concernant '
-                    f'{keyword}. Cette section couvre les points essentiels avec '
-                    f'des exemples concrets et des donnees verificables.</p>'
+            if h2_index < len(demos):
+                demo_title, demo_content = demos[h2_index]
+                h2_index += 1
+            else:
+                demo_title = f"{titre} — {kw_clean}"
+                demo_content = (
+                    f"Cette section aborde {kw_clean} sous un angle concret et operationnel. "
+                    f"Les informations presentees ici sont basees sur une analyse rigoureuse "
+                    f"et une experience de terrain. L'objectif est de vous fournir des elements "
+                    f"actionnables pour prendre les bonnes decisions."
                 )
+            sections_html.append(f'<h2>{demo_title}</h2>')
+            section_titles.append(demo_title)
+            sections_html.append(f'<p>{demo_content}</p>')
         elif stype == "faq":
-            sections_html.append('<h2>FAQ — Questions Frequentes</h2>')
+            sections_html.append("<h2>FAQ — Questions frequentes</h2>")
             section_titles.append("FAQ")
-            for i in range(1, 6):
+            faq_questions = persona.get("questions_typiques", [])[:5]
+            if not faq_questions:
+                faq_questions = [f"Comment bien choisir pour {kw_clean} ?",
+                                 f"Quels sont les avantages de {kw_clean} ?",
+                                 f"Quel budget prevoir pour {kw_clean} ?",
+                                 f"Comment eviter les pieges de {kw_clean} ?",
+                                 f"Quelles alternatives a {kw_clean} ?"]
+            for i, q in enumerate(faq_questions + [f"Question {len(faq_questions)+1} sur {kw_clean} ?"]):
+                if i >= 5: break
+                q_clean = q.strip().rstrip("?") + " ?"
                 sections_html.append(
-                    f'<h3>Question {i} sur {keyword} ?</h3>\n'
-                    f'<p>Reponse detaillee a la question {i}, avec des informations '
-                    f'precises et utiles pour le lecteur.</p>'
+                    f'<h3>{q_clean}</h3>\n'
+                    f'<p>La reponse a cette question depend de votre situation personnelle. '
+                    f'Dans la plupart des cas, il est recommande de prendre en compte '
+                    f'les criteres de qualite, de budget et de proximite. '
+                    f'Consultez notre guide detaille pour approfondir ce point.</p>'
                 )
         elif stype == "en_bref":
-            sections_html.append('<h2>En Bref</h2>')
-            section_titles.append("En Bref")
-            sections_html.append('<ul>')
-            for i in range(1, 6):
-                sections_html.append(
-                    f'<li><strong>Point cle {i} :</strong> information essentielle '
-                    f'a retenir sur {keyword}.</li>'
-                )
-            sections_html.append('</ul>')
+            sections_html.append("<h2>En bref — L'essentiel a retenir</h2>")
+            section_titles.append("En bref")
+            sections_html.append("<ul>")
+            bullets = [
+                f"{kw_clean} est un sujet strategique qui concerne aussi bien les particuliers que les professionnels.",
+                f"Les solutions disponibles en 2026 offrent des performances accrues et une meilleure adaptabilite aux besoins specifiques.",
+                f"Notre analyse montre qu'une approche personnalisee permet d'obtenir des resultats significativement superieurs.",
+                f"Les erreurs les plus frequentes sont evitables avec une information de qualite et un accompagnement adequat.",
+                f"Comparer les options et lire les avis d'experts reste la meilleure methode pour faire le bon choix.",
+            ]
+            for b in bullets:
+                sections_html.append(f"<li>{b}</li>")
+            sections_html.append("</ul>")
         elif stype == "cta":
-            cta_text = "Demandez votre devis gratuit" if intention == "transactionnelle" else "Telechargez notre guide complet"
+            cta_text = offre.get("cta_principal", "Contactez-nous pour en savoir plus")
             sections_html.append(
                 f'<div><h2>Passez a l\'action</h2>\n'
-                f'<p>Vous avez maintenant toutes les cles pour comprendre {keyword}. '
-                f'Notre equipe d\'experts est la pour vous accompagner.</p>\n'
+                f'<p>Vous avez maintenant toutes les informations necessaires '
+                f'pour prendre une decision eclairee concernant {kw_clean}. '
+                f'Notre equipe est a votre disposition pour vous accompagner.</p>\n'
                 f'<p><strong>{cta_text}</strong></p></div>'
             )
         elif stype == "conclusion":
             sections_html.append(
                 f'<h2>Conclusion</h2>\n'
-                f'<p>En resume, {keyword} est un domaine riche qui merite '
-                f'une attention particuliere. Nous avons couvert les points '
-                f'essentiels pour vous permettre de prendre une decision eclairee.</p>\n'
-                f'<p>N\'hesitez pas a consulter nos autres guides pour approfondir '
-                f'vos connaissances.</p>'
+                f'<p>En conclusion, {kw_clean} merite toute votre attention. '
+                f'Les elements presentes dans cet article vous donnent une vision '
+                f'complete et nuancee du sujet. A vous maintenant de passer a l\'action '
+                f'en utilisant ces informations pour prendre la meilleure decision possible.</p>\n'
+                f'<p>Pour aller plus loin, consultez nos autres guides et ressources '
+                f'sur des sujets connexes.</p>'
             )
             section_titles.append("Conclusion")
 
@@ -335,9 +384,9 @@ def _mock_brouillon(state: SessionState) -> Brouillon:
     return Brouillon(
         html=html,
         word_count=word_count,
-        titre=f"Guide Complet {keyword.replace('-', ' ').title()} — Conseils d'Experts",
-        meta_description=f"Decouvrez notre guide complet sur {keyword}. "
-                         f"Conseils d'experts, exemples concrets et guide pas a pas.",
+        titre=f"{kw_clean.title()} — Guide Complet",
+        meta_description=f"Decouvrez notre analyse complete de {kw_clean}. "
+                         f"Conseils, comparaison et guide pratique pour faire le bon choix.",
         sections=section_titles[:15],
     )
 
