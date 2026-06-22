@@ -223,6 +223,9 @@ def _classify_urls(urls: list[str]) -> dict[str, int]:
 def crawl_from_homepage(base_url: str, max_pages: int = 50, max_depth: int = 3) -> list[str]:
     """Crawl BFS depuis la homepage.
 
+    Parcourt les liens internes et retourne les URLs decouvertes,
+    priorisant les pages proches de la racine (parentes → filles).
+
     Args:
         base_url: URL de depart
         max_pages: nombre max de pages a crawler
@@ -230,6 +233,57 @@ def crawl_from_homepage(base_url: str, max_pages: int = 50, max_depth: int = 3) 
 
     Returns: liste d'URLs decouvertes
     """
-    # Version simplifiee : juste la homepage + pages liees dans le HTML
-    # Un crawler complet necessiterait Playwright/crawlee (V2)
-    return [base_url]  # Placeholder pour V1
+    import asyncio
+    from urllib.parse import urljoin, urlparse
+    import httpx
+    from bs4 import BeautifulSoup
+
+    if not base_url.startswith("http"):
+        base_url = f"https://{base_url}"
+
+    domain = urlparse(base_url).netloc.lower()
+    discovered = set()
+    visited = set()
+    queue = [(base_url, 0)]  # (url, depth)
+    pages = []
+
+    async def _crawl_one():
+        """Version synchrone simplifiee pour V1."""
+        import httpx as _httpx
+        while queue and len(pages) < max_pages:
+            url, depth = queue.pop(0)
+            if url in visited:
+                continue
+            visited.add(url)
+
+            try:
+                with _httpx.Client(timeout=10, follow_redirects=True) as client:
+                    resp = client.get(url, headers={"User-Agent": "HermesAudit/1.0"})
+                if resp.status_code != 200:
+                    continue
+                soup = BeautifulSoup(resp.text, "html.parser")
+                pages.append(url)
+
+                if depth < max_depth:
+                    # Extraire les liens internes
+                    for a in soup.find_all("a", href=True):
+                        href = a["href"]
+                        full = urljoin(base_url, href)
+                        parsed = urlparse(full)
+                        # Meme domaine, pas de fragment, pas de fichier
+                        if (parsed.netloc.lower() == domain
+                                and full not in visited
+                                and full not in discovered
+                                and not parsed.path.endswith(('.pdf', '.jpg', '.png', '.gif', '.svg', '.mp4', '.zip'))
+                                and '/wp-admin/' not in parsed.path
+                                and '/wp-login' not in parsed.path
+                                and '/cart' not in parsed.path
+                                and '/checkout' not in parsed.path):
+                            discovered.add(full)
+                            queue.append((full, depth + 1))
+            except Exception:
+                continue
+
+    _crawl_one()
+    logger.info(f"BFS crawl: {len(pages)} pages discovered from {base_url}")
+    return pages

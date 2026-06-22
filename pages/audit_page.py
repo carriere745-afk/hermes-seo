@@ -160,6 +160,14 @@ def render_audit_page():
                 with m5: st.metric("EEAT", f"{s.eea_t.score}/16")
                 with m6: st.metric("UX", s.ux.score)
                 with m7: st.metric("Transp.", s.transparency.score)
+                # Radar chart
+                import plotly.graph_objects as go
+                cats = ['SEO', 'Qualite', 'AEO', 'GEO', 'EEAT', 'UX']
+                vals = [s.seo_onpage.score, s.quality.score, s.aeo.score, s.geo.score, s.eea_t.score * 6.25, s.ux.score]
+                fig = go.Figure()
+                fig.add_trace(go.Scatterpolar(r=vals, theta=cats, fill='toself', line=dict(color='#1E88E5', width=2), fillcolor='rgba(30,136,229,0.2)'))
+                fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100], showticklabels=False)), showlegend=False, height=250, margin=dict(l=20, r=20, t=20, b=20))
+                st.plotly_chart(fig, use_container_width=True)
                 if brief:
                     cf1, cf2 = st.columns(2)
                     with cf1:
@@ -195,7 +203,7 @@ def render_audit_page():
 
         # Export global
         st.markdown("---"); st.markdown("### Export global")
-        exp_col1, exp_col2 = st.columns(2)
+        exp_col1, exp_col2, exp_col3 = st.columns(3)
         with exp_col1:
             html = f"<html><body><h1>Audit {getattr(result, 'site_url', '')}</h1><table border=1><tr><th>URL</th><th>SEO</th><th>Global</th></tr>"
             for page in result.crawled_pages:
@@ -214,3 +222,11 @@ def render_audit_page():
                 t = s.transparency.score if getattr(s.transparency, 'score', None) else 0
                 csv += f"{page.url},{s.seo_onpage.score},{s.quality.score},{s.aeo.score},{s.geo.score},{s.eea_t.score},{s.ux.score},{t},{s.global_score}\n"
             st.download_button("Telecharger CSV", data=csv, file_name=f"audit_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv", use_container_width=True)
+        with exp_col3:
+            try:
+                from weasyprint import HTML as wpHTML
+                pdf_html = html.replace("<table border=1", "<table border=1 style='border-collapse:collapse;width:100%'")
+                pdf_bytes = wpHTML(string=pdf_html).write_pdf()
+                st.download_button("Telecharger PDF", data=pdf_bytes, file_name=f"audit_{datetime.now().strftime('%Y%m%d')}.pdf", mime="application/pdf", use_container_width=True)
+            except Exception:
+                st.caption("PDF: installer weasyprint")
