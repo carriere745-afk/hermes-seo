@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from hermes.connectors.serp_api import SerpAPIClient
 from hermes.connectors.dataforseo_connector import dataforseo
 from hermes.connectors.keywordseverywhere_connector import keywordseverywhere
+from hermes.connectors.rankparse_connector import rankparse
 from hermes.models.audit import AuditSessionState
 
 logger = logging.getLogger("hermes.audit.ac01b")
@@ -182,6 +183,37 @@ async def run(state: AuditSessionState) -> AuditSessionState:
             for note in adj["notes"]:
                 s.quality.strengths.append(f"[SERP] {note}" if adj["quality"] >= 0 else f"[SERP] {note}")
 
+            # ── Faisabilite SEO (RankParse DA) ─────────────────────
+            feasibility = None
+            if rankparse.is_configured:
+                try:
+                    # DA du site (depuis l'URL de la page)
+                    from urllib.parse import urlparse
+                    site_domain = urlparse(state.site_url or page.url).netloc.replace("www.", "")
+                    site_da_data = await rankparse.get_domain_authority(site_domain)
+                    site_da = site_da_data.get("da", 0)
+
+                    # DA moyen du top 10 (depuis les domaines SERP)
+                    top_domains = [r.get("domain", "") for r in serp_context.get("top10", [])[:5] if r.get("domain")]
+                    top_das = []
+                    if top_domains:
+                        batch = await rankparse.batch_domain_authority(top_domains[:5])
+                        top_das = [v.get("da", 0) for v in batch.values() if v.get("da", 0) > 0]
+
+                    if top_das and site_da > 0:
+                        avg_top_da = sum(top_das) // len(top_das)
+                        feasibility = rankparse.feasibility_score(site_da, avg_top_da)
+                        feasibility["site_da"] = site_da
+                        feasibility["avg_top_da"] = avg_top_da
+                        feasibility["top_das"] = top_das[:5]
+                        feasibility["domain"] = site_domain
+                        logger.info(
+                            f"AC01b: feasibility for {site_domain}: "
+                            f"DA={site_da} vs avg={avg_top_da} -> {feasibility['score']}%"
+                        )
+                except Exception as e:
+                    logger.warning(f"AC01b: RankParse feasibility failed: {e}")
+
             # Stocker le contexte SERP dans la page (metadata)
             if not hasattr(page, "serp_context"):
                 page.serp_context = {}
@@ -193,7 +225,22 @@ async def run(state: AuditSessionState) -> AuditSessionState:
                 "search_volume": serp_context["search_volume"],
                 "cpc": serp_context["cpc"],
                 "source": serp_context["source"],
+                "feasibility": feasibility,
             }
+            # Ajouter la note de faisabilite aux forces/faiblesses
+            if feasibility and s:
+                if feasibility["score"] >= 70:
+                    s.quality.strengths.append(
+                        f"[DA] Faisabilite: {feasibility['score']}% — "
+                        f"DA site {feasibility['site_da']} vs top10 {feasibility['avg_top_da']} "
+                        f"({feasibility['label']})"
+                    )
+                else:
+                    s.quality.weaknesses.append(
+                        f"[DA] Faisabilite: {feasibility['score']}% — "
+                        f"DA site {feasibility['site_da']} vs top10 {feasibility['avg_top_da']} "
+                        f"({feasibility['label']}). {feasibility['reco']}"
+                    )
 
     state.updated_at = datetime.now()
     return state
