@@ -1,4 +1,4 @@
-"""Agents du Pipeline Audit de Contenu — 10 agents.
+"""Agents du Pipeline Audit de Contenu — 11 agents.
 
 AC00 : Superviseur Audit
 AC01 : Content Crawler + Indexabilite
@@ -7,9 +7,10 @@ AC03 : Scoring AEO
 AC04 : Scoring GEO
 AC05 : Scoring EEAT
 AC06 : Scoring UX / Lisibilite
-AC07 : Cannibalisation Inter-Pages
-AC08 : Synthese + audit_brief
-AC09 : Roadmap + Export + Connecteur
+AC07 : Transparence Contenu (Delta DOM) — NOUVEAU
+AC08 : Cannibalisation Inter-Pages
+AC09 : Synthese + audit_brief
+AC10 : Roadmap + Export + Connecteur
 """
 
 from hermes.agents.audit.ac00_supervisor import run as ac00
@@ -22,7 +23,7 @@ from hermes.agents.audit.ac06_ux import run as ac06
 from hermes.agents.audit.ac07_cannibalisation import run as ac07
 from hermes.agents.audit.ac08_synthesis import run as ac08
 from hermes.agents.audit.ac09_roadmap_export import run as ac09
-from hermes.agents.audit.ac09_roadmap_export import prepare_audit_brief_for_editorial
+from hermes.agents.audit.ac09_delta_dom import run as ac10
 
 AUDIT_REGISTRY: dict[str, callable] = {
     "ac00": ac00,
@@ -35,11 +36,12 @@ AUDIT_REGISTRY: dict[str, callable] = {
     "ac07": ac07,
     "ac08": ac08,
     "ac09": ac09,
+    "ac10": ac10,
 }
 
 AUDIT_ORDER: list[str] = [
     "ac00", "ac01", "ac02", "ac03", "ac04", "ac05",
-    "ac06", "ac07", "ac08", "ac09",
+    "ac06", "ac10", "ac07", "ac08", "ac09",
 ]
 
-__all__ = ["AUDIT_REGISTRY", "AUDIT_ORDER", "prepare_audit_brief_for_editorial"]
+__all__ = ["AUDIT_REGISTRY", "AUDIT_ORDER"]

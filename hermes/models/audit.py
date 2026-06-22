@@ -108,6 +108,7 @@ class AuditScores(BaseModel):
     geo: DimensionScore = Field(default_factory=DimensionScore)
     eea_t: DimensionScore = Field(default_factory=DimensionScore)
     ux: DimensionScore = Field(default_factory=DimensionScore)
+    transparency: DimensionScore = Field(default_factory=DimensionScore)
     global_score: int = 0
     global_confidence: str = "indicatif"
 
