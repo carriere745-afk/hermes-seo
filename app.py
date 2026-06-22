@@ -375,10 +375,8 @@ def _render_pipeline_error(error_summary: dict) -> None:
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/document.png", width=60)
 
-    # Parametre session_id dans l'URL — force Session Detail (AVANT le widget)
-    params = st.query_params
-    if "session_id" in params and "nav_page" not in st.session_state:
-        st.session_state.nav_page = "Session Detail"
+    # Navigation
+    st.markdown("## Navigation")
 
     # Navigation
     st.markdown("## Navigation")
@@ -389,9 +387,14 @@ with st.sidebar:
         key="nav_page",
     )
 
-    # Stocker le session_id APRES le widget
+    # Si ?session_id= dans l'URL, on stocke l'ID + flag (one-shot)
+    params = st.query_params
     if "session_id" in params:
         st.session_state.selected_session_id = params["session_id"]
+        # Flag one-shot: persiste jusqu'a consommation par le bloc principal
+        if "from_url_consumed" not in st.session_state:
+            st.session_state.from_url = True
+            st.session_state.from_url_consumed = True
 
     # Sidebar specifique a la page Generator
     if nav == "Generator":
@@ -492,12 +495,18 @@ with st.sidebar:
 
 # ─── Contenu principal ─────────────────────────────────────────────────
 
-if nav == "Archive":
+from_url = st.session_state.pop("from_url", False)
+if from_url:
+    # URL directe ?session_id= → force Session Detail
+    sid = st.session_state.get("selected_session_id")
+    if sid:
+        render_session_detail(sid)
+    else:
+        st.info("Session introuvable.")
+elif nav == "Archive":
     render_archive_page()
-
 elif nav == "Audit de Contenu":
     render_audit_page()
-
 elif nav == "Session Detail":
     sid = st.session_state.get("selected_session_id")
     if sid:
