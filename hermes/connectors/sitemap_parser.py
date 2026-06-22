@@ -13,17 +13,22 @@ import httpx
 
 logger = logging.getLogger("hermes.sitemap")
 
-# Candidats sitemap a tester dans l'ordre
+# Candidats sitemap a tester dans l'ordre (standards + CMS specifiques)
 SITEMAP_CANDIDATES = [
     "/sitemap.xml",
     "/sitemap_index.xml",
     "/sitemap-index.xml",
     "/sitemap/sitemap.xml",
-    "/wp-sitemap.xml",
+    "/wp-sitemap.xml",           # WordPress 5.5+
     "/news-sitemap.xml",
     "/page-sitemap.xml",
     "/post-sitemap.xml",
     "/sitemap.xml.gz",
+    "/1_index_sitemap.xml",      # PrestaShop
+    "/2_index_sitemap.xml",      # PrestaShop (categories)
+    "/fr/sitemap.xml",           # Multilingue
+    "/sitemap_index.xml",        # Variante
+    "/sitemap.php",              # CMS custom
 ]
 
 # Filtres d'exclusion (extensions non-HTML)
@@ -111,18 +116,36 @@ async def parse_sitemap_recursive(
     domain = urlparse(base_url).netloc.lower()
 
     async def _fetch_sitemap(url: str) -> dict:
-        """Fetch un sitemap et extrait les URLs + detection index."""
+        """Fetch un sitemap et extrait les URLs + detection index.
+
+        Gere les formats : standard, Google, PrestaShop, Yoast, RankMath.
+        """
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(url)
+                resp = await client.get(
+                    url,
+                    headers={"User-Agent": "HermesAudit/1.0", "Accept": "application/xml,text/xml,*/*"},
+                    follow_redirects=True,
+                )
                 if resp.status_code != 200:
+                    logger.warning(f"Sitemap {url} → HTTP {resp.status_code}")
                     return {"urls": [], "is_index": False}
                 xml = resp.text
-                # Detection sitemap index
+
+                # Detection sitemap index (standard + PrestaShop)
                 is_index = bool(re.search(r"<sitemapindex", xml, re.IGNORECASE))
-                # Extraction <loc>
+
+                # Extraction <loc> — avec ou sans namespace XML
                 locs = re.findall(r"<loc>(.*?)</loc>", xml, re.IGNORECASE)
+                if not locs:
+                    # PrestaShop: <url><loc>...</loc></url>
+                    locs = re.findall(r"<loc[^>]*>(.*?)</loc>", xml, re.IGNORECASE)
+                if not locs:
+                    # Fallback : chercher toute URL http dans le XML
+                    locs = re.findall(r"https?://[^\s<\"']+", xml)
+
                 urls = [loc.strip() for loc in locs if loc.strip().startswith("http")]
+                logger.info(f"Sitemap {url}: {'index' if is_index else 'urlset'} → {len(urls)} URLs")
                 return {"urls": urls, "is_index": is_index}
         except Exception as e:
             logger.warning(f"Sitemap fetch failed: {url} — {e}")
