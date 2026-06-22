@@ -2,7 +2,7 @@
 
 Application Streamlit pour utilisateurs non-techniques.
 Un champ mot-clé, un bouton, et le contenu est généré.
-Navigation : Generator | Archive | Session Detail
+Navigation : Generator | Archive | Audit | Session Detail
 """
 
 import asyncio
@@ -36,6 +36,7 @@ from hermes.core.pipeline_guard import (
 )
 from hermes.agents import AGENT_REGISTRY
 from pages.archive_page import render_archive_page
+from pages.audit_page import render_audit_page
 from pages.session_detail_page import render_session_detail
 
 # Configuration de la page
@@ -378,7 +379,7 @@ with st.sidebar:
     st.markdown("## Navigation")
     nav = st.radio(
         "Page",
-        options=["Generator", "Archive", "Session Detail"],
+        options=["Generator", "Archive", "Audit de Contenu", "Session Detail"],
         label_visibility="collapsed",
         key="nav_page",
     )
@@ -477,6 +478,8 @@ with st.sidebar:
         st.markdown("---")
         if nav == "Archive":
             st.caption("Historique, stats et gestion des sessions.")
+        elif nav == "Audit de Contenu":
+            st.caption("Analysez vos pages existantes (SEO/AEO/GEO/EEAT/UX).")
         elif nav == "Session Detail":
             st.caption("Detail d'une session.")
             if st.session_state.get("selected_session_id"):
@@ -487,6 +490,9 @@ with st.sidebar:
 
 if nav == "Archive":
     render_archive_page()
+
+elif nav == "Audit de Contenu":
+    render_audit_page()
 
 elif nav == "Session Detail":
     sid = st.session_state.get("selected_session_id")
