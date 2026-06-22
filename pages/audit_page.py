@@ -155,6 +155,13 @@ def render_audit_page():
         with k4: st.metric("Briefs prets", len(result.briefs))
         with k5: st.metric("A reecrire", sum(1 for s in result.scores.values() if s.global_score < 50))
 
+        # CMS detection
+        cms = getattr(result.crawled_pages[0], 'cms_detected', '') if result.crawled_pages else ''
+        if cms and cms != 'inconnu':
+            cms_ver = getattr(result.crawled_pages[0], 'cms_version', '')
+            cms_conf = getattr(result.crawled_pages[0], 'cms_confidence', 0)
+            st.info(f"**CMS detecte :** {cms} {f'v{cms_ver}' if cms_ver else ''} (confiance {cms_conf}%)")
+
         if result.scores:
             avg_seo = int(sum(s.seo_onpage.score for s in result.scores.values()) / len(result.scores))
             avg_qual = int(sum(s.quality.score for s in result.scores.values()) / len(result.scores))

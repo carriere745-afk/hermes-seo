@@ -56,6 +56,18 @@ async def detect_sitemaps(base_url: str) -> dict:
     if not base_url.startswith("http"):
         base_url = f"https://{base_url}"
 
+    # 0. Detector le CMS pour prioriser les candidats
+    cms_candidates = []
+    try:
+        from hermes.connectors.cms_detector import detect_cms, CMS_SITEMAP_PRIORITY
+        cms_data = await detect_cms(base_url)
+        if cms_data.get("sitemap_candidates"):
+            cms_candidates = cms_data["sitemap_candidates"]
+            logger.info(f"CMS detected: {cms_data['cms']} (confidence {cms_data.get('confidence', 0)}%). "
+                       f"Sitemap candidates: {cms_candidates}")
+    except ImportError:
+        pass
+
     # 1. Essayer robots.txt
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -75,9 +87,10 @@ async def detect_sitemaps(base_url: str) -> dict:
     except Exception:
         pass
 
-    # 2. Tester les candidats classiques
+    # 2. Tester les candidats (CMS d'abord, puis generiques)
+    candidates_to_test = cms_candidates + [c for c in SITEMAP_CANDIDATES if c not in cms_candidates]
     async with httpx.AsyncClient(timeout=10.0) as client:
-        for path in SITEMAP_CANDIDATES:
+        for path in candidates_to_test:
             try:
                 url = urljoin(base_url, path)
                 resp = await client.head(url)

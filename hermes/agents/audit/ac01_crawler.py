@@ -254,13 +254,24 @@ async def run(state: AuditSessionState) -> AuditSessionState:
 
         if status == 200 and html:
             signals = _extract_signals(html, url)
-            # Appliquer les signaux au modele
             for key, value in signals.items():
                 if hasattr(page, key):
                     setattr(page, key, value)
-            # Redirect chain
             if final_url != url:
                 page.redirect_chain = [url, final_url]
+            # Detection CMS depuis le HTML + headers
+            try:
+                from hermes.connectors.cms_detector import detect_cms
+                cms_data = await detect_cms(url)
+                page.cms_detected = cms_data.get("cms", "inconnu")
+                page.cms_version = cms_data.get("version", "")
+                page.cms_confidence = cms_data.get("confidence", 0)
+                logger.info(
+                    f"AC01: CMS detected = {page.cms_detected} "
+                    f"(confidence {page.cms_confidence}%)"
+                )
+            except Exception as cms_err:
+                logger.debug(f"AC01: CMS detection skipped ({cms_err})")
             logger.info(
                 f"AC01: {url} OK — {page.word_count} mots, "
                 f"h1='{page.h1[:50]}', images={page.images_total}"

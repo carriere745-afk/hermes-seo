@@ -88,6 +88,11 @@ class CrawledPage(BaseModel):
     # SERP context (ajoute par AC01b)
     serp_context: Optional[dict[str, Any]] = None
 
+    # CMS detection (rempli par AC01)
+    cms_detected: str = ""
+    cms_version: str = ""
+    cms_confidence: int = 0
+
     def to_dict(self) -> dict:
         return self.model_dump()
 

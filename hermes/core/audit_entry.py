@@ -80,14 +80,26 @@ async def resolve_entry_urls(
         if not base_url.startswith("http"):
             base_url = f"https://{base_url}"
 
-        # Auto-detecter
+        # Auto-detecter (avec CMS hint si echec)
         detected = await detect_sitemaps(base_url)
         if not detected["found"]:
+            # Essayer de donner un indice via la detection CMS
+            hint = ""
+            try:
+                from hermes.connectors.cms_detector import detect_cms, get_cms_sitemap_hint
+                cms_data = await detect_cms(base_url)
+                if cms_data.get("cms") and cms_data["cms"] != "inconnu":
+                    hint = get_cms_sitemap_hint(cms_data)
+            except Exception:
+                pass
             result["error"] = (
                 "Aucun sitemap detecte. Essayez de coller l'URL du sitemap "
                 "directement (ex: https://exemple.com/sitemap.xml) "
                 "ou utilisez le mode 'Liste d'URLs'."
+                + (f"\n\n{hint}" if hint else "")
             )
+            if hint:
+                result["meta"]["cms_hint"] = hint
             return result
 
         urls, type_dist, meta = await parse_sitemap_recursive(
