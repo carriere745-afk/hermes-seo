@@ -384,10 +384,12 @@ with st.sidebar:
         key="nav_page",
     )
 
-    # Parametre session_id dans l'URL
+    # Parametre session_id dans l'URL — force Session Detail
     params = st.query_params
     if "session_id" in params:
-        st.session_state.selected_session_id = params["session_id"]
+        sid = params["session_id"]
+        st.session_state.selected_session_id = sid
+        st.session_state.nav_page = "Session Detail"  # Force navigation auto
 
     # Sidebar specifique a la page Generator
     if nav == "Generator":
