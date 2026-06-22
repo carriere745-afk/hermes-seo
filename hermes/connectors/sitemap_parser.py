@@ -70,9 +70,9 @@ async def detect_sitemaps(base_url: str) -> dict:
 
     # 1. Essayer robots.txt
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True, verify=False) as client:
             robots_url = urljoin(base_url, "/robots.txt")
-            resp = await client.get(robots_url)
+            resp = await client.get(robots_url, headers={"User-Agent": "HermesAudit/1.0"})
             if resp.status_code == 200:
                 text = resp.text
                 # Extraire les Sitemap: lignes
@@ -93,7 +93,8 @@ async def detect_sitemaps(base_url: str) -> dict:
         for path in candidates_to_test:
             try:
                 url = urljoin(base_url, path)
-                resp = await client.head(url)
+                # Essayer GET avant HEAD (certains serveurs refusent HEAD)
+                resp = await client.get(url, headers={"User-Agent": "HermesAudit/1.0", "Accept": "application/xml,text/xml,*/*"})
                 if resp.status_code == 200:
                     return {
                         "found": True,
@@ -131,7 +132,7 @@ async def parse_sitemap_recursive(
     async def _fetch_sitemap(url: str) -> dict:
         """Fetch un sitemap et extrait les URLs + detection index.
 
-        Gere les formats : standard, Google, PrestaShop, Yoast, RankMath.
+        Gere les formats : standard, Google, PrestaShop (CDATA), Yoast, RankMath.
         """
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
@@ -145,21 +146,39 @@ async def parse_sitemap_recursive(
                     return {"urls": [], "is_index": False}
                 xml = resp.text
 
-                # Detection sitemap index (standard + PrestaShop)
+                # Detection sitemap index
                 is_index = bool(re.search(r"<sitemapindex", xml, re.IGNORECASE))
 
-                # Extraction <loc> — avec ou sans namespace XML
-                locs = re.findall(r"<loc>(.*?)</loc>", xml, re.IGNORECASE)
-                if not locs:
-                    # PrestaShop: <url><loc>...</loc></url>
-                    locs = re.findall(r"<loc[^>]*>(.*?)</loc>", xml, re.IGNORECASE)
-                if not locs:
-                    # Fallback : chercher toute URL http dans le XML
-                    locs = re.findall(r"https?://[^\s<\"']+", xml)
+                # Extraction URLs — approche robuste multi-etapes
+                clean_urls = []
 
-                urls = [loc.strip() for loc in locs if loc.strip().startswith("http")]
-                logger.info(f"Sitemap {url}: {'index' if is_index else 'urlset'} → {len(urls)} URLs")
-                return {"urls": urls, "is_index": is_index}
+                # 1. Extraction directe : <loc>URL</loc>
+                for m in re.finditer(r"<loc>(.*?)</loc>", xml, re.IGNORECASE | re.DOTALL):
+                    content = m.group(1).strip()
+                    # Retirer wrapper CDATA
+                    for pattern in (r"<!\[CDATA\[(.*?)\]\]>", r"<!\[CDATA\[(.*?)\]\]", r"\[CDATA\[(.*?)\]\]>"):
+                        cm = re.search(pattern, content, re.DOTALL)
+                        if cm:
+                            content = cm.group(1).strip()
+                            break
+                    if content.startswith("http"):
+                        clean_urls.append(content)
+
+                # 2. Fallback : extraire les URLs depuis les blocs CDATA
+                if not clean_urls:
+                    for m in re.finditer(r"<!\[CDATA\[(https?://[^\]]*?)\]\]>", xml):
+                        clean_urls.append(m.group(1).strip())
+
+                # 3. Fallback ultime : toute URL du domaine
+                if not clean_urls:
+                    all_urls = re.findall(r"https?://[^\s><\"'&]+", xml)
+                    clean_urls = [u for u in all_urls if not u.endswith(('.jpg', '.png', '.gif', '.svg', '.css', '.js'))]
+
+                # Deduplicate
+                clean_urls = list(dict.fromkeys(clean_urls))
+
+                logger.info(f"Sitemap {url}: {'index' if is_index else 'urlset'} → {len(clean_urls)} URLs")
+                return {"urls": clean_urls, "is_index": is_index}
         except Exception as e:
             logger.warning(f"Sitemap fetch failed: {url} — {e}")
             return {"urls": [], "is_index": False}
@@ -214,11 +233,11 @@ def _filter_urls(urls: list[str], domain: str, max_urls: int) -> list[str]:
             u = urlparse(url)
             if u.netloc.lower() != domain:
                 continue
-            if any(u.pathname.lower().endswith(ext) for ext in EXCLUDED_EXTENSIONS):
+            if any(u.path.lower().endswith(ext) for ext in EXCLUDED_EXTENSIONS):
                 continue
-            if any(p in u.pathname.lower() for p in EXCLUDED_PATTERNS):
+            if any(p in u.path.lower() for p in EXCLUDED_PATTERNS):
                 continue
-            if "sitemap" in u.pathname.lower():
+            if "sitemap" in u.path.lower():
                 continue
             if url in seen:
                 continue
@@ -234,7 +253,7 @@ def _classify_urls(urls: list[str]) -> dict[str, int]:
     """Detecte les types de pages pour preview."""
     distribution = {}
     for url in urls:
-        path = urlparse(url).pathname.lower()
+        path = urlparse(url).path.lower()
         if path == "/" or path == "":
             page_type = "accueil"
         elif any(w in path for w in ("/blog/", "/article/", "/actualite/", "/news/", "/post/")):

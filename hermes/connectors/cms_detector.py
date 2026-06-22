@@ -19,9 +19,10 @@ CMS_SIGNATURES = {
     "PrestaShop": [
         ("header", r"PrestaShop", 50),
         ("meta", r'name="generator"[^>]*content="PrestaShop', 40),
+        ("cookie", r"PrestaShop-[a-f0-9]{32}", 50),
         ("html", r"/modules/|/themes/|prestashop", 30),
-        ("cookie", r"PrestaShop-[a-f0-9]{32}", 20),
         ("sitemap", r"/\d+_index_sitemap\.xml", 30),
+        ("sitemap", r"/\d+_fr_\d+_sitemap\.xml", 25),
     ],
     "WordPress": [
         ("header", r"X-Powered-By:.*WordPress", 40),
@@ -129,7 +130,9 @@ async def detect_cms(url: str) -> dict:
                 return result
             html = resp.text
             all_headers = str(resp.headers)
-            cookies = resp.headers.get("set-cookie", "")
+            # httpx stocke plusieurs Set-Cookie comme liste
+            cookies_raw = resp.headers.get("set-cookie", "")
+            all_cookies = "; ".join(resp.headers.get_list("set-cookie")) if hasattr(resp.headers, "get_list") else cookies_raw
 
         # 3. Scorer chaque CMS
         scores = {}
@@ -148,7 +151,7 @@ async def detect_cms(url: str) -> dict:
                 elif sig_type == "html":
                     matched = bool(re.search(pattern, html[:10000], re.IGNORECASE))
                 elif sig_type == "cookie":
-                    matched = bool(re.search(pattern, cookies, re.IGNORECASE))
+                    matched = bool(re.search(pattern, all_cookies, re.IGNORECASE))
                 elif sig_type == "file":
                     try:
                         file_url = urljoin(url, pattern.lstrip("/"))
