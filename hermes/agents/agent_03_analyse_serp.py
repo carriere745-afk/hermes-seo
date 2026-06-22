@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 
 from hermes import config
 from hermes.connectors.serp_api import SerpAPIClient
+from hermes.connectors.keyword_aggregator import get_keyword_data, enrich_serp_with_da
 from hermes.core.llm import LLMFactory
 from hermes.core.logging import log_agent_start, log_agent_completed, log_agent_failed
 from hermes.models.agent_data import SerpData, SerpResult
@@ -56,6 +57,10 @@ def _parse_raw_results(raw_data: dict) -> dict[str, Any]:
             "word_count": item.get("word_count"),
             "h2_count": item.get("h2_count"),
             "image_count": item.get("image_count"),
+            # Metriques d'autorite (enrichies par keyword_aggregator)
+            "da": item.get("da"),
+            "backlinks": item.get("backlinks"),
+            "referring_domains": item.get("referring_domains"),
         })
 
     # PAA / questions associees
@@ -215,6 +220,9 @@ def _mock_serp(keyword: str, secteur: str | None = None) -> SerpData:
         ],
         search_volume=880,
         keyword_difficulty=42,
+        cpc=1.20,
+        trend_direction=5,
+        keyword_source="mock",
     )
 
 
@@ -245,10 +253,37 @@ async def run(state: SessionState) -> SessionState:
             result.tokens_output = 0
             result.cost_estimated = 0.0
         else:
-            # 1. Appel API SERP
+            # 1. Appel API SERP (TalorData)
             client = SerpAPIClient(dry_run=False)
             raw = await client.search(keyword)
             parsed = _parse_raw_results(raw)
+
+            # 1b. Enrichissement DA (RankParse) + Volume (DataForSEO/KE/pytrends)
+            try:
+                kw_data = await get_keyword_data(keyword)
+                parsed["search_volume"] = kw_data.get("search_volume", 0)
+                parsed["keyword_difficulty"] = int(kw_data.get("competition", 0) * 100) if kw_data.get("competition") else None
+                parsed["cpc"] = kw_data.get("cpc", 0)
+                parsed["trend_direction"] = kw_data.get("trend_direction")
+                parsed["keyword_source"] = kw_data.get("source", "none")
+                logger.info(
+                    f"Enriched '{keyword}' with {kw_data['source']}: "
+                    f"vol={kw_data.get('search_volume', 0)}, "
+                    f"cpc={kw_data.get('cpc', 0)}"
+                )
+            except Exception as e:
+                logger.warning(f"Keyword data enrichment failed: {e}")
+
+            try:
+                if parsed.get("organic_results"):
+                    parsed["organic_results"] = await enrich_serp_with_da(
+                        parsed["organic_results"]
+                    )
+                    logger.info(
+                        f"DA enriched for {len(parsed['organic_results'])} domains"
+                    )
+            except Exception as e:
+                logger.warning(f"DA enrichment failed: {e}")
 
             # 2. Enrichissement LLM (analyse concurrentielle)
             factory = LLMFactory(
@@ -278,7 +313,7 @@ async def run(state: SessionState) -> SessionState:
 
             enriched = _enrich_with_llm(parsed, keyword, llm_text)
 
-            # 3. Construire SerpData
+            # 3. Construire SerpData (avec DA + keyword metrics enrichis)
             top10 = [
                 SerpResult(
                     position=r["position"],
@@ -289,6 +324,9 @@ async def run(state: SessionState) -> SessionState:
                     word_count=r.get("word_count"),
                     h2_count=r.get("h2_count"),
                     image_count=r.get("image_count"),
+                    da=r.get("da"),  # RankParse DA
+                    backlinks=r.get("backlinks"),
+                    referring_domains=r.get("referring_domains"),
                 )
                 for r in parsed["organic_results"][:10]
             ]
@@ -300,8 +338,11 @@ async def run(state: SessionState) -> SessionState:
                 ai_overviews=[parsed["ai_overview"]] if parsed.get("ai_overview") else enriched.get("ai_overviews", []),
                 concurrents_directs=enriched.get("concurrents_directs", []),
                 mots_cles_associes=enriched.get("mots_cles_associes", []),
-                search_volume=enriched.get("search_volume"),
-                keyword_difficulty=enriched.get("keyword_difficulty"),
+                search_volume=parsed.get("search_volume") or enriched.get("search_volume"),
+                keyword_difficulty=parsed.get("keyword_difficulty") or enriched.get("keyword_difficulty"),
+                cpc=parsed.get("cpc"),
+                trend_direction=parsed.get("trend_direction"),
+                keyword_source=parsed.get("keyword_source", "talordata"),
             )
 
             result.model_used = model_used

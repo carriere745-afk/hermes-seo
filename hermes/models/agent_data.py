@@ -65,6 +65,10 @@ class SerpResult(BaseModel):
     word_count: Optional[int] = None
     h2_count: Optional[int] = None
     image_count: Optional[int] = None
+    # Metriques d'autorite (RankParse)
+    da: Optional[int] = None  # Domain Authority (0-100)
+    backlinks: Optional[int] = None
+    referring_domains: Optional[int] = None
 
 
 class SerpData(BaseModel):
@@ -78,6 +82,10 @@ class SerpData(BaseModel):
     keyword_difficulty: Optional[int] = None
     total_results: Optional[int] = None
     snack_pack: list[dict[str, Any]] = Field(default_factory=list)
+    # Metriques agregees (DataForSEO/KE/pytrends)
+    cpc: Optional[float] = None
+    trend_direction: Optional[int] = None
+    keyword_source: Optional[str] = None
 
 
 # ─── Agent 04 — Intention & Type ──────────────────────────────────────
