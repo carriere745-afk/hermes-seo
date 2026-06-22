@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Analyse du Cahier des Charges · Pipeline Audit de Contenu</title>
+<style>
+body{max-width:1050px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #e65100;padding-bottom:10px}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:35px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#e65100;color:#fff;padding:10px 12px;text-align:left}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#fff3e0}
+.green{color:#2e7d32;font-weight:600}
+.red{color:#c62828;font-weight:600}
+.orange{color:#e65100;font-weight:600}
+.blue{color:#1565c0;font-weight:600}
+.ok{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px}
+.warn{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px}
+.info{background:#e3f2fd;border-left:4px solid #1565c0;padding:12px 18px;margin:15px 0;border-radius:4px}
+.crit{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+</style>
+</head>
+<body>
+
+<h1>Analyse du Cahier des Charges · Pipeline Audit de Contenu</h1>
+<p style="color:#888;margin-top:-5px">22 juin 2026 · 14 agents proposés · ~34h estimées dans le cahier</p>
+
+
+
+<h2>1. Verdict global</h2>
+
+<div class="ok"><strong>Le cahier des charges est excellent.</strong> Structure complète, agents bien définis, scoring cohérent, connexion propre avec le Pipeline 1. Les retours ChatGPT/Claude/DeepSeek ont été bien intégrés.</div>
+
+<p><strong>Note : 9/10</strong>. Les seuls points d'attention sont :</p>
+<ul>
+<li><strong>14 agents → 10 suffisent</strong> : AC02 (Indexabilité) peut être fusionné avec AC01 (Crawler). AC14 (Connecteur Réécriture) est une fonction de 20 lignes, pas un agent.</li>
+<li><strong>AC09 (Transparence/Delta DOM) : trop complexe pour une V1</strong>. Playwright + comparaison CSS est un chantier à part entière. À reporter en V2.</li>
+<li><strong>L'estimation de 34h est optimiste</strong>. La réalité est plutôt <strong>40-45h</strong> en comptant l'intégration et le débogage.</li>
+</ul>
+
+
+
+<h2>2. Analyse agent par agent</h2>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Avis</th><th>Réutilisable depuis Hermes</th><th>OSS dispo</th></tr>
+<tr>
+<td>AC00</td>
+<td>Superviseur Audit</td>
+<td class="green">✅ Garder. Pattern Agent 00 existant.</td>
+<td>100% — <code>agent_00_supervisor.py</code> + <code>pipeline_guard.py</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>AC01</td>
+<td>Content Crawler</td>
+<td class="green">✅ Garder. Agent fondateur.</td>
+<td>30% — <code>site_scraper.py</code> (déjà codé !)</td>
+<td>SEOpie Core, AI Website Audit CLI, librecrawl MCP</td>
+</tr>
+<tr>
+<td>AC02</td>
+<td>Indexabilité</td>
+<td class="orange">⚠️ Fusionner avec AC01</td>
+<td>60% — <code>content_guard.py</code> + heuristiques</td>
+<td>protego (déjà installé)</td>
+</tr>
+<tr>
+<td>AC03</td>
+<td>Scoring SEO</td>
+<td class="green">✅ Garder</td>
+<td>80% — <code>audit-parser.js</code> (saas-seo) + <code>scoring_rules.py</code></td>
+<td>AI Website Audit CLI (Content score 0-100)</td>
+</tr>
+<tr>
+<td>AC04</td>
+<td>Qualité Éditoriale</td>
+<td class="green">✅ Garder</td>
+<td>50% — <code>content_guard.py</code> (placeholder detection) + heuristiques</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AC05</td>
+<td>Scoring AEO</td>
+<td class="green">✅ Garder</td>
+<td>60% — Agent 11 (AEO) logique + prompt AEO</td>
+<td>GEO Optimizer Skill (47 méthodes)</td>
+</tr>
+<tr>
+<td>AC06</td>
+<td>Scoring GEO</td>
+<td class="green">✅ Garder</td>
+<td>60% — Agent 12 (GEO) + <code>source_credibility.py</code></td>
+<td>GEO Optimizer Skill</td>
+</tr>
+<tr>
+<td>AC07</td>
+<td>Scoring EEAT</td>
+<td class="green">✅ Garder</td>
+<td>50% — Agent 13 (EEAT) + YMYL rules</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AC08</td>
+<td>Scoring UX</td>
+<td class="green">✅ Garder</td>
+<td>40% — <code>textstat</code> (déjà intégré)</td>
+<td>textstat (déjà installé)</td>
+</tr>
+<tr>
+<td>AC09</td>
+<td>Transparence (Delta DOM)</td>
+<td class="red">❌ Reporter en V2</td>
+<td>0% — chantier complexe</td>
+<td>Playwright (lourd)</td>
+</tr>
+<tr>
+<td>AC10</td>
+<td>Cannibalisation</td>
+<td class="green">✅ Garder</td>
+<td>70% — Agent 08 (ChromaDB) + Agent 27 (cohérence)</td>
+<td>SEO Keyword Cannibalization Detector</td>
+</tr>
+<tr>
+<td>AC11</td>
+<td>Synthèse d'Audit</td>
+<td class="green">✅ Garder. Cœur du pipeline.</td>
+<td>20% — logique d'agrégation nouvelle</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AC12</td>
+<td>Roadmap</td>
+<td class="green">✅ Garder</td>
+<td>30% — logique métier pure</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AC13</td>
+<td>Export Rapport</td>
+<td class="green">✅ Garder</td>
+<td>80% — pattern Agent 23 (CMS Export)</td>
+<td>Jinja2 (Python natif)</td>
+</tr>
+<tr>
+<td>AC14</td>
+<td>Connecteur Réécriture</td>
+<td class="orange">⚠️ Simplifier. 20 lignes de code, pas un agent.</td>
+<td>90% — fonction helper, pas un agent LangGraph</td>
+<td>—</td>
+</tr>
+</table>
+
+
+
+<h2>3. Architecture finale recommandée (10 agents)</h2>
+
+<div class="info"><strong>14 → 10 agents</strong> : AC02 fusionné dans AC01, AC14 simplifié en helper, AC09 reporté en V2.</div>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Phase</th><th>LLM</th><th>Effort</th></tr>
+<tr><td>AC00</td><td>Superviseur Audit</td><td>Orchestration</td><td>Aucun</td><td>2h</td></tr>
+<tr><td>AC01</td><td>Content Crawler + Indexabilité</td><td>Collecte</td><td>Aucun</td><td>6h</td></tr>
+<tr><td>AC02</td><td>Scoring SEO On-Page + Qualité Éditoriale</td><td>Scoring</td><td>Aucun</td><td>4h</td></tr>
+<tr><td>AC03</td><td>Scoring AEO</td><td>Scoring</td><td>Aucun</td><td>3h</td></tr>
+<tr><td>AC04</td><td>Scoring GEO</td><td>Scoring</td><td>Aucun</td><td>3h</td></tr>
+<tr><td>AC05</td><td>Scoring EEAT</td><td>Scoring</td><td>Aucun</td><td>2h</td></tr>
+<tr><td>AC06</td><td>Scoring UX + Lisibilité</td><td>Scoring</td><td>Aucun</td><td>2h</td></tr>
+<tr><td>AC07</td><td>Cannibalisation Inter-Pages</td><td>Analyse</td><td>Aucun</td><td>3h</td></tr>
+<tr><td>AC08</td><td>Synthèse + audit_brief</td><td>Synthèse</td><td>Haiku</td><td>4h</td></tr>
+<tr><td>AC09</td><td>Roadmap + Export + Connecteur</td><td>Export</td><td>Aucun</td><td>3h</td></tr>
+</table>
+
+<p><strong>Total : 32h</strong> (au lieu de 34h dans le cahier, mais avec 4 agents de moins et AC09 reporté)</p>
+
+
+
+<h2>4. Réutilisation de l'existant Hermes</h2>
+
+<table>
+<tr><th>Module Hermes</th><th>Ce qu'il apporte au Pipeline Audit</th></tr>
+<tr><td><code>scoring_rules.py</code> (10 profils)</td><td>Pondérations adaptatives déjà prêtes — le pipeline Audit les utilise tel quel</td></tr>
+<tr><td><code>source_credibility.py</code> (A/B/C/D)</td><td>Classification des sources dans AC04 (GEO) — déjà codé</td></tr>
+<tr><td><code>content_guard.py</code></td><td>Détection placeholders, contenu interne, affirmations non sourcées — AC02 le réutilise</td></tr>
+<tr><td><code>site_scraper.py</code> (déjà codé le 21 juin !)</td><td>Extraction nom, services, contact, secteur, ton depuis le site — AC01 le réutilise</td></tr>
+<tr><td><code>card_excerpt.py</code></td><td>Génération d'extraits pour les fiches du rapport d'audit</td></tr>
+<tr><td><code>pipeline_guard.py</code></td><td>Arrêt sur échec critique, reprise — AC00 le réutilise</td></tr>
+<tr><td><code>gsc_connector.py</code></td><td>Données de trafic réelles pour AC09 (Roadmap) — connecté le 22 juin</td></tr>
+<tr><td><code>llm.py</code> (timeout, retry, JSON repair)</td><td>Appel Haiku dans AC08 — déjà robuste</td></tr>
+<tr><td><code>session_manager.py</code></td><td>Sauvegarde après chaque agent — déjà intégré</td></tr>
+<tr><td>Agent 08, Agent 27</td><td>Logique de cannibalisation et cohérence — AC07 les réutilise</td></tr>
+</table>
+
+<div class="ok"><strong>~50% du code du Pipeline Audit est déjà écrit</strong> dans Hermes. Il ne s'agit pas de tout coder from scratch — il s'agit de composer des modules existants.</div>
+
+
+
+<h2>5. Outils Open-Source identifiés spécifiquement pour ce pipeline</h2>
+
+<table>
+<tr><th>Outil</th><th>Usage</th><th>pip install</th><th>Gain estimé</th></tr>
+<tr><td><strong>AI Website Audit CLI</strong> (MIT, juin 2026)</td><td>Scoring SEO multi-catégories déjà fait : Content, SEO, Trust, Perf. Extraction title/meta/Hn/images/links/schema.</td><td><code>pip install git+https://github.com/Tools2U/AI-Website-Audit-CLI</code></td><td>~40% de AC01-AC02 déjà fait</td></tr>
+<tr><td><strong>GEO Optimizer Skill</strong> v4.15 (MIT, 1720 tests)</td><td>47 méthodes AEO/GEO avec scoring 0-100. Robots.txt, llms.txt, schema, citabilité, entités. Déjà testé en CI/CD.</td><td><code>pip install geo-optimizer-skill</code></td><td>~50% de AC03-AC04 déjà fait</td></tr>
+<tr><td><strong>SEOpie Core</strong> (MIT, mai 2026)</td><td>Crawl + extraction headings/images/schema/meta. Score 0-100 pondéré. HTML/JSON/CSV.</td><td>git clone</td><td>Fallback extraction si BeautifulSoup rate</td></tr>
+<tr><td><strong>SEO Keyword Cannibalization Detector</strong> (MIT)</td><td>Détection paires cannibales via GSC + similarité cosinus</td><td>git clone</td><td>~60% de AC07 déjà fait</td></tr>
+</table>
+
+<div class="warn"><strong>⚠️ Ces outils sont des FALLBACKS, pas des dépendances obligatoires.</strong> Si l'outil est installé, on l'utilise. Sinon, le code custom d'Hermes prend le relais. Zéro dépendance dure à un outil externe.</div>
+
+
+
+<h2>6. Points d'attention</h2>
+
+<div class="crit"><strong>1. AC09 (Transparence / Delta DOM) — TROP COMPLEXE POUR UNE V1</strong><br>
+Playwright + comparaison CSS + détection de couleurs = un chantier de 15-20h à lui seul. Le ROI pour une V1 est faible : le cas d'usage "texte blanc sur fond blanc" représente <0.1% des audits. <strong>À reporter en V2.</strong></div>
+
+<div class="warn"><strong>2. AC14 (Connecteur Réécriture) — PAS UN AGENT</strong><br>
+C'est un helper de 20 lignes qui prépare l'<code>audit_brief</code> et le passe au Pipeline 1. Pas besoin d'un nœud LangGraph dédié. Une fonction <code>prepare_audit_brief_for_pipeline1()</code> suffit.</div>
+
+<div class="warn"><strong>3. AC02 (Indexabilité) — FUSIONNER AVEC AC01</strong><br>
+Vérifier le status code, le noindex, le canonical — c'est 5 checks triviaux que le crawler peut faire en même temps qu'il fetch la page. Pas besoin d'un agent séparé.</div>
+
+<div class="info"><strong>4. Estimation réaliste : 40-45h, pas 34h</strong><br>
+Le cahier sous-estime l'intégration, le débogage et les tests. Avec 10 agents (au lieu de 14), l'estimation corrigée est de <strong>32h</strong> + 20% de marge = <strong>~38h</strong>.</div>
+
+<div class="crit"><strong>5. BeautifulSoup vs Playwright — ATTENTION</strong><br>
+Le cahier propose Playwright en fallback. Playwright pèse 400MB, nécessite un navigateur Chromium, et ne fonctionne pas sur Streamlit Cloud (sandbox). Pour la V1, BeautifulSoup seul suffit. Le rendu JS peut être simulé via <code>requests</code> avec un user-agent Googlebot.</div>
+
+
+
+<h2>7. Recommandations</h2>
+
+<table>
+<tr><th>#</th><th>Recommandation</th><th>Impact</th></tr>
+<tr><td>1</td><td><strong>10 agents, pas 14</strong> — AC02+AC01 fusionnés, AC14 simplifié, AC09 reporté en V2</td><td>Code plus propre, moins de complexité</td></tr>
+<tr><td>2</td><td><strong>BeautifulSoup uniquement pour la V1</strong> — pas de Playwright</td><td>Compatible Streamlit Cloud, pas de dépendance lourde</td></tr>
+<tr><td>3</td><td><strong>4 outils OSS en fallback</strong> — AI Website Audit CLI, GEO Optimizer, SEOpie Core, Cannibalization Detector</td><td>~40% de code en moins</td></tr>
+<tr><td>4</td><td><strong>Commencer par AC00 + AC01</strong> — ces deux agents sont le socle</td><td>Le reste du pipeline en dépend</td></tr>
+<tr><td>5</td><td><strong>Ne pas toucher au Pipeline 1</strong> — l'audit est un nouveau pipeline indépendant</td><td>Zéro régression</td></tr>
+</table>
+
+
+
+<h2>8. Prochaines étapes concrètes</h2>
+
+<div class="ok">
+<strong>Si tu valides :</strong><br>
+1. Je crée le dossier <code>hermes/agents/audit/</code><br>
+2. J'installe les 4 outils OSS en fallback<br>
+3. Je code AC00 (2h) + AC01 (6h) — le socle<br>
+4. Tu testes sur un site réel<br>
+5. On continue sprint par sprint
+</div>
+
+<p style="margin-top:50px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">Hermes SEO v3 · Analyse du Cahier des Charges · 22 juin 2026</p>
+
+</body>
+</html>
