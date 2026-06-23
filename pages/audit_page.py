@@ -76,6 +76,67 @@ def _explain_ux_score(s, page) -> None:
     if not has_cta: st.caption(f"  _Aucun CTA detecte. Un appel a l'action (bouton, formulaire) ameliore l'experience utilisateur._")
 
 
+# Fourchettes de scores attendus par type de CMS et type de page
+# (score bas = normal pour ce type de page, ne veut pas dire "mauvais")
+CMS_SCORE_RANGES = {
+    "PrestaShop": {
+        "accueil": (40, 60, "Page vitrine — l'essentiel est le design et la navigation, pas le contenu long."),
+        "produits": (25, 45, "Fiche produit e-commerce — peu de contenu textuel, score structurellement bas. C'est normal."),
+        "categories": (20, 40, "Page listing — le contenu est dans les produits, pas dans la categorie."),
+        "articles": (50, 75, "Page blog — contenu redactionnel, le score devrait etre plus eleve."),
+        "legales": (30, 50, "Page administrative — contenu standard, le score reflete la conformite plus que la performance."),
+    },
+    "WordPress": {
+        "accueil": (45, 70, "Page d'accueil WordPress — contenu souvent limite."),
+        "produits": (30, 55, "Page produit WooCommerce."),
+        "articles": (55, 80, "Article de blog — WordPress excelle sur ce format."),
+        "categories": (25, 45, "Page de categorie."),
+        "legales": (35, 55, "Page legale standard."),
+    },
+    "Shopify": {
+        "accueil": (40, 60, "Page d'accueil Shopify."),
+        "produits": (30, 50, "Fiche produit Shopify — descriptions souvent courtes."),
+        "categories": (25, 45, "Collection Shopify."),
+        "articles": (50, 75, "Article de blog Shopify."),
+    },
+}
+
+DEFAULT_SCORE_RANGES = {
+    "accueil": (40, 65, "Page d'accueil."),
+    "produits": (30, 50, "Page produit/service."),
+    "articles": (50, 80, "Article ou page de contenu."),
+    "categories": (25, 45, "Page listing/categorie."),
+    "legales": (35, 55, "Page administrative."),
+    "autres": (30, 60, "Page non categorisee."),
+}
+
+
+def _get_score_context(cms: str, page_type: str) -> tuple:
+    """Retourne (min_normal, max_normal, description) pour un couple CMS + type de page."""
+    cms_ranges = CMS_SCORE_RANGES.get(cms, {})
+    return cms_ranges.get(page_type) or DEFAULT_SCORE_RANGES.get(page_type, (30, 60, ""))
+
+
+def _classify_page_type(url: str) -> str:
+    """Determine le type de page a partir de son URL."""
+    import re as _re
+    from urllib.parse import urlparse as _urlparse
+    path = _urlparse(url).path.lower()
+    if path == "/" or path == "":
+        return "accueil"
+    if _re.search(r"/\d+-[\w-]+\.html?$", path):
+        return "produits"
+    if any(w in path for w in ("/blog/", "/article/", "/actualite/", "/news/", "/post/", "/module-blog")):
+        return "articles"
+    if any(w in path for w in ("/produit/", "/product/", "/shop/")):
+        return "produits"
+    if any(w in path for w in ("/categorie/", "/category/", "/collection/")):
+        return "categories"
+    if any(w in path for w in ("/cgu/", "/cgv/", "/mentions/", "/privacy/", "/contact/", "/login", "/account")):
+        return "legales"
+    return "autres"
+
+
 def _run_audit_sync(urls, site_url, mode):
     return asyncio.run(run_audit_pipeline(urls=urls, site_url=site_url, mode=mode))
 
@@ -155,12 +216,24 @@ def render_audit_page():
         with k4: st.metric("Briefs prets", len(result.briefs))
         with k5: st.metric("A reecrire", sum(1 for s in result.scores.values() if s.global_score < 50))
 
-        # CMS detection
+        # CMS detection + contexte
         cms = getattr(result.crawled_pages[0], 'cms_detected', '') if result.crawled_pages else ''
         if cms and cms != 'inconnu':
             cms_ver = getattr(result.crawled_pages[0], 'cms_version', '')
             cms_conf = getattr(result.crawled_pages[0], 'cms_confidence', 0)
             st.info(f"**CMS detecte :** {cms} {f'v{cms_ver}' if cms_ver else ''} (confiance {cms_conf}%)")
+
+        # Contexte d'interpretation des scores selon le CMS
+        if cms and cms != 'inconnu' and CMS_SCORE_RANGES.get(cms):
+            with st.expander("Comment lire ces scores ?", expanded=False):
+                st.markdown(f"Les scores sont sur 100 mais **dependent du type de page et du CMS ({cms})**.")
+                st.markdown("Une fiche produit e-commerce n'aura jamais 90/100 — et c'est normal.")
+                st.markdown("| Type de page | Score normal | Interpretation |")
+                st.markdown("|-------------|-------------|----------------|")
+                for pt, (lo, hi, desc) in CMS_SCORE_RANGES.get(cms, DEFAULT_SCORE_RANGES).items():
+                    emoji = "🟢" if hi >= 60 else "🟡" if hi >= 40 else "🔴"
+                    st.markdown(f"| {pt} | {lo}-{hi}/100 | {emoji} {desc} |")
+                st.caption("Un score dans la fourchette ou superieur = correct. Inferieur = marge de progression.")
 
         if result.scores:
             avg_seo = int(sum(s.seo_onpage.score for s in result.scores.values()) / len(result.scores))
@@ -237,6 +310,21 @@ def render_audit_page():
                 fig.add_trace(go.Scatterpolar(r=vals, theta=cats, fill='toself', line=dict(color='#1E88E5', width=2), fillcolor='rgba(30,136,229,0.2)'))
                 fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100], showticklabels=False)), showlegend=False, height=250, margin=dict(l=20, r=20, t=20, b=20))
                 st.plotly_chart(fig, use_container_width=True)
+                # Contexte type de page : score normal attendu
+                page_type = _classify_page_type(page.url)
+                score_context = _get_score_context(cms, page_type)
+                normal_lo, normal_hi, context_desc = score_context
+                in_range = normal_lo <= s.global_score <= normal_hi
+                above = s.global_score > normal_hi
+                ctx_icon = "✓" if in_range else "▲" if above else "▼"
+                ctx_color = "green" if in_range else "blue" if above else "orange"
+                st.caption(
+                    f"Type de page : **{page_type}** | "
+                    f"Score normal pour un site {cms if cms and cms != 'inconnu' else 'standard'} : "
+                    f"**{normal_lo}-{normal_hi}/100** | "
+                    f"Votre score : **{s.global_score}/100** :{ctx_color}[{ctx_icon}] "
+                    f"{'Dans la fourchette normale.' if in_range else 'Au-dessus de la moyenne.' if above else 'En dessous de la fourchette. Marge de progression.'}"
+                )
                 # Pourquoi ce score ? — breakdown detaille
                 with st.expander("Pourquoi ces scores ?"):
                     _explain_seo_score(s, page)

@@ -250,23 +250,33 @@ def _filter_urls(urls: list[str], domain: str, max_urls: int) -> list[str]:
 
 
 def _classify_urls(urls: list[str]) -> dict[str, int]:
-    """Detecte les types de pages pour preview."""
+    """Detecte les types de pages pour preview.
+
+    Supporte les formats d'URL : PrestaShop, WordPress, Shopify, et generiques.
+    """
     distribution = {}
     for url in urls:
         path = urlparse(url).path.lower()
         if path == "/" or path == "":
             page_type = "accueil"
-        elif any(w in path for w in ("/blog/", "/article/", "/actualite/", "/news/", "/post/")):
+        # PrestaShop: /123-slug.html → produit, /123-slug → categorie, /content/123-slug → page CMS
+        elif re.search(r"/\d+-[\w-]+\.html?$", path):
+            page_type = "produits"
+        elif re.search(r"/\d+-[\w-]+$", path) and not path.endswith((".html", ".htm", ".php")):
+            page_type = "categories"
+        elif any(w in path for w in ("/blog/", "/article/", "/actualite/", "/news/", "/post/", "/module-blog")):
             page_type = "articles"
         elif any(w in path for w in ("/service/", "/prestation/", "/offre/")):
             page_type = "services"
-        elif any(w in path for w in ("/produit/", "/product/", "/shop/")):
+        elif any(w in path for w in ("/produit/", "/product/", "/shop/", "/fr/")):
             page_type = "produits"
-        elif any(w in path for w in ("/categorie/", "/category/")):
+        elif any(w in path for w in ("/categorie/", "/category/", "/collection/")):
             page_type = "categories"
         elif any(w in path for w in ("/faq/", "/questions/", "/glossaire/")):
             page_type = "FAQ"
-        elif any(w in path for w in ("/cgu/", "/cgv/", "/mentions/", "/privacy/", "/contact/")):
+        elif any(w in path for w in ("/cgu/", "/cgv/", "/mentions/", "/privacy/", "/contact/", "/nous-contacter")):
+            page_type = "legales"
+        elif any(w in path for w in ("/login", "/account", "/account/", "/my-account", "/mon-compte")):
             page_type = "legales"
         else:
             page_type = "autres"

@@ -27,10 +27,11 @@ class KeywordsEverywhereConnector:
 
     def __init__(self):
         self._api_key = self._get_env("KEYWORDS_EVERYWHERE_API_KEY")
+        self._disabled_reason = None  # Si non-null, l'API a echoue de facon permanente
 
     @property
     def is_configured(self) -> bool:
-        return bool(self._api_key)
+        return bool(self._api_key) and self._disabled_reason is None
 
     def _get_env(self, key: str) -> str:
         try:
@@ -71,6 +72,11 @@ class KeywordsEverywhereConnector:
                     },
                     data=dict(params),
                 )
+                # Desactiver definitivement si quota epuise ou cle invalide
+                if resp.status_code in (401, 402, 403):
+                    self._disabled_reason = f"HTTP {resp.status_code} — credit epuise ou cle invalide"
+                    logger.warning(f"Keywords Everywhere desactive pour cette session: {self._disabled_reason}")
+                    return {}
                 resp.raise_for_status()
                 data = resp.json()
 

@@ -157,6 +157,9 @@ async def run(state: AuditSessionState) -> AuditSessionState:
     """Enrichit l'audit avec le contexte SERP pour chaque page."""
     state.current_agent = "ac01b"
 
+    # Cache evite de rappeler KE/DataForSEO pour chaque page
+    kw_cache = {}
+
     for page in state.crawled_pages:
         if page.fetch_error:
             continue
@@ -165,8 +168,14 @@ async def run(state: AuditSessionState) -> AuditSessionState:
         if not keyword:
             continue
 
-        logger.info(f"AC01b: SERP context for '{keyword}'")
-        serp_context = await _get_serp_context(keyword)
+        # Utiliser le cache si le mot-cle a deja ete traite
+        kw_key = keyword.lower().strip()
+        if kw_key in kw_cache:
+            serp_context = kw_cache[kw_key]
+        else:
+            logger.info(f"AC01b: SERP context for '{keyword}'")
+            serp_context = await _get_serp_context(keyword)
+            kw_cache[kw_key] = serp_context
 
         # Appliquer les ajustements aux scores existants
         s = state.scores.get(page.url)

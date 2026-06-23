@@ -8,26 +8,30 @@ Avant de chercher le sitemap, on detecte le CMS pour :
 $0 — pas de LLM, pas d'API. Headers HTTP + balises meta + patterns HTML.
 """
 
+import logging
 import re
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 import httpx
 
+logger = logging.getLogger("hermes.cms_detector")
+
 # Signatures CMS : (nom, [(type, pattern, poids)])
 CMS_SIGNATURES = {
     "PrestaShop": [
         ("header", r"PrestaShop", 50),
         ("meta", r'name="generator"[^>]*content="PrestaShop', 40),
-        ("cookie", r"PrestaShop-[a-f0-9]{32}", 50),
+        ("meta", r'name="generator"[^>]*content="prestashop', 40),
+        ("cookie", r"PrestaShop-[a-f0-9]{10,64}", 50),
         ("html", r"/modules/|/themes/|prestashop", 30),
-        ("sitemap", r"/\d+_index_sitemap\.xml", 30),
-        ("sitemap", r"/\d+_fr_\d+_sitemap\.xml", 25),
+        ("html", r'id="prestashop"|class="prestashop"|class="ps_"', 20),
+        ("html", r"prestashop\.com|addons\.prestashop", 15),
+        ("sitemap", r"/\d+/_index_sitemap\.xml", 30),
     ],
     "WordPress": [
-        ("header", r"X-Powered-By:.*WordPress", 40),
-        ("meta", r'wp-content|wordpress', 40),
-        ("html", r"/wp-content/|/wp-includes/|/wp-json/", 30),
+        ("header", r"WordPress", 40),
+        ("html", r"/wp-content/|/wp-includes/|/wp-json/|wordpress", 40),
         ("file", r"/wp-login\.php", 20),
         ("sitemap", r"/wp-sitemap\.xml|/sitemap_index\.xml", 20),
     ],
@@ -113,26 +117,46 @@ async def detect_cms(url: str) -> dict:
     if not url.startswith("http"):
         url = f"https://{url}"
 
+    UA = "HermesAudit/1.0"
+
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             # 1. HEAD pour les headers
             headers_data = {}
             try:
-                head_resp = await client.head(url)
+                head_resp = await client.head(url, headers={"User-Agent": UA})
                 headers_data = dict(head_resp.headers)
-                # Recuperer le corps du HEAD
             except Exception:
                 pass
 
             # 2. GET pour le HTML (meta, patterns)
-            resp = await client.get(url)
-            if resp.status_code != 200:
-                return result
-            html = resp.text
-            all_headers = str(resp.headers)
-            # httpx stocke plusieurs Set-Cookie comme liste
-            cookies_raw = resp.headers.get("set-cookie", "")
-            all_cookies = "; ".join(resp.headers.get_list("set-cookie")) if hasattr(resp.headers, "get_list") else cookies_raw
+            html = ""
+            all_headers = ""
+            all_cookies = ""
+            try:
+                resp = await client.get(url, headers={"User-Agent": UA, "Accept": "text/html,*/*"})
+                if resp.status_code == 200:
+                    html = resp.text
+                    all_headers = str(resp.headers)
+                    cookies_raw = resp.headers.get("set-cookie", "")
+                    all_cookies = "; ".join(resp.headers.get_list("set-cookie")) if hasattr(resp.headers, "get_list") else cookies_raw
+                else:
+                    logger.debug(f"CMS detector: GET {url} → {resp.status_code}, falling back to robots.txt only")
+            except Exception as e:
+                logger.debug(f"CMS detector: GET failed ({e}), falling back to robots.txt")
+
+            # 2.5 Robots.txt — source de signatures CMS (ex: "PrestaShop" dans le commentaire)
+            robots_txt = ""
+            try:
+                robots_url = urljoin(url, "/robots.txt")
+                robots_resp = await client.get(robots_url, headers={"User-Agent": UA})
+                if robots_resp.status_code == 200:
+                    robots_txt = robots_resp.text[:2000]
+            except Exception:
+                pass
+
+        # Contenu combine pour les recherches
+        combined_text = f"{all_headers}\n{html[:15000]}\n{robots_txt}"
 
         # 3. Scorer chaque CMS
         scores = {}
@@ -141,17 +165,9 @@ async def detect_cms(url: str) -> dict:
             found_signals = []
             for sig_type, pattern, weight in signatures:
                 matched = False
-                if sig_type == "header":
-                    matched = bool(re.search(pattern, all_headers, re.IGNORECASE))
-                elif sig_type == "meta":
-                    matched = bool(re.search(
-                        rf'<meta[^>]*{pattern}',
-                        html[:5000], re.IGNORECASE
-                    ))
-                elif sig_type == "html":
-                    matched = bool(re.search(pattern, html[:10000], re.IGNORECASE))
-                elif sig_type == "cookie":
-                    matched = bool(re.search(pattern, all_cookies, re.IGNORECASE))
+                if sig_type in ("header", "html", "cookie", "meta"):
+                    # Recherche dans le contenu combine (headers + HTML + robots.txt)
+                    matched = bool(re.search(pattern, combined_text, re.IGNORECASE))
                 elif sig_type == "file":
                     try:
                         file_url = urljoin(url, pattern.lstrip("/"))
@@ -160,12 +176,8 @@ async def detect_cms(url: str) -> dict:
                     except Exception:
                         pass
                 elif sig_type == "sitemap":
-                    try:
-                        sitemap_url = urljoin(url, pattern.lstrip("/"))
-                        sitemap_resp = await client.head(sitemap_url)
-                        matched = sitemap_resp.status_code == 200
-                    except Exception:
-                        pass
+                    # Chercher le pattern dans le HTML et robots.txt (pas comme URL)
+                    matched = bool(re.search(pattern, combined_text, re.IGNORECASE))
 
                 if matched:
                     score += weight
