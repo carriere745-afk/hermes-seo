@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO · Les 7 Pipelines · V2 · 23 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-orange{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fffde7;color:#f9a825;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO · Les 7 Pipelines · V2</h1>
+<p class="meta">Version V2 · 23 juin 2026 · 656+ tests · 2 pipelines en production</p>
+
+<div class="success">
+<strong>Nouveau dans la V2 :</strong> Le <strong>Pipeline 2 (Audit de Contenu)</strong> passe de "Architecture validée" à <strong>opérationnel en production</strong>. Premier audit réel sur hartmann-tresore.fr (PrestaShop e-commerce, 20 pages) validé le 23 juin 2026.
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Pipeline Éditorial (Rédaction) <span class="badge-green">~95% · production</span></h2>
+
+<p><strong>Rôle final :</strong> Produire tout type de contenu SEO/AEO/GEO à partir d'un mot-clé.</p>
+
+<table>
+<tr><th>Phase</th><th>Agents</th><th>Rôle</th><th>LLM</th></tr>
+<tr><td>Orchestration</td><td>00</td><td>Superviseur — valide chaque transition, bloque si incohérence</td><td>Aucun</td></tr>
+<tr><td>Contextualisation</td><td>01, 02, 03</td><td>Brief entreprise, Persona, Analyse SERP (TalorData + DataForSEO + KE)</td><td>DeepSeek / GPT</td></tr>
+<tr><td>Stratégie</td><td>04, 05, 06, 07</td><td>Intention &amp; Type, Offre/Conversion, Différenciation, Template (10 templates)</td><td>DeepSeek</td></tr>
+<tr><td>Vérification</td><td>08</td><td>Anti-cannibalisation (ChromaDB)</td><td>Haiku</td></tr>
+<tr><td>Production</td><td>09</td><td>★ Rédaction HTML — cœur du pipeline</td><td>Claude Sonnet</td></tr>
+<tr><td>Optimisation</td><td>10, 11, 12</td><td>SEO On-Page, AEO (Answer Engine), GEO (Generative Engine) — avec fallback heuristique</td><td>GPT / Haiku</td></tr>
+<tr><td>Validation</td><td>13, 14, 15</td><td>EEAT, Conformité sectorielle (9 secteurs), Fact-checking</td><td>Haiku</td></tr>
+<tr><td>Enrichissement</td><td>16, 17, 18, 19, 20, 21, 22</td><td>Maillage interne/externe, Multiformat, A/B testing, Localisation, Schema.org, Images 3 niveaux</td><td>DeepSeek / Sonnet</td></tr>
+<tr><td>Cohérence</td><td>27</td><td>Cohérence Inter-Articles — détecte contradictions avec contenus existants</td><td>Aucun</td></tr>
+<tr><td>Publication</td><td>23, 24</td><td>CMS Export (WordPress/HTML/MD), Plan de mise à jour</td><td>Aucun</td></tr>
+<tr><td>Décision</td><td>25, 26</td><td>Critique Qualité (9 critères, scoring adaptatif), Audit post-publication (GSC live)</td><td>Aucun / Haiku</td></tr>
+</table>
+
+<div class="note"><strong>28 agents · ~$0.60/article standard · 10 types de contenu supportés :</strong> article, pilier, service_local, landing, comparatif, fiche_produit, faq, news, glossaire, témoignage</div>
+
+<p><strong>Ce qui reste (~5%) :</strong> LLM Guard anti-hallucination renforcé, content decay detection en boucle GSC, few-shot examples dans les prompts.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline Audit de Contenu <span class="badge-green">~95% · production</span></h2>
+
+<p><strong>Rôle final :</strong> Évaluer les pages existantes d'un site sur SEO/AEO/GEO/EEAT/UX et produire un rapport d'audit complet avec recommandations actionnables. Le pipeline ne publie pas — il diagnostique. La réécriture est gérée par le Pipeline 1 (Éditorial).</p>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Rôle</th><th>LLM</th><th>Statut</th></tr>
+<tr><td>AC01</td><td>Content Crawler</td><td>Fetch la page, extrait 55+ signaux (titres, metas, H1-H6, images, liens, schemas, OG, breadcrumbs, CTAs) + <strong>détecte CMS (12 supportés)</strong></td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC01b</td><td>SERP Context</td><td>Enrichit chaque page avec contexte SERP (top 10, volume, PAA, faisabilité DA). <strong>Cache mot-clé</strong> pour éviter N appels.</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC02</td><td>Scoring SEO On-Page</td><td>Score 0-100 : title, meta, Hn, images, liens, densité mots-clés</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC03</td><td>Scoring AEO</td><td>Score 0-100 : En bref, FAQ, H2 questions, définitions</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC04</td><td>Scoring GEO</td><td>Score 0-100 : sources, entités, phrases citables, chunks</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC05</td><td>Scoring EEAT</td><td>Score 0-16 : auteur, confiance, sources institutionnelles, YMYL</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC06</td><td>Scoring UX/Lisibilité</td><td>Score 0-100 : Flesch FR (textstat), longueur, CTA, cohérence</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC07</td><td>Synthèse d'Audit</td><td>Agrège scores, forces/faiblesses, recommandations type-aware</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC08</td><td>Roadmap de Réécriture</td><td>Classe les pages : à réécrire/enrichir/fusionner/supprimer. Priorise par impact × effort</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC09</td><td>Cannibalisation</td><td>Détecte paires cannibales entre pages auditées</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC10</td><td>Export Rapport</td><td>HTML + JSON + CSV + PDF (weasyprint), radar chart, faisabilité DA</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+</table>
+
+<div class="success"><strong>Validation en production · 23 juin 2026 :</strong> Audit complet de hartmann-tresore.fr (PrestaShop e-commerce). CMS détecté à 95%, sitemap PrestaShop parsé (CDATA), 20 URLs auditées en ~30s, scores cohérents (30-34/100 pour les fiches produits, normal pour ce type de page).</div>
+
+<p><strong>Connexion avec le Pipeline 1 :</strong> L'audit produit un <code>audit_brief</code> structuré. Le bouton "Réécrire cette page" dans le rapport déclenche le Pipeline Éditorial avec le brief en input.</p>
+
+<p><strong>Interprétation type-aware :</strong> Le rapport affiche un bandeau "Comment lire ces scores ?" avec les fourchettes attendues selon le CMS et le type de page (ex: PrestaShop produit = 25-45/100 normal). Chaque page individuelle affiche un indicateur ✓/▲/▼ par rapport à cette fourchette.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Pipeline Audit Technique <span class="badge-red">🔴 0%</span></h2>
+
+<p><strong>Rôle final :</strong> Scanner un site web et produire un rapport d'audit technique complet avec priorités.</p>
+
+<table>
+<tr><th>Agent</th><th>Rôle anticipé</th></tr>
+<tr><td>T01 · Crawler</td><td>Parcourt le site (URLs, status codes, Hn, images, liens)</td></tr>
+<tr><td>T02 · Indexation</td><td>Vérifie statut GSC par URL (indexée/désindexée)</td></tr>
+<tr><td>T03 · Performance</td><td>Core Web Vitals (LCP, INP, CLS, TTFB)</td></tr>
+<tr><td>T04 · Structure</td><td>Vérifie H1, title, meta, canonical, OG</td></tr>
+<tr><td>T05 · Contenu</td><td>Détecte thin content, duplicats, pages orphelines</td></tr>
+<tr><td>T06 · Schema</td><td>Valide tous les JSON-LD trouvés</td></tr>
+<tr><td>T07 · Sitemap</td><td>Analyse robots.txt + sitemap XML (réutilise <code>sitemap_parser.py</code> du Pipeline 2)</td></tr>
+<tr><td>T08 · Mobile</td><td>Vérifie responsive, viewport</td></tr>
+<tr><td>T09 · Sécurité</td><td>HTTPS, mixed content, headers</td></tr>
+<tr><td>T10 · International</td><td>Vérifie hreflang, cohérence multilingue</td></tr>
+<tr><td>T11 · Synthèse</td><td>Agrège tous les rapports</td></tr>
+<tr><td>T12 · Priorisation</td><td>Classe problèmes par impact × effort</td></tr>
+<tr><td>T13 · Roadmap</td><td>Plan d'action avec deadlines</td></tr>
+<tr><td>T14 · Superviseur</td><td>Garde-fou</td></tr>
+<tr><td>T15 · Export</td><td>Rapport PDF/HTML/JSON</td></tr>
+</table>
+
+<p><strong>Outils open-source prêts :</strong> crawlee, advertools, mcp-seo, seokar, ultimate-sitemap-parser. <strong>Réutilisable du Pipeline 2 :</strong> <code>cms_detector.py</code>, <code>sitemap_parser.py</code>.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Pipeline SERP &amp; Positions <span class="badge-red">🔴 0%</span></h2>
+
+<p><strong>Rôle final :</strong> Suivre les positions, analyser la concurrence, détecter les opportunités.</p>
+
+<table>
+<tr><th>Agent</th><th>Rôle anticipé</th></tr>
+<tr><td>S01 · Rank Tracker</td><td>Suivi positions via GSC API</td></tr>
+<tr><td>S02 · Volatilité</td><td>Détection variations &gt; seuil</td></tr>
+<tr><td>S03 · SERP Features</td><td>Featured snippet, PAA, vidéo, AI Overview</td></tr>
+<tr><td>S04 · Concurrent Monitor</td><td>Suivi des concurrents définis</td></tr>
+<tr><td>S05 · Gap Content</td><td>Ce que le top 3 a que notre page n'a pas (réutilise AC01b)</td></tr>
+<tr><td>S06 · Quick Wins</td><td>Pages en position 4-15</td></tr>
+<tr><td>S07 · Alertes</td><td>Perte &gt;5 places, gain top 10</td></tr>
+<tr><td>S08 · Superviseur</td><td>Garde-fou</td></tr>
+</table>
+
+<p><strong>Outils open-source prêts :</strong> openserp, searchconsole-mcp, seo-pilot. <strong>GSC déjà connecté</strong> via <code>gsc_connector.py</code>. <strong>SERP connecté</strong> via <code>serp_api.py</code> (TalorData + Scrape.do + Serpstack).</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Pipeline Stratégie <span class="badge-red">🔴 0%</span></h2>
+
+<p><strong>Rôle final :</strong> Identifier les gaps, opportunités, produire une roadmap éditoriale.</p>
+
+<table>
+<tr><th>Agent</th><th>Rôle anticipé</th></tr>
+<tr><td>ST01 · Cartographie</td><td>Sujets couverts vs manquants (réutilise le crawler du Pipeline 2)</td></tr>
+<tr><td>ST02 · Cannibalisation</td><td>Détection paires cannibales via GSC + cohérence avec AC09</td></tr>
+<tr><td>ST03 · Opportunités</td><td>Requêtes sans page dédiée</td></tr>
+<tr><td>ST04 · Gap Concurrentiel</td><td>Sujets concurrents non couverts</td></tr>
+<tr><td>ST05 · Scoring Business</td><td>Pages par potentiel (trafic × intent × conversion)</td></tr>
+<tr><td>ST06 · Roadmap Éditoriale</td><td>Plan de contenu priorisé</td></tr>
+<tr><td>ST07 · Silos</td><td>Détection silos sans pilier, piliers sans satellites</td></tr>
+<tr><td>ST08 · Fusion/Séparation</td><td>Recommandations structurelles</td></tr>
+<tr><td>ST09 · Revue Humaine</td><td>File de validation pour sujets sensibles</td></tr>
+<tr><td>ST10 · Superviseur</td><td>Garde-fou</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Pipeline Maillage &amp; Backlinks <span class="badge-red">🔴 0%</span></h2>
+
+<p><strong>Rôle final :</strong> Auditer les liens, recommander des backlinks, détecter les liens toxiques.</p>
+
+<table>
+<tr><th>Agent</th><th>Rôle anticipé</th></tr>
+<tr><td>B01 · Import Backlinks</td><td>Récupère les backlinks (Ahrefs/DataForSEO API)</td></tr>
+<tr><td>B02 · Qualité Domaines</td><td>Score de qualité par domaine référent (réutilise RankParse DA)</td></tr>
+<tr><td>B03 · Toxiques</td><td>Détection liens suspects (spam, PBN)</td></tr>
+<tr><td>B04 · Gap Analysis</td><td>Domaines qui linkent les concurrents mais pas nous</td></tr>
+<tr><td>B05 · Link Reclamation</td><td>Mentions non linkées de la marque</td></tr>
+<tr><td>B06 · Recommandations</td><td>Priorisées par impact</td></tr>
+<tr><td>B07 · Superviseur</td><td>Garde-fou</td></tr>
+</table>
+
+<p><strong>Outils open-source prêts :</strong> seotools, dataseo-mcp. <strong>RankParse DA connecté</strong> via <code>rankparse_connector.py</code> (utilisé dans AC01b).</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. Pipeline Maintenance <span class="badge-red">🔴 0%</span></h2>
+
+<p><strong>Rôle final :</strong> Détecter l'obsolescence, déclencher des mises à jour, réviser automatiquement.</p>
+
+<table>
+<tr><th>Agent</th><th>Rôle anticipé</th></tr>
+<tr><td>M01 · Fraîcheur</td><td>Score d'obsolescence par page</td></tr>
+<tr><td>M02 · Déclencheurs</td><td>Core update, changement loi, annonce concurrent</td></tr>
+<tr><td>M03 · File de Révision</td><td>Priorisée par impact (réutilise AC08 roadmap)</td></tr>
+<tr><td>M04 · Réécriture</td><td>Mise à jour auto (réutilise Pipeline 1)</td></tr>
+<tr><td>M05 · Planification</td><td>Calendrier de révision</td></tr>
+<tr><td>M06 · Superviseur</td><td>Garde-fou</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>Résumé Global</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Statut</th><th>Agents</th><th>Outils OSS</th></tr>
+<tr><td>1</td><td><strong>Éditorial (Rédaction)</strong></td><td><span class="badge-green">~95% · production</span></td><td>28</td><td>textstat, yake, json-repair, protego</td></tr>
+<tr><td>2</td><td><strong>Audit de Contenu</strong></td><td><span class="badge-green">~95% · production</span></td><td>11</td><td>cms_detector, textstat, geo-optimizer-skill</td></tr>
+<tr><td>3</td><td><strong>Audit Technique</strong></td><td><span class="badge-red">🔴 0%</span></td><td>~15</td><td>crawlee, advertools, mcp-seo, seokar</td></tr>
+<tr><td>4</td><td><strong>SERP &amp; Positions</strong></td><td><span class="badge-red">🔴 0%</span></td><td>~8</td><td>openserp, searchconsole-mcp, seo-pilot</td></tr>
+<tr><td>5</td><td><strong>Stratégie</strong></td><td><span class="badge-red">🔴 0%</span></td><td>~10</td><td>seo-pilot, seotools</td></tr>
+<tr><td>6</td><td><strong>Maillage &amp; Backlinks</strong></td><td><span class="badge-red">🔴 0%</span></td><td>~7</td><td>dataseo-mcp, seotools, rankparse</td></tr>
+<tr><td>7</td><td><strong>Maintenance</strong></td><td><span class="badge-red">🔴 0%</span></td><td>~6</td><td>Réutilise Pipeline 1 + 2</td></tr>
+<tr><td colspan="3"><strong>Total</strong></td><td><strong>~85 agents</strong></td><td><strong>21 outils + 4 connecteurs</strong></td></tr>
+</table>
+
+<div class="warning" style="margin-top:30px">
+<strong>2 pipelines sur 7 en production :</strong>
+<ul>
+<li><strong>Pipeline 1 (Éditorial)</strong> produit des articles réels depuis le 17 juin 2026 (cas concret : <code>article_cleantout37.html</code>).</li>
+<li><strong>Pipeline 2 (Audit de Contenu)</strong> audite des sites réels depuis le 23 juin 2026 (cas concret : hartmann-tresore.fr / PrestaShop / 20 pages).</li>
+</ul>
+Les pipelines 3-7 sont prêts à être développés selon la méthode convenue : l'utilisateur écrit le cahier des charges, Claude implémente agent par agent.
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>Changelog V2 (vs V1 du 22 juin)</h2>
+
+<table>
+<tr><th>Élément</th><th>V1</th><th>V2</th></tr>
+<tr><td>Pipeline 1 (Éditorial)</td><td>28 agents · 95%</td><td>28 agents · 95% (stable)</td></tr>
+<tr><td>Pipeline 2 (Audit de Contenu)</td><td>10 agents · "Architecture validée"</td><td><strong>11 agents · production (validé en réel)</strong></td></tr>
+<tr><td>CMS Detector</td><td>—</td><td><strong>Ajouté · 12 CMS · $0</strong></td></tr>
+<tr><td>Faisabilité DA</td><td>—</td><td><strong>Ajouté via RankParse · intégré dans AC01b</strong></td></tr>
+<tr><td>Cache SERP</td><td>—</td><td><strong>Ajouté · 1 appel par mot-clé unique</strong></td></tr>
+<tr><td>Auto-disable connecteurs</td><td>—</td><td><strong>Ajouté · KE/TalorData se désactivent après 401/402/403</strong></td></tr>
+<tr><td>Interprétation type-aware</td><td>—</td><td><strong>Ajoutée · fourchettes attendues par CMS × type</strong></td></tr>
+<tr><td>Sitemap parser</td><td>Standard + Yoast/RankMath</td><td><strong>+CDATA + PrestaShop + classification URLs type-aware</strong></td></tr>
+</table>
+
+<p style="margin-top:50px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">Hermes SEO v3 · V2 · FC Solutions · 23 juin 2026 · Compatible copier-coller Google Docs</p>
+
+</body>
+</html>

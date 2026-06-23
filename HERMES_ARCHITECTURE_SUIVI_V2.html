@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Suivi d'Architecture V2 · 23 juin 2026</title>
+<style>
+body{max-width:1000px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+ul,ol{margin:8px 0;padding-left:25px}
+li{margin:4px 0}
+.changelog{background:#fafafa;border:1px solid #ddd;padding:15px 20px;border-radius:6px;margin:15px 0}
+.changelog h3{margin-top:0;color:#1E88E5}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Suivi d'Architecture · V2</h1>
+<p class="meta">Version 0.4 · 23 juin 2026 · Pipeline Rédaction ~95% + Pipeline Audit de Contenu ~95% (en production) · 656+ tests</p>
+
+<div class="success">
+<strong>Nouveau dans la V2 (23 juin 2026) :</strong>
+<ul>
+<li><strong>Pipeline Audit de Contenu</strong> passe de "Architecture validée" à <strong>opérationnel en production</strong>. Testé en réel sur hartmann-tresore.fr (PrestaShop, 20 pages).</li>
+<li><strong>CMS Auto-Detector</strong> ajouté (12 CMS supportés, $0)</li>
+<li><strong>Interprétation type-aware des scores</strong> dans le rapport d'audit (l'utilisateur sait si un score 30/100 est normal pour son type de page)</li>
+<li><strong>Sitemap parser</strong> renforcé : support CDATA, PrestaShop, multi-namespace</li>
+<li><strong>Cache SERP + auto-disable des connecteurs en panne</strong> (KE en 402)</li>
+</ul>
+</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>1. Vue d'ensemble</h2>
+
+<p>Hermes SEO est un orchestrateur multi-agents qui produit tout type de contenu (SEO / AEO / GEO) pour n'importe quelle entreprise, site web, mot-clé et objectif. Il auditecte aussi les contenus existants et propose des recommandations actionnables.</p>
+
+<div class="note"><strong>Stack :</strong> Python 3.12 · LangGraph 1.2.5 · Streamlit · ChromaDB · SQLite · Claude Sonnet 4.6 · GPT-5.4 · Haiku 4.5 · DeepSeek V4 Flash · TalorData (SERP) · DataForSEO + Keywords Everywhere (en place)</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>2. Les 28 agents du pipeline éditorial</h2>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Rôle</th><th>LLM</th><th>Statut</th></tr>
+<tr><td>00</td><td>Superviseur central</td><td>Vérifie les transitions, bloque si incohérence</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>01</td><td>Brief Entreprise</td><td>Positionnement, offres, ton, preuves, contraintes légales</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>02</td><td>Persona</td><td>Lecteur idéal : maturité, vocabulaire, freins</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>03</td><td>Analyse SERP</td><td>Top 10 Google, PAA, AI Overviews, snack pack local</td><td>GPT-5.4 + TalorData + DataForSEO</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>04</td><td>Intention &amp; Type</td><td>Classifie intention (5 types) et type de page (10 types)</td><td>DeepSeek V4 + heuristiques</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>05</td><td>Offre &amp; Conversion</td><td>Bénéfices, objections, preuves, CTA par intention</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>06</td><td>Différenciation</td><td>Angles faibles concurrents, opportunités uniques</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>07</td><td>Template</td><td>Sélectionne et enrichit le squelette éditorial (10 templates)</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>08</td><td>Anti-cannibalisation</td><td>Détecte conflits avec la mémoire ChromaDB</td><td>Haiku + ChromaDB</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>09</td><td>Rédaction ★</td><td>Produit le brouillon HTML complet (cœur du pipeline)</td><td>Claude Sonnet 4.6</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>10</td><td>SEO</td><td>Title, meta, structure Hn, densité, maillage</td><td>GPT-5.4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>11</td><td>AEO</td><td>En bref, H2 questions, FAQ, définitions</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>12</td><td>GEO</td><td>Sources, entités, phrases citables, chunks + fallback heuristique</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>13</td><td>EEAT</td><td>Expertise, Expérience, Autorité, Fiabilité (score 0-16)</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>14</td><td>Conformité</td><td>Règles sectorielles (9 secteurs réglementés)</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>15</td><td>Fact-checking</td><td>Vérifie chiffres, dates, affirmations, sources</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>16</td><td>Maillage interne</td><td>Propose liens vers contenus existants du site</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>17</td><td>Maillage externe</td><td>Suggère liens sortants vers sources d'autorité</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>18</td><td>Multiformat</td><td>Décline en LinkedIn, YouTube, newsletter, posts sociaux</td><td>Claude Sonnet</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>19</td><td>Test A/B</td><td>3 variantes de title/meta + prédiction CTR</td><td>GPT-5.4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>20</td><td>Localisation</td><td>Adapte pour plusieurs régions/pays (devises, lois, hreflang)</td><td>Claude Sonnet</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>21</td><td>Schema.org</td><td>Génère JSON-LD adapté au type de page (déterministe)</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>22</td><td>Images</td><td>Plan visuel 3 niveaux : hero, milieu, infographie + logo overlay</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>23</td><td>CMS Export</td><td>Formate pour WordPress, HTML, Markdown, JSON</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>24</td><td>Mise à jour</td><td>Planifie la révision périodique, surveille obsolescence</td><td>DeepSeek V4</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>25</td><td>Critique Qualité</td><td>Grille 9 critères (/100) · décide publication ou blocage</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>26</td><td>Audit post-pub</td><td>Récupère données GSC, corrèle avec scores, met à jour mémoire</td><td>Haiku</td><td><span class="badge-green">OK (GSC live)</span></td></tr>
+<tr><td>27</td><td>Cohérence Inter-Articles</td><td>Détecte contradictions avec contenus existants</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>3. Les 10 agents du Pipeline Audit de Contenu <span class="badge-green">~95% (en production)</span></h2>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Rôle</th><th>LLM</th><th>Statut</th></tr>
+<tr><td>AC01</td><td>Content Crawler</td><td>Fetch la page, extrait 55+ signaux + détecte CMS (12 supportés)</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC01b</td><td>SERP Context</td><td>Enrichit avec contexte SERP (top 10, volume, PAA) + cache mot-clé</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC02</td><td>Scoring SEO On-Page</td><td>Score 0-100 : title, meta, Hn, images, liens, densité mots-clés</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC03</td><td>Scoring AEO</td><td>Score 0-100 : En bref, FAQ, H2 questions, définitions</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC04</td><td>Scoring GEO</td><td>Score 0-100 : sources, entités, phrases citables, chunks</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC05</td><td>Scoring EEAT</td><td>Score 0-16 : auteur, confiance, sources institutionnelles, YMYL</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC06</td><td>Scoring UX/Lisibilité</td><td>Score 0-100 : Flesch FR (textstat), longueur, CTA, cohérence</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC07</td><td>Synthèse d'Audit</td><td>Agrège scores, forces/faiblesses, recommandations type-aware</td><td>Haiku</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC08</td><td>Roadmap de Réécriture</td><td>Classe les pages : à réécrire/enrichir/fusionner. Priorise par impact × effort</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC09</td><td>Cannibalisation</td><td>Détecte paires cannibales entre pages auditées</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>AC10</td><td>Export Rapport</td><td>HTML + JSON + CSV + PDF (weasyprint), radar chart, faisabilité DA</td><td>Aucun</td><td><span class="badge-green">OK</span></td></tr>
+</table>
+
+<div class="success"><strong>Validation production :</strong> Testé en réel sur hartmann-tresore.fr (PrestaShop e-commerce) le 23 juin 2026. CMS détecté à 95%, 20 URLs auditées avec scores cohérents, classification correcte (1 accueil + 1 article + 18 produits), cache SERP fonctionnel.</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>4. Grille de scoring (Agent 25) — enrichie</h2>
+
+<table>
+<tr><th>Critère</th><th>Poids</th><th>Barème</th><th>Adaptatif ?</th></tr>
+<tr><td>Lisibilité (Flesch français · textstat)</td><td>10</td><td>&lt;30:0 / 30-50:5 / 50-70:8 / &gt;70:10</td><td>Oui · Required pour landing</td></tr>
+<tr><td>Densité sémantique</td><td>15</td><td>&lt;5:0 / 5-10:7 / 10-15:12 / &gt;15:15</td><td>Oui · Neutral pour landing/fiche_produit</td></tr>
+<tr><td>Réponse aux PAA</td><td>20</td><td>% questions PAA couvertes (≥80% → 20)</td><td>Oui · Neutral pour landing/service_local</td></tr>
+<tr><td>Originalité</td><td>15</td><td>Facteurs de différenciation appliqués vs génériques</td><td>Oui · Required pour pilier/comparatif</td></tr>
+<tr><td>Fraîcheur des sources</td><td>10</td><td>&lt;30j:10 / 30-90j:7 / 90-365j:4 / &gt;365j:0</td><td>Oui · Required pour news</td></tr>
+<tr><td>Respect AEO</td><td>10</td><td>En bref (2) + H2 questions (3) + FAQ (3) + définitions (2)</td><td>Oui · Neutral pour landing/comparatif</td></tr>
+<tr><td>Respect GEO</td><td>10</td><td>Sources primaires (3) + entités (3) + citations (2) + chunks (2)</td><td>Oui · Neutral pour service_local/landing</td></tr>
+<tr><td>Absence d'erreurs factuelles</td><td>6</td><td>0 erreur majeure = 6 · chaque hallucination → -2</td><td>Non · Toujours Required</td></tr>
+<tr><td>Naturalité du texte</td><td>4</td><td>Patterns IA détectés · &lt;20% IA → 4</td><td>Oui · Required pour témoignage</td></tr>
+</table>
+
+<p><strong>Seuil de publication :</strong> 75/100 (standard) · ajustable par mode qualité<br>
+<strong>Scoring adaptatif :</strong> Chaque type de page (10 profils) a des poids Required/Valued/Neutral/Penalty différents<br>
+<strong>Content Guard :</strong> Pénalité de -3 points par placeholder détecté · Blocage si contenu interne exposé</p>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>5. Modes qualité (Pipeline Éditorial)</h2>
+
+<table>
+<tr><th>Mode</th><th>Agents activés</th><th>Coût/article</th></tr>
+<tr><td>fast</td><td>00,01,04,07,09,10,11,15,25</td><td>~$0.50</td></tr>
+<tr><td>standard ⭐</td><td>fast + 02,03,05,06,08,12,13,16,21,22,23,27</td><td>~$0.60</td></tr>
+<tr><td>premium</td><td>standard + 14,17,18,19,20,24,26</td><td>~$0.80</td></tr>
+<tr><td>compliance</td><td>premium + renforcement 14, double fact-check, validation humaine</td><td>~$0.83</td></tr>
+<tr><td>debug</td><td>Tous + logs détaillés + dry-run</td><td>$0</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>6. Modes qualité (Pipeline Audit de Contenu)</h2>
+
+<table>
+<tr><th>Mode</th><th>Description</th><th>Coût/page</th></tr>
+<tr><td>fast</td><td>AC01 + AC02-06 (scores déterministes uniquement)</td><td>~$0.001</td></tr>
+<tr><td>standard ⭐</td><td>fast + AC07 (synthèse Haiku) + AC09 (cannibalisation)</td><td>~$0.005</td></tr>
+<tr><td>premium</td><td>standard + AC01b (SERP context + faisabilité DA via RankParse)</td><td>~$0.015</td></tr>
+<tr><td>debug</td><td>Tous + logs détaillés + dry-run</td><td>$0</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>7. Features transversales (cumul V1 + V2)</h2>
+
+<table>
+<tr><th>Feature</th><th>Fichier</th><th>Impact</th></tr>
+<tr><td>Timeout LLM adaptatif</td><td><code>llm.py</code></td><td>Formule max(45, maxTokens/50+30) — évite les coupures</td></tr>
+<tr><td>Retry intelligent</td><td><code>llm.py</code></td><td>3 tentatives, backoff exponentiel + jitter sur 429/5xx/timeout</td></tr>
+<tr><td>JSON Repair 3 niveaux</td><td><code>llm.py</code></td><td>strict parse → regex extract → json-repair</td></tr>
+<tr><td>Guardrails sécurité</td><td><code>guard.py</code></td><td>Anti-injection, mots interdits, validation URL</td></tr>
+<tr><td>Arrêt sur échec critique</td><td><code>pipeline_guard.py</code></td><td>Page d'erreur + bouton Reprendre au lieu de placeholder</td></tr>
+<tr><td>Content Guard</td><td><code>content_guard.py</code></td><td>Détection contenu interne, placeholders, affirmations non sourcées</td></tr>
+<tr><td>Scoring adaptatif</td><td><code>scoring_rules.py</code></td><td>10 profils de page avec poids Required/Valued/Neutral/Penalty</td></tr>
+<tr><td>Sources structurées</td><td><code>source_credibility.py</code></td><td>Tiers A/B/C/D, domaines institutionnels, exigences YMYL</td></tr>
+<tr><td>Extraits de cartes</td><td><code>card_excerpt.py</code></td><td>Snippets 50-160 car. optimisés clic</td></tr>
+<tr><td>Heuristic Router</td><td><code>heuristic_router.py</code></td><td>Déterministe avant LLM — économise les appels inutiles</td></tr>
+<tr><td>Brief stratégique</td><td><code>strategic_brief.py</code></td><td>Audience, angle, risques, YMYL détection</td></tr>
+<tr><td>Images 3 niveaux</td><td><code>image_planner.py</code></td><td>Hero 1200x630 + milieu + infographie + logo overlay</td></tr>
+<tr><td>WP auto-publish</td><td><code>wp_publisher.py</code></td><td>REST API WordPress avec catégories, tags, SEO meta</td></tr>
+<tr><td><strong>CMS Auto-Detector</strong> 🆕</td><td><code>cms_detector.py</code></td><td>12 CMS supportés (PrestaShop/WP/Shopify/...), priorise sitemap candidates</td></tr>
+<tr><td><strong>Sitemap parser renforcé</strong> 🆕</td><td><code>sitemap_parser.py</code></td><td>Support CDATA, PrestaShop, multi-namespace, classification URLs type-aware</td></tr>
+<tr><td><strong>Cache SERP par mot-clé</strong> 🆕</td><td><code>ac01b_serp_context.py</code></td><td>Évite N appels pour N pages partageant le même keyword</td></tr>
+<tr><td><strong>Auto-disable des connecteurs</strong> 🆕</td><td><code>keywordseverywhere_connector.py</code></td><td>Désactive après HTTP 401/402/403 — fini le spam</td></tr>
+<tr><td><strong>Interprétation type-aware</strong> 🆕</td><td><code>audit_page.py</code></td><td>Fourchettes de scores attendus par CMS × type de page (PrestaShop produit 25-45/100 = normal)</td></tr>
+<tr><td><strong>Faisabilité DA</strong> 🆕</td><td><code>rankparse_connector.py</code></td><td>Compare DA du site vs DA moyen top 10 → score de faisabilité</td></tr>
+<tr><td><strong>Fallback GEO heuristique</strong> 🆕</td><td><code>agent_12_geo.py</code></td><td>Si LLM GEO renvoie vide, extraction d'entités + sources sectorielles</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>8. Intégrations open-source (juin 2026)</h2>
+
+<p>4 outils déjà intégrés au pipeline rédaction · 17 catalogués dans <code>tools/</code> pour les futurs pipelines.</p>
+
+<table>
+<tr><th>Outil</th><th>Version</th><th>Usage Hermes</th><th>Pipeline</th></tr>
+<tr><td>textstat</td><td>0.7.13</td><td>Flesch multilingue (40+ langues)</td><td>Rédaction + Audit ✓</td></tr>
+<tr><td>yake</td><td>0.7.3</td><td>Extraction mots-clés non supervisée</td><td>Rédaction ✓</td></tr>
+<tr><td>json-repair</td><td>0.61.0</td><td>Réparation JSON LLM</td><td>Rédaction ✓</td></tr>
+<tr><td>protego</td><td>0.6.1</td><td>robots.txt parser</td><td>Audit ✓</td></tr>
+<tr><td>crawlee</td><td>1.7.2</td><td>Crawler JS rendering</td><td>Audit Technique (à venir)</td></tr>
+<tr><td>advertools</td><td>0.17</td><td>Kit SEO complet</td><td>Audit Technique (à venir)</td></tr>
+<tr><td>mcp-seo</td><td>0.3.0</td><td>18 MCP tools, Lighthouse</td><td>Audit Technique (à venir)</td></tr>
+<tr><td>seokar</td><td>1.0.0</td><td>Analyse on-page, score 0-100%</td><td>Audit Technique (à venir)</td></tr>
+<tr><td>ultimate-sitemap-parser</td><td>1.7</td><td>Parser sitemap XML</td><td>Audit Technique (à venir)</td></tr>
+<tr><td>openserp</td><td>0.8.3</td><td>SERP self-hosted multi-engine</td><td>SERP &amp; Positions</td></tr>
+<tr><td>searchconsole-mcp</td><td>latest</td><td>GSC analytics 7 tools</td><td>SERP &amp; Positions</td></tr>
+<tr><td>seo-pilot</td><td>0.1.0</td><td>GSC auto-fix, scoring</td><td>SERP &amp; Positions</td></tr>
+<tr><td>seotools</td><td>0.1.2</td><td>PageRank interne, orphelines</td><td>Maillage &amp; Backlinks</td></tr>
+<tr><td>dataseo-mcp</td><td>latest</td><td>Ahrefs backlinks gratuit</td><td>Maillage &amp; Backlinks</td></tr>
+<tr><td>geo-optimizer-skill</td><td>4.15</td><td>47 méthodes, 1720 tests</td><td>GEO / AEO</td></tr>
+<tr><td>georankpy</td><td>0.1.0</td><td>Chunks sémantiques, entités</td><td>GEO / AEO</td></tr>
+<tr><td>langchain-hreflang</td><td>0.1.0</td><td>Validation hreflang</td><td>Utilitaires</td></tr>
+<tr><td>keybert</td><td>latest</td><td>Keywords BERT (precision)</td><td>Utilitaires</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>9. Les 7 pipelines (état d'avancement V2)</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Rôle final</th><th>Agents</th><th>Statut</th></tr>
+<tr><td>1</td><td><strong>Éditorial</strong></td><td>Produire un article SEO/AEO/GEO complet depuis un mot-clé</td><td>28</td><td><span class="badge-green">~95% · production</span></td></tr>
+<tr><td>2</td><td><strong>Audit de Contenu</strong></td><td>Auditer pages existantes sur 7 dimensions + recommandations actionnables</td><td>11</td><td><span class="badge-green">~95% · production</span></td></tr>
+<tr><td>3</td><td><strong>Audit Technique</strong></td><td>Scanner un site, produire un rapport d'audit avec priorités</td><td>~15</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>4</td><td><strong>SERP &amp; Positions</strong></td><td>Suivre les positions, analyser la concurrence, détecter les opportunités</td><td>~8</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>5</td><td><strong>Stratégie</strong></td><td>Identifier les gaps, opportunités, produire une roadmap éditoriale</td><td>~10</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>6</td><td><strong>Maillage &amp; Backlinks</strong></td><td>Auditer les liens, recommander des backlinks, détecter les liens toxiques</td><td>~7</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>7</td><td><strong>Maintenance</strong></td><td>Détecter l'obsolescence, déclencher des mises à jour automatiques</td><td>~6</td><td><span class="badge-red">0%</span></td></tr>
+</table>
+
+<div class="note"><strong>Total :</strong> ~85 agents sur 7 pipelines. <strong>2 sur 7 opérationnels en production.</strong> Chaque pipeline a son propre superviseur + un Orchestrateur central qui coordonne les pipelines entre eux.</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>10. Ce qui reste à faire — court terme</h2>
+
+<table>
+<tr><th>Pipeline</th><th>Feature</th><th>Blocage</th></tr>
+<tr><td>1 Éditorial</td><td>LLM Guard anti-hallucination (renforcement)</td><td>Prêt à coder</td></tr>
+<tr><td>1 Éditorial</td><td>Content decay detection</td><td>Besoin GSC live (en place)</td></tr>
+<tr><td>2 Audit Contenu</td><td>Normaliser EEAT /100 (au lieu de /16) pour cohérence radar</td><td>Côté UI seulement</td></tr>
+<tr><td>2 Audit Contenu</td><td>Recommandations actionnables par CMS (ex: "pour PrestaShop, activer le module SEO X")</td><td>Mapping CMS → modules SEO recommandés</td></tr>
+<tr><td>3 Audit Technique</td><td>Démarrage du cahier des charges</td><td>À planifier</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>11. Déploiement</h2>
+
+<table>
+<tr><th>Environnement</th><th>URL</th><th>Statut</th></tr>
+<tr><td>Local (dev)</td><td><code>http://localhost:8502</code></td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>Streamlit Cloud</td><td><code>https://carriere745-afk-hermes-seo-app-XXXX.streamlit.app</code></td><td><span class="badge-green">OK</span> · auto-deploy sur git push</td></tr>
+<tr><td>GitHub</td><td><code>https://github.com/carriere745-afk/hermes-seo</code></td><td><span class="badge-green">OK</span> · privé · main @ 35a562b</td></tr>
+</table>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>12. Règles de robustesse (toutes implémentées)</h2>
+
+<ul>
+<li>✅ Contrats Pydantic — 28 modèles entrée/sortie validés</li>
+<li>✅ Superviseur central — vérifie chaque transition, bloque si incohérence</li>
+<li>✅ Sauvegarde après chaque agent — reprise depuis le dernier agent réussi</li>
+<li>✅ Logs structurés JSONL — session_id, agent, durée, tokens, coût, modèle</li>
+<li>✅ Versioning des prompts — 28 prompts dans <code>prompts/agent_XX_nom/v1/system.md</code></li>
+<li>✅ Tests obligatoires — 656+ tests (unitaire + intégration + dry-run)</li>
+<li>✅ Refus des rustines — toute anomalie → analyse + test + validation pipeline complet</li>
+<li>✅ Mode dry-run par défaut — aucun appel API sans décocher explicitement</li>
+<li>✅ Startup check obligatoire — 17 vérifications avant tout pipeline</li>
+<li>✅ 6 agents non-skippables — 00, 01, 04, 07, 15, 25</li>
+<li>✅ Timeout adaptatif + retry intelligent + fallback automatique</li>
+<li>✅ Arrêt sur échec critique + page d'erreur + bouton Reprendre</li>
+<li>✅ <strong>Auto-disable des connecteurs en panne</strong> (nouveau V2)</li>
+<li>✅ <strong>Cache mot-clé sur SERP context</strong> (nouveau V2)</li>
+<li>✅ <strong>Détection CMS amont du sitemap</strong> (nouveau V2)</li>
+</ul>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>13. Coûts opérationnels</h2>
+
+<h3>Pipeline 1 — Rédaction</h3>
+<table>
+<tr><th>Mode</th><th>Agents</th><th>Coût/article</th><th>Coût/100 articles</th></tr>
+<tr><td>fast</td><td>9</td><td>~$0.50</td><td>~$50</td></tr>
+<tr><td>standard ⭐</td><td>21</td><td>~$0.60</td><td>~$60</td></tr>
+<tr><td>premium</td><td>27</td><td>~$0.80</td><td>~$80</td></tr>
+<tr><td>compliance</td><td>27+</td><td>~$0.83</td><td>~$83</td></tr>
+</table>
+
+<h3>Pipeline 2 — Audit de Contenu</h3>
+<table>
+<tr><th>Mode</th><th>Agents</th><th>Coût/page</th><th>Coût/100 pages</th></tr>
+<tr><td>fast</td><td>6</td><td>~$0.001</td><td>~$0.10</td></tr>
+<tr><td>standard ⭐</td><td>8</td><td>~$0.005</td><td>~$0.50</td></tr>
+<tr><td>premium</td><td>10</td><td>~$0.015</td><td>~$1.50</td></tr>
+</table>
+
+<div class="warning"><strong>Articles réels produits :</strong> <code>article_cleantout37.html</code> (8420 caractères, ~$0.10, Clean Tout 37). <strong>Audits réels réalisés :</strong> hartmann-tresore.fr (PrestaShop, 20 pages, ~$0.10) le 23 juin 2026.</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>14. Changelog V2 (vs V1)</h2>
+
+<div class="changelog">
+<h3>23 juin 2026 — Commit 35a562b</h3>
+<ul>
+<li><strong>+1 connecteur</strong> : <code>cms_detector.py</code> (12 CMS, $0)</li>
+<li><strong>+1 agent</strong> : AC01b (SERP context avec cache) — Pipeline 2 passe à 11 agents</li>
+<li><strong>+1 agent</strong> : Agent 27 (Cohérence Inter-Articles) — Pipeline 1 passe à 28 agents</li>
+<li><strong>Sitemap parser</strong> : CDATA + PrestaShop + multi-namespace + classification type-aware</li>
+<li><strong>Auto-disable</strong> : Keywords Everywhere se désactive après HTTP 401/402/403</li>
+<li><strong>UX</strong> : bandeau "Comment lire ces scores ?" avec fourchettes attendues par CMS × type de page</li>
+<li><strong>Faisabilité DA</strong> : DA site vs DA moyen top 10 → recommandation actionnable</li>
+<li><strong>Fallback GEO</strong> : extraction d'entités heuristique si LLM renvoie vide</li>
+</ul>
+</div>
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>15. Méthode de travail (convenue 21 juin · maintenue V2)</h2>
+
+<ol>
+<li>L'utilisateur définit le process (quel pipeline, quels agents, quel ordre)</li>
+<li>L'utilisateur écrit le cahier des charges</li>
+<li>Claude implémente agent par agent, dans l'ordre défini</li>
+<li>Claude fait les tests (entrée valide, invalide, sortie conforme, erreur)</li>
+<li>Claude connecte au pipeline existant sans casser ce qui marche</li>
+<li>L'utilisateur valide chaque agent ou groupe d'agents</li>
+<li>L'utilisateur teste en conditions réelles</li>
+</ol>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document généré le 23 juin 2026 · Hermes SEO v3 · V2 · FC Solutions<br>
+Compatible copier-coller vers Google Docs — les tableaux conservent leur structure
+</p>
+
+</body>
+</html>
