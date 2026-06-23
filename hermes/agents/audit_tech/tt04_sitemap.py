@@ -284,5 +284,16 @@ async def run(state: TechAuditState) -> TechAuditState:
             ))
 
     logger.info(f"T04: sitemap={len(sitemap_urls)} URLs, robots={'present' if robots_analysis['found'] else 'absent'}")
+
+    # Scoring crawlability
+    if state.crawled_pages:
+        total = len(state.crawled_pages)
+        crawlable = sum(1 for p in state.crawled_pages if p.status_code == 200 and not p.robots_blocked)
+        sitemap_present = 1 if sitemap_urls else 0
+        robots_ok = 1 if robots_analysis["found"] and not robots_analysis["disallow_all"] else 0
+        score = int((crawlable / max(1, total)) * 50 + sitemap_present * 30 + robots_ok * 20)
+        state.scores.crawlability.score = min(100, score)
+        state.scores.crawlability.confidence = "high"
+
     state.updated_at = datetime.now()
     return state

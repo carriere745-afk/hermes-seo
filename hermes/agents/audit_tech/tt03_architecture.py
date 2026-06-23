@@ -29,27 +29,46 @@ from hermes.models.audit_tech import TechAuditState, TechIssue
 logger = logging.getLogger("hermes.audit_tech.tt03")
 
 
-def _build_link_graph(pages: list) -> nx.DiGraph:
-    """Construit un graphe dirige des liens internes.
+def _normalize_url(url: str) -> str:
+    """Normalise une URL pour le matching (retire trailing slash, www, fragments)."""
+    u = urlparse(url)
+    path = u.path.rstrip("/") or "/"
+    netloc = u.netloc.lower().replace("www.", "")
+    return f"{u.scheme}://{netloc}{path}"
 
-    Chaque page est un noeud, chaque lien interne est une arete.
-    """
+
+def _build_link_graph(pages: list) -> nx.DiGraph:
+    """Construit un graphe dirige des liens internes."""
     G = nx.DiGraph()
 
-    # Indexer les URLs pour lookup rapide
-    url_set = {p.url for p in pages}
-    domain = urlparse(pages[0].url).netloc.lower().replace("www.", "") if pages else ""
+    # Indexer les URLs normalisees pour lookup rapide (plusieurs variantes)
+    url_set = {}
+    for p in pages:
+        norm = _normalize_url(p.url)
+        url_set[norm] = p.url
+        # Aussi indexer avec/sans www, avec/sans trailing slash
+        url_set[norm.rstrip("/")] = p.url
+        url_set[norm + "/"] = p.url
 
     for page in pages:
-        G.add_node(page.url, title=page.title[:80], depth=page.crawl_depth)
+        page_norm = _normalize_url(page.url)
+        G.add_node(page_norm, title=page.title[:80], depth=page.crawl_depth)
 
         for link in page.internal_links_list:
             target = link.get("url", "")
-            # Normaliser pour le matching
-            target_normalized = target.rstrip("/")
-            if target_normalized in url_set or target in url_set:
-                found = target if target in url_set else target_normalized
-                G.add_edge(page.url, found)
+            if not target.startswith("http"):
+                continue
+            target_norm = _normalize_url(target)
+            # Essayer plusieurs variantes
+            found = None
+            for variant in (target_norm, target_norm.rstrip("/"), target_norm + "/",
+                           target_norm.replace("https://", "http://"),
+                           target_norm.replace("http://", "https://")):
+                if variant in url_set:
+                    found = url_set[variant]
+                    break
+            if found:
+                G.add_edge(page_norm, _normalize_url(found))
 
     return G
 
@@ -74,21 +93,22 @@ def _detect_silos(G: nx.DiGraph, pages: list) -> tuple[list[dict], list[dict]]:
         edges = []
         for u, v in G.edges():
             if u in node_to_idx and v in node_to_idx:
-                edges.append((node_to_idx[u], node_to_idx[v]))
+                edges.append([node_to_idx[u], node_to_idx[v]])
 
-        if len(edges) < 2:
+        if len(edges) < 2 or len(nodes) < 3:
             return silos, silos_fantomes
 
         # Creer la matrice d'adjacence et appliquer Louvain
-        edge_list = np.array(edges)
+        edge_list = np.array(edges, dtype=int)
         adjacency = from_edge_list(edge_list, directed=True)
         louvain = Louvain()
-        labels = louvain.fit_transform(adjacency)
+        labels_sparse = louvain.fit_transform(adjacency)
+        labels = labels_sparse.toarray().flatten().astype(int) if hasattr(labels_sparse, 'toarray') else np.array(labels_sparse).flatten()
 
         # Grouper les noeuds par communaute
         communities: dict[int, list[str]] = {}
         for i, label in enumerate(labels):
-            label = int(label)
+            label = int(float(label))
             if label not in communities:
                 communities[label] = []
             communities[label].append(nodes[i])
@@ -352,5 +372,16 @@ async def run(state: TechAuditState) -> TechAuditState:
         ))
 
     logger.info(f"T03: {issue_counter} issues generated")
+
+    # Scoring architecture
+    if state.crawled_pages:
+        total = max(1, len(state.crawled_pages))
+        orphan_penalty = len(metrics["orphans"]) / total * 40
+        depth_penalty = min(20, metrics["depth_avg"] * 5)
+        has_silos = 1 if silos else 0
+        score = int(100 - orphan_penalty - depth_penalty + has_silos * 20)
+        state.scores.architecture.score = max(0, min(100, score))
+        state.scores.architecture.confidence = "high" if G.number_of_edges() > 0 else "medium"
+
     state.updated_at = datetime.now()
     return state

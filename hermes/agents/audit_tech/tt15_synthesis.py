@@ -59,7 +59,11 @@ async def run(state: TechAuditState) -> TechAuditState:
     else:
         state.scores.global_confidence = "medium"
 
-    # 3. Compteurs par dimension
+    # 3. Deduplication : consolider les issues similaires (meme URL + meme categorie)
+    deduped = _deduplicate_issues(state.issues)
+    state.issues = deduped
+
+    # 4. Compteurs par dimension
     for dim_name in DIMENSION_WEIGHTS:
         dim = getattr(dims, dim_name, None)
         if dim:
@@ -67,7 +71,7 @@ async def run(state: TechAuditState) -> TechAuditState:
             dim.issues_count = len(cat_issues)
             dim.critical_count = sum(1 for i in cat_issues if i.severity == "critical")
 
-    # 4. Top issues P0/P1
+    # 5. Top issues P0/P1
     critical = [i for i in state.issues if i.priority in ("P0", "P1")]
     critical.sort(key=lambda i: (0 if i.priority == "P0" else 1, i.severity))
 
@@ -82,6 +86,39 @@ async def run(state: TechAuditState) -> TechAuditState:
     state.status = "synthesized"
     state.updated_at = datetime.now()
     return state
+
+
+def _deduplicate_issues(issues: list[TechIssue]) -> list[TechIssue]:
+    """Consolide les issues dupliquees (meme URL + meme categorie).
+
+    Garde la severite la plus elevee et fusionne les descriptions.
+    """
+    seen: dict[tuple, list[TechIssue]] = {}
+    for issue in issues:
+        key = (issue.url, issue.category)
+        if key not in seen:
+            seen[key] = []
+        seen[key].append(issue)
+
+    deduped = []
+    for key, group in seen.items():
+        if len(group) == 1:
+            deduped.append(group[0])
+        else:
+            # Fusionner : garder le plus severe, concatener les descriptions
+            severities = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+            group.sort(key=lambda i: severities.get(i.severity, 9))
+            consolidated = group[0]
+            if len(group) > 1:
+                extra = "; ".join(set(i.description for i in group[1:3]))
+                if extra and extra not in consolidated.description:
+                    consolidated.description += f" (+ {len(group)-1} autres: {extra[:100]})"
+                # Prendre la priorite la plus elevee
+                priorities = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
+                consolidated.priority = min(group, key=lambda i: priorities.get(i.priority, 9)).priority
+            deduped.append(consolidated)
+
+    return deduped
 
 
 def _category_to_dim(category: str) -> str:

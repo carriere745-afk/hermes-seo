@@ -265,7 +265,7 @@ async def run(state: TechAuditState) -> TechAuditState:
                 priority=pi["priority"],
             ))
 
-    logger.info(f"T05: {issue_counter - len(state.issues) + len(state.issues) if issue_counter > 0 else len(state.issues)} issues, {len(dup_titles)} duplicate titles, {len(dup_h1s)} duplicate H1s")
+    logger.info(f"T05: {len(state.issues)} total issues, {len(dup_titles)} duplicate titles, {len(dup_h1s)} duplicate H1s")
 
     # Scoring
     if state.crawled_pages:
