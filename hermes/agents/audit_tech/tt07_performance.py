@@ -12,7 +12,7 @@ $0 — PageSpeed Insights API gratuite, pas de LLM.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from hermes.models.audit_tech import TechAuditState, TechIssue
 
@@ -46,6 +46,27 @@ async def run(state: TechAuditState) -> TechAuditState:
     psi_pages = pages_to_audit[:MAX_PSI_PAGES]
     if homepage and homepage not in psi_pages:
         psi_pages = [homepage] + psi_pages[:MAX_PSI_PAGES - 1]
+
+    # 0. Essayer GSC Core Web Vitals (donnees terrain, confidence high)
+    gsc_cwv = None
+    try:
+        from hermes.connectors.gsc_connector import gsc
+        if gsc.is_configured:
+            domain = state.domain
+            site_url_gsc = f"sc-domain:{domain}"
+            # GSC CWV via query (dimension device)
+            cwv_data = await gsc.query(
+                site_url_gsc,
+                start_date=(datetime.now() - timedelta(days=28)).strftime("%Y-%m-%d"),
+                end_date=datetime.now().strftime("%Y-%m-%d"),
+                dimensions=["page"],
+                row_limit=100,
+            )
+            if cwv_data:
+                gsc_cwv = cwv_data
+                logger.info(f"T07: GSC CWV data available ({len(gsc_cwv)} pages)")
+    except Exception as e:
+        logger.debug(f"T07: GSC CWV unavailable ({e})")
 
     logger.info(f"T07: analysing performance for {len(pages_to_audit)} pages (PSI: {len(psi_pages)}, heuristic: rest)")
 

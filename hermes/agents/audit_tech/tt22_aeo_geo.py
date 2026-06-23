@@ -387,5 +387,37 @@ async def run(state: TechAuditState) -> TechAuditState:
             pass
 
     logger.info(f"T22: llms.txt={'found' if llms['found'] else 'missing'}, AI crawlers found={len(ai_robots['crawlers_found'])}, blocked={len(ai_robots['crawlers_blocked'])}")
+
+    # 6. GEO Optimizer (external OSS audit, optional)
+    try:
+        from hermes.connectors.geo_optimizer_connector import audit_aeo_geo
+        geo_result = await audit_aeo_geo(state.site_url)
+        if not geo_result.get("error") and geo_result["score"] > 0:
+            issue_counter += 1
+            state.issues.append(TechIssue(
+                id=f"P-{issue_counter:03d}", category="aeo_geo",
+                description=f"AEO/GEO Score (geo-optimizer): {geo_result['score']}/100 (band {geo_result['band']})",
+                url=state.site_url,
+                observed=f"geo_optimizer_score: {geo_result['score']}, robots={geo_result['robots_score']}, llms={geo_result['llms_txt_score']}, schema={geo_result['schema_score']}",
+                rule="score AEO/GEO > 70", confidence="high",
+                source_agent="T22", severity="medium" if geo_result["score"] < 50 else "low",
+                impact_business="High", gain_potentiel="High",
+                effort="Suivre les recommandations du rapport geo-optimizer",
+                priority="P2" if geo_result["score"] < 50 else "P3",
+            ))
+            for reco in geo_result.get("recommendations", [])[:3]:
+                issue_counter += 1
+                state.issues.append(TechIssue(
+                    id=f"P-{issue_counter:03d}", category="aeo_geo",
+                    description=f"GEO Reco: {reco[:130]}",
+                    url=state.site_url, observed=reco[:100],
+                    rule="geo-optimizer recommendation", confidence="medium",
+                    source_agent="T22", severity="low",
+                    impact_business="Medium", gain_potentiel="Medium",
+                    effort="Appliquer la recommandation", priority="P3",
+                ))
+    except Exception as e:
+        logger.debug(f"T22: geo-optimizer skipped ({e})")
+
     state.updated_at = datetime.now()
     return state
