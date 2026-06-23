@@ -40,6 +40,8 @@ from hermes.agents.audit_tech.tt17_roadmap import run as tt17
 from hermes.agents.audit_tech.tt18_routing import run as tt18
 from hermes.agents.audit_tech.tt19_export import run as tt19
 from hermes.agents.audit_tech.tt20_logs import run as tt20
+# Bonus: AEO/GEO Technical Readiness
+from hermes.agents.audit_tech.tt22_aeo_geo import run as tt22
 
 TECH_REGISTRY: dict[str, callable] = {
     "tt00": tt00, "tt01": tt01, "tt02": tt02, "tt03": tt03,
@@ -47,7 +49,7 @@ TECH_REGISTRY: dict[str, callable] = {
     "tt08": tt08, "tt09": tt09, "tt10": tt10, "tt11": tt11,
     "tt12": tt12, "tt13": tt13, "tt14": tt14, "tt15": tt15,
     "tt16": tt16, "tt17": tt17, "tt18": tt18, "tt19": tt19,
-    "tt20": tt20, "tt21": tt21,
+    "tt20": tt20, "tt21": tt21, "tt22": tt22,
     # Sprint 4+
     # "tt07": tt07, "tt08": tt08, "tt09": tt09,
     # Sprint 5+
@@ -67,7 +69,7 @@ TECH_ORDER: list[str] = [
     "tt01", "tt02", "tt03", "tt04", "tt20",
     # Phase 2 — Analyse
     "tt05", "tt06", "tt07", "tt08", "tt09",
-    "tt10", "tt11", "tt12", "tt13", "tt21",
+    "tt10", "tt11", "tt12", "tt13", "tt21", "tt22",
     # Phase 3 — Impact
     "tt14",
     # Phase 4 — Synthese
