@@ -67,7 +67,45 @@ async def run(state: SerpVisibilityState) -> SerpVisibilityState:
 
     state.health_score = sum(components.values())
 
-    # 2. Routage inter-pipelines
+    # 2. Insights et encouragements (depuis les alertes S04/S07)
+    encouragements_list = [a.note for a in state.alerts if a.type in ("opportunite_concurrentielle", "faisabilite_da")]
+
+    # 3. Analyse du paysage concurrentiel (depuis S04)
+    competitor_types = {}
+    low_threat_count = 0
+    for alert in state.alerts:
+        if "faible menace" in alert.note.lower() or "opportunite" in alert.type:
+            low_threat_count += 1
+
+    # Generer un resume executif
+    resume_lines = []
+    if encouragements_list:
+        resume_lines.append("### Opportunites detectees")
+        for e in encouragements_list[:3]:
+            resume_lines.append(f"- {e}")
+
+    # Synthese du paysage concurrentiel
+    if low_threat_count > 0:
+        resume_lines.append(
+            f"- Le paysage concurrentiel est favorable sur {low_threat_count} mots-cles — "
+            f"peu de marques nationales, beaucoup d'annuaires/petits locaux"
+        )
+
+    # Recommendations basees sur les donnees
+    if state.positions:
+        top_positions = [p for p in state.positions if p.position <= 10]
+        if top_positions:
+            resume_lines.append(f"- {len(top_positions)} mots-cles deja dans le top 10 — proteger ces positions avec du contenu frais")
+        near_top = [p for p in state.positions if 11 <= p.position <= 20]
+        if near_top:
+            resume_lines.append(f"- {len(near_top)} mots-cles en position 11-20 — Quick Wins potentiels avec enrichissement cible (P1)")
+
+    if state.ai_visibility_score < 30 and state.mode != "fast":
+        resume_lines.append(f"- AI Visibility faible ({state.ai_visibility_score}/100) — prioriser llms.txt, FAQ et sources (P3/P1)")
+
+    state.resume_executif = resume_lines
+
+    # 4. Routage inter-pipelines
     pipelines = []
     if state.quick_wins:
         urls_p1 = [w.url for w in state.quick_wins if w.pipeline_cible == "P1"][:10]
@@ -75,12 +113,12 @@ async def run(state: SerpVisibilityState) -> SerpVisibilityState:
             pipelines.append({"pipeline_id": 1, "pipeline_name": "Editorial", "data_type": "quick_wins", "urls": urls_p1, "priority": "High"})
     if state.content_gaps:
         pipelines.append({"pipeline_id": 1, "pipeline_name": "Editorial", "data_type": "content_gaps", "urls": [g["url"] for g in state.content_gaps], "priority": "High"})
-    if state.orphans if hasattr(state, 'orphans') else []:
+    if hasattr(state, 'orphans') and state.orphans:
         pipelines.append({"pipeline_id": 6, "pipeline_name": "Maillage", "data_type": "orphans", "priority": "Medium"})
 
     state.pipelines_to_trigger = pipelines
 
-    # 3. Rapport HTML minimal
+    # 5. Rapport HTML
     state.rapport_html = _build_report_html(state)
 
     state.status = "completed"

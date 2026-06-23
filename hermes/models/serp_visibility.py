@@ -38,7 +38,7 @@ class AlertEntry(BaseModel):
     url: str = ""
     valeur_avant: Optional[float] = None
     valeur_apres: Optional[float] = None
-    priorite: Literal["P0", "P1", "P2"] = "P2"
+    priorite: str = "P2"  # P0, P1, P2, info
     canal: str = "UI"  # UI / Email / Webhook
     statut: str = "ouvert"  # ouvert / traite / ignore
     date: datetime = Field(default_factory=datetime.now)
@@ -181,6 +181,7 @@ class SerpVisibilityState(BaseModel):
 
     # Synthese
     rapport_html: str = ""
+    resume_executif: list[str] = Field(default_factory=list)
     pipelines_to_trigger: list[dict[str, Any]] = Field(default_factory=list)
 
     # Session
