@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Suivi d'Architecture · V4 · 24 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-orange{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+.changelog{background:#fafafa;border:1px solid #ddd;padding:15px 20px;border-radius:6px;margin:15px 0}
+.changelog h3{margin-top:0;color:#1E88E5}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Suivi d'Architecture · V4</h1>
+<p class="meta">Version 0.6 · 24 juin 2026 · 4 pipelines en production · 73 agents · Stack Python 3.12 + LangGraph + Streamlit · 12 connecteurs · 10 outils OSS</p>
+
+<div class="success">
+<strong>V4 — Pipeline 4 (SERP & Visibility Intelligence) complet :</strong>
+<ul>
+<li><strong>11 agents</strong> implementes et testes en reel (S00-S10)</li>
+<li><strong>Mode continu</strong> : cron configurable (quotidien/hebdo/mensuel) pour surveillance automatique</li>
+<li><strong>Rank tracking</strong> : GSC (positions reelles) + TalorData fallback + DataForSEO + Keywords Everywhere (volume)</li>
+<li><strong>Intelligence concurrentielle</strong> : classification 7 types (annuaire/local/marque/media/marketplace/forum/gouv), paysage concurrentiel, encouragements, DA feasibility</li>
+<li><strong>Quick Wins</strong> : positions 4-15 + Business Score (volume x conversion x marge)</li>
+<li><strong>Alertes</strong> : 7 categories, email P0, suspension automatique pendant Core Updates</li>
+<li><strong>AI Visibility Score</strong> : taux de citation IA, diversite des sources (SGE, Perplexity, ChatGPT)</li>
+<li><strong>Correlation actions/positions</strong> : J+7, J+30, J+60, J+90 + confidence_score High/Medium/Low</li>
+<li><strong>UI Streamlit</strong> : dashboard, tabs (positions, quick wins, concurrence, rapport)</li>
+<li><strong>Dashboard Admin</strong> : consommation API, etat connecteurs, couts par pipeline</li>
+<li><strong>Historique SQLite</strong> : 7 tables (positions_history, alerts_log, competitor_positions, share_of_voice, ai_visibility, actions_log, correlations)</li>
+<li>Teste sur <strong>clean tout 37</strong> ("entreprise de nettoyage Tours") et <strong>fc-solutions.pro</strong> (GSC)</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Vue d'ensemble — 4 pipelines en production</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Role</th><th>Agents</th><th>Statut</th><th>Connecteurs</th></tr>
+<tr>
+    <td>1</td><td><strong>Editorial (Redaction)</strong></td>
+    <td>Produire un article SEO/AEO/GEO depuis un mot-cle</td>
+    <td>28</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>TalorData, DataForSEO, KE, GSC, RankParse, Claude, GPT, DeepSeek</td>
+</tr>
+<tr>
+    <td>2</td><td><strong>Audit de Contenu</strong></td>
+    <td>Auditer pages existantes sur 7 dimensions + recommandations</td>
+    <td>11</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>CMS Detector, Sitemap Parser, GSC, RankParse, KE</td>
+</tr>
+<tr>
+    <td>3</td><td><strong>Audit Technique</strong></td>
+    <td>Scanner le site, 12 dimensions, roadmap CMS</td>
+    <td>23</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>PSI, shcheck, polly, CMS Detector, Sitemap Parser, GSC, protego, schorg, scikit-network, geo-optimizer</td>
+</tr>
+<tr>
+    <td>4</td><td><strong>SERP & Visibility Intelligence</strong></td>
+    <td>Surveiller positions, analyser concurrence, detecter opportunites, alertes</td>
+    <td>11</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>GSC, TalorData, DataForSEO, KE, RankParse, SQLite SERP</td>
+</tr>
+<tr><td>5</td><td>Strategie</td><td>Gaps, opportunites, roadmap editoriale + GA4</td><td>~12</td><td><span class="badge-red">0%</span></td><td>—</td></tr>
+<tr><td>6</td><td>Maillage & Backlinks</td><td>Audit liens, backlinks, liens toxiques</td><td>~7</td><td><span class="badge-red">0%</span></td><td>—</td></tr>
+<tr><td>7</td><td>Maintenance</td><td>Obsolescence, mises a jour automatiques</td><td>~6</td><td><span class="badge-red">0%</span></td><td>—</td></tr>
+</table>
+
+<div class="note"><strong>Total : ~98 agents sur 7 pipelines. 4 sur 7 operationnels en production.</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline 4 — SERP & Visibility Intelligence — Les 11 agents</h2>
+
+<table>
+<tr><th>Phase</th><th>Agent</th><th>Nom</th><th>Role</th><th>Cout</th></tr>
+<tr><td>Phase 0</td><td>S00</td><td>Superviseur SERP</td><td>Config site, startup check, lock fichier, verification GSC</td><td>$0</td></tr>
+<tr><td rowspan="2">Phase 1<br>Collecte</td><td>S01</td><td>Rank Tracker</td><td>GSC + TalorData fallback + DataForSEO + KE volumes + SQLite historique</td><td>$0-0.001/kw</td></tr>
+<tr><td>S02</td><td>Variations</td><td>7 categories (chute critique → entree top 3), filtre anti-bruit 3j</td><td>$0</td></tr>
+<tr><td rowspan="7">Phase 2<br>Analyse</td><td>S02b</td><td>Google Update Monitor</td><td>Heuristique (>20% kw varient) + RSS Google/ SE Roundtable/ SEJ</td><td>$0</td></tr>
+<tr><td>S03</td><td>SERP Features</td><td>10 features, scoring opportunite (traffic x faisabilite / effort)</td><td>$0</td></tr>
+<tr><td>S04</td><td>Concurrents 🆕</td><td>Auto-detection + classification 7 types + paysage + DA + encouragements</td><td>$0</td></tr>
+<tr><td>S04b</td><td>Share of Voice</td><td>SOV impressions, clics, weighted visibility, evolution 7/30j</td><td>$0</td></tr>
+<tr><td>S05</td><td>Gap Content</td><td>Top 3 vs page : PAA, AI Overview, Featured Snippet + Haiku (premium)</td><td>$0-0.005</td></tr>
+<tr><td>S06</td><td>Quick Wins</td><td>Positions 4-15 + Business Score (volume x conversion x marge)</td><td>$0</td></tr>
+<tr><td>S08</td><td>AEO/AI Overviews</td><td>SGE citations, AI Visibility Score 0-100</td><td>$0</td></tr>
+<tr><td>Phase 3</td><td>S07</td><td>Alertes</td><td>Deduplication, Core Update suspension 7j, email P0, webhook</td><td>$0</td></tr>
+<tr><td>Phase 4</td><td>S09</td><td>Correlation</td><td>Actions x positions : deltas J+7/30/60/90 + confidence_score High/Med/Low</td><td>$0</td></tr>
+<tr><td>Phase 5</td><td>S10</td><td>Synthese</td><td>Health Score 0-100, resume executif, rapport HTML, routage P1/P6</td><td>$0</td></tr>
+</table>
+
+<div class="success"><strong>11 agents · $0 (fast) / ~$0.03/semaine (standard, 500 kw)</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Tests en conditions reelles (24 juin 2026)</h2>
+
+<table>
+<tr><th>Site</th><th>Mot-cle</th><th>Position</th><th>Concurrents</th><th>Paysage</th><th>Insight</th></tr>
+<tr>
+    <td><strong>cleantout37.fr</strong></td>
+    <td>entreprise de nettoyage Tours</td>
+    <td><strong>#7</strong></td>
+    <td>5 (cleanolia.fr #1, pagesjaunes #2, mappy #3, netto-decor, propre-horizon)</td>
+    <td><span class="badge-green">FACILE</span></td>
+    <td>5/5 concurrents a faible menace (locaux + annuaires). Aucune marque nationale. Barriere BASSE.</td>
+</tr>
+<tr>
+    <td><strong>fc-solutions.pro</strong></td>
+    <td>11 keywords GSC</td>
+    <td>#5-#14</td>
+    <td>openai.com, pappers.fr, fcsolutions.ch...</td>
+    <td><span class="badge-yellow">MODEREE</span></td>
+    <td>35 positions GSC. Concurrents marques + annuaires. Quick wins potentiels sur mots-cles locaux.</td>
+</tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Connecteurs (12)</h2>
+
+<table>
+<tr><th>Connecteur</th><th>Fichier</th><th>Pipeline</th><th>Type</th><th>Cout</th></tr>
+<tr><td>GSC Connector</td><td><code>gsc_connector.py</code></td><td>1-4</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>TalorData / SERP</td><td><code>serp_api.py</code></td><td>1, 3, 4</td><td>Payant</td><td>$0.25-0.90/1K</td></tr>
+<tr><td>DataForSEO</td><td><code>dataforseo_connector.py</code></td><td>1, 4</td><td>Payant</td><td>$0.001-0.02</td></tr>
+<tr><td>Keywords Everywhere</td><td><code>keywordseverywhere_connector.py</code></td><td>1, 2, 4</td><td>Payant</td><td>~$0.01/100kw</td></tr>
+<tr><td>RankParse</td><td><code>rankparse_connector.py</code></td><td>2, 3, 4</td><td>Payant</td><td>~$0.009</td></tr>
+<tr><td>CMS Detector</td><td><code>cms_detector.py</code></td><td>2, 3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Sitemap Parser</td><td><code>sitemap_parser.py</code></td><td>2, 3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>PageSpeed Insights</td><td><code>pagespeed_connector.py</code></td><td>3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Security Headers (shcheck)</td><td><code>security_headers.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>Hreflang Validator (polly)</td><td><code>hreflang_validator.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>GEO Optimizer</td><td><code>geo_optimizer_connector.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>SQLite SERP</td><td><code>serp_db.py</code></td><td>4</td><td>Gratuit</td><td>$0</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Outils OSS integres (10)</h2>
+
+<table>
+<tr><th>Outil</th><th>Version</th><th>Usage</th><th>Pipeline</th></tr>
+<tr><td>textstat</td><td>0.7.13</td><td>Flesch multilingue (40+ langues)</td><td>1 + 2</td></tr>
+<tr><td>yake</td><td>0.7.3</td><td>Extraction mots-cles non supervisee</td><td>1</td></tr>
+<tr><td>json-repair</td><td>0.61</td><td>Reparation JSON LLM</td><td>1</td></tr>
+<tr><td>protego</td><td>0.6.1</td><td>robots.txt parser Google-compatible</td><td>2 + 3</td></tr>
+<tr><td>schorg</td><td>0.7.5</td><td>Schema.org Pydantic models</td><td>1 + 3</td></tr>
+<tr><td>shcheck</td><td>1.7</td><td>Analyse headers securite (6 headers)</td><td>3</td></tr>
+<tr><td>polly</td><td>0.6.4</td><td>Validation hreflang bilaterale (Moz)</td><td>3</td></tr>
+<tr><td>scikit-network</td><td>0.33.5</td><td>Louvain clustering, silos</td><td>3</td></tr>
+<tr><td>geo-optimizer-skill</td><td>latest</td><td>Score AEO/GEO 0-100, 47 methodes</td><td>3</td></tr>
+<tr><td>openserp</td><td>0.8.3</td><td>SERP self-hosted (Bing, DDG) — catalogue</td><td>4</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Cout operationnel cumule</h2>
+
+<table>
+<tr><th>Pipeline</th><th>Mode</th><th>Cout unitaire</th><th>Cout/100</th></tr>
+<tr><td>1 — Redaction</td><td>standard</td><td>~$0.60/article</td><td>~$60</td></tr>
+<tr><td>2 — Audit Contenu</td><td>standard</td><td>~$0.005/page</td><td>~$0.50</td></tr>
+<tr><td>3 — Audit Technique</td><td>standard</td><td>$0.00/10 pages</td><td>$0.00</td></tr>
+<tr><td>4 — SERP Visibility</td><td>standard</td><td>~$0.03/semaine (500 kw)</td><td>~$2.50/mois</td></tr>
+</table>
+
+<h3>Budget mensuel cumule (site moyen 500 keywords)</h3>
+<table>
+<tr><th>Scenario</th><th>Cout/mois</th><th>Detail</th></tr>
+<tr><td>Minimal (fast)</td><td><strong>$0.00</strong></td><td>GSC uniquement, pas de LLM</td></tr>
+<tr><td>Standard</td><td><strong>~$3.10</strong></td><td>Articles + audits + SERP 500kw</td></tr>
+<tr><td>Intensif (premium)</td><td><strong>~$83</strong></td><td>100 articles premium + longue traine</td></tr>
+</table>
+
+<div class="note">Comparaison : Semrush ~$120/mois, Ahrefs ~$99/mois. Hermes SEO : ~$3/mois en standard.</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. 18 regles de robustesse (toutes implementees)</h2>
+
+<ol>
+<li>✅ Contrats Pydantic — tous les agents ont des modeles valides</li>
+<li>✅ Superviseur — consentement obligatoire, bornes, rate limiting</li>
+<li>✅ Defensif uniquement — pas de test d'intrusion</li>
+<li>✅ Confidence scoring — High/Medium/Low sur chaque issue/alerte/correlation</li>
+<li>✅ Source de preuve — agent source + URL + observed + rule</li>
+<li>✅ do_not_recommend_if — pas de reco absurde</li>
+<li>✅ Adaptatif — seuils par type de page</li>
+<li>✅ CMS-aware — recos localisees (WP->Yoast, PrestaShop->Module SEO)</li>
+<li>✅ Fallback cascade — GSC->TalorData->DataForSEO->openserp</li>
+<li>✅ Auto-disable — KE apres 402, PSI apres 429</li>
+<li>✅ Deduplication — T15 + S07</li>
+<li>✅ Exports multiples — HTML, JSON, CSV, PDF</li>
+<li>✅ Routage inter-pipelines — T18 + S10</li>
+<li>✅ Rate limiting + robots.txt</li>
+<li>✅ Skip intelligent — agents conditionnels, T20 logs, S03/S08 fast</li>
+<li>✅ Tracabilite — chaque issue documentee</li>
+<li>✅ Core Update suspension — S02b + S07 protegent contre les faux positifs massifs</li>
+<li>✅ Encouragements — pas seulement des alertes, des insights positifs (paysage concurrentiel favorable)</li>
+</ol>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>8. Interface utilisateur (6 pages)</h2>
+
+<table>
+<tr><th>Page</th><th>Fichier</th><th>Pipeline</th></tr>
+<tr><td>Generator</td><td><code>app.py</code></td><td>1 — Redaction SEO/AEO/GEO</td></tr>
+<tr><td>Audit de Contenu</td><td><code>pages/audit_page.py</code></td><td>2 — 7 dimensions, radar chart</td></tr>
+<tr><td>Audit Technique</td><td><code>pages/audit_tech_page.py</code></td><td>3 — 12 dimensions, consentement, roadmap</td></tr>
+<tr><td>SERP & Visibilite</td><td><code>pages/serp_visibility_page.py</code></td><td>4 — Positions, quick wins, concurrence</td></tr>
+<tr><td>Admin</td><td><code>pages/admin_dashboard.py</code></td><td>Transversal — API, couts, connecteurs</td></tr>
+<tr><td>Archive</td><td><code>pages/archive_page.py</code></td><td>Historique sessions</td></tr>
+</table>
+
+<p>CLI : <code>hermes run</code>, <code>hermes audit-tech run</code>, <code>hermes archive</code>, <code>hermes check</code></p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>9. Changelog V4 (vs V3)</h2>
+
+<div class="changelog">
+<h3>23-24 juin 2026 — Pipeline 4 complet</h3>
+<ul>
+<li><strong>+1 pipeline</strong> : SERP & Visibility Intelligence — 11 agents</li>
+<li><strong>+1 connecteur</strong> : SQLite SERP (positions_history, 7 tables)</li>
+<li><strong>+1 outil OSS catalogue</strong> : openserp 0.8.3</li>
+<li><strong>+2 pages UI</strong> : SERP & Visibilite + Admin Dashboard</li>
+<li><strong>+2 features bonus</strong> : classification concurrentielle (7 types) + encouragements</li>
+<li><strong>+1 dimension</strong> : AI Visibility Score 0-100</li>
+<li><strong>Business Score</strong> : volume x conversion x marge par type de page</li>
+<li><strong>Correlation actions/positions</strong> : J+90 + confidence_score High/Medium/Low</li>
+<li><strong>Alertes email P0</strong> + suspension Core Update</li>
+<li><strong>Dashboard Admin</strong> : consommation API, etat 12 connecteurs, couts 4 pipelines, budget mensuel</li>
+<li><strong>Tests reels</strong> : cleantout37.fr + fc-solutions.pro</li>
+<li><strong>~1500 lignes</strong> de code ajoutees (Pipeline 4)</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>10. Methode de travail</h2>
+
+<ol>
+<li>L'utilisateur definit le process (quel pipeline, quels agents, quel ordre)</li>
+<li>L'utilisateur ecrit le cahier des charges</li>
+<li>Claude implemente agent par agent, dans l'ordre defini</li>
+<li>Claude fait les tests et verifications</li>
+<li>Claude connecte au pipeline existant sans casser ce qui marche</li>
+<li>L'utilisateur valide chaque agent ou groupe d'agents</li>
+<li>L'utilisateur teste en conditions reelles</li>
+</ol>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document genere le 24 juin 2026 · Hermes SEO v3 · V4 · FC Solutions<br>
+Compatible copier-coller Google Docs — les tableaux conservent leur structure
+</p>
+</body>
+</html>
