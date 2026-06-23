@@ -12,14 +12,17 @@ Ordre d'execution :
 # Agents implementes au Sprint 1
 from hermes.agents.audit_tech.tt00_supervisor import run as tt00
 from hermes.agents.audit_tech.tt01_crawler import run as tt01
+# Sprint 2
+from hermes.agents.audit_tech.tt03_architecture import run as tt03
+from hermes.agents.audit_tech.tt04_sitemap import run as tt04
 
 TECH_REGISTRY: dict[str, callable] = {
     "tt00": tt00,
     "tt01": tt01,
-    # Sprint 2+
-    # "tt02": tt02, "tt03": tt03, "tt04": tt04,
+    "tt03": tt03,
+    "tt04": tt04,
     # Sprint 3+
-    # "tt05": tt05, "tt06": tt06,
+    # "tt02": tt02, "tt05": tt05, "tt06": tt06,
     # Sprint 4+
     # "tt07": tt07, "tt08": tt08, "tt09": tt09,
     # Sprint 5+
@@ -35,5 +38,7 @@ TECH_REGISTRY: dict[str, callable] = {
 TECH_ORDER: list[str] = [
     "tt00",
     "tt01",
-    # Les agents suivants seront ajoutes au fur et a mesure des sprints
+    "tt03",
+    "tt04",
+    # Ajout des autres sprints au fur et a mesure
 ]
