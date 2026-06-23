@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Suivi d'Architecture · V3 · 23 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-orange{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+.changelog{background:#fafafa;border:1px solid #ddd;padding:15px 20px;border-radius:6px;margin:15px 0}
+.changelog h3{margin-top:0;color:#1E88E5}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Suivi d'Architecture · V3</h1>
+<p class="meta">Version 0.5 · 23 juin 2026 · Pipeline Rédaction ~95% · Pipeline Audit Contenu ~95% · Pipeline Audit Technique ~85% (agents OK, UI manquante) · Stack Python 3.12 + LangGraph + Streamlit</p>
+
+<div class="success">
+<strong>Nouveau dans la V3 :</strong>
+<ul>
+<li><strong>Pipeline 3 (Audit Technique)</strong> : 22 agents implémentés et testés en conditions réelles</li>
+<li>Tests sur <strong>hartmann-tresore.fr</strong> (PrestaShop, 10 pages, 69/100) et <strong>coffrefortpro.com</strong> (PrestaShop, 10 pages, 72/100)</li>
+<li><strong>5 nouveaux connecteurs</strong> : PageSpeed Insights, Security Headers (shcheck), Hreflang Validator (polly), CMS Detector (réutilisé), Sitemap Parser (réutilisé)</li>
+<li><strong>5 nouveaux outils OSS intégrés</strong> : shcheck, polly, scikit-network, protego, schorg</li>
+<li><strong>Agent T21 bonus</strong> : Code Quality & CMS SEO Impact (HTML5 sémantique, DOM depth, page builder detection, W3C errors)</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Vue d'ensemble — 3 pipelines en production</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Rôle</th><th>Agents</th><th>Statut</th><th>Connecteurs</th></tr>
+<tr>
+    <td>1</td><td><strong>Éditorial (Rédaction)</strong></td>
+    <td>Produire un article SEO/AEO/GEO depuis un mot-clé</td>
+    <td>28</td>
+    <td><span class="badge-green">~95% · production</span></td>
+    <td>TalorData, DataForSEO, KE, GSC, RankParse</td>
+</tr>
+<tr>
+    <td>2</td><td><strong>Audit de Contenu</strong></td>
+    <td>Auditer pages existantes sur 7 dimensions + recommandations</td>
+    <td>11</td>
+    <td><span class="badge-green">~95% · production</span></td>
+    <td>CMS Detector, Sitemap Parser, GSC, RankParse, KE</td>
+</tr>
+<tr>
+    <td>3</td><td><strong>Audit Technique</strong></td>
+    <td>Scanner le site, analyser 11 dimensions techniques, roadmap CMS</td>
+    <td>22</td>
+    <td><span class="badge-yellow">~85% · agents OK, UI à faire</span></td>
+    <td>PSI, shcheck, polly, CMS Detector, Sitemap Parser, GSC</td>
+</tr>
+<tr>
+    <td>4</td><td><strong>SERP & Positions</strong></td>
+    <td>Suivre positions, concurrence, opportunités</td>
+    <td>~8</td>
+    <td><span class="badge-red">0%</span></td>
+    <td>—</td>
+</tr>
+<tr>
+    <td>5</td><td><strong>Stratégie</strong></td>
+    <td>Gaps, opportunités, roadmap éditoriale</td>
+    <td>~10</td>
+    <td><span class="badge-red">0%</span></td>
+    <td>—</td>
+</tr>
+<tr>
+    <td>6</td><td><strong>Maillage & Backlinks</strong></td>
+    <td>Audit liens, backlinks, liens toxiques</td>
+    <td>~7</td>
+    <td><span class="badge-red">0%</span></td>
+    <td>—</td>
+</tr>
+<tr>
+    <td>7</td><td><strong>Maintenance</strong></td>
+    <td>Obsolescence, mises à jour automatiques</td>
+    <td>~6</td>
+    <td><span class="badge-red">0%</span></td>
+    <td>—</td>
+</tr>
+</table>
+
+<div class="note"><strong>Total :</strong> ~92 agents sur 7 pipelines. <strong>3 sur 7 opérationnels.</strong> Pipeline 3 testé en conditions réelles sur 2 sites PrestaShop.</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline 3 — Audit Technique — Décomposition</h2>
+
+<table>
+<tr><th>Phase</th><th>Agent</th><th>Nom</th><th>Rôle</th><th>Coût</th><th>Statut</th></tr>
+<tr><td>Phase 0</td><td>T00</td><td>Superviseur Technique</td><td>Consentement, bornes, startup check, profils client</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td rowspan="5">Phase 1<br>Collecte</td><td>T01</td><td>Crawler Technique</td><td>Crawl 60+ signaux (HTTP, meta, Hn, images, liens, schema, hreflang, UX, perf)</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T02</td><td>Indexation</td><td>GSC URL Inspection ou fallback heuristique — 7 statuts, confidence High/Med/Low</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T03</td><td>Architecture</td><td>Graphe liens (NetworkX), Louvain clustering (scikit-network), silos fantômes, profondeur</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T04</td><td>Sitemap/Robots</td><td>Sitemap BFS (réutilise Pipeline 2), robots.txt validation (protego), comparaison crawl</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T20</td><td>Log Analysis</td><td>Analyse logs serveur (optionnel) — Googlebot crawl, 404s, crawl budget</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td rowspan="9">Phase 2<br>Analyse</td><td>T05</td><td>Structure On-Page</td><td>Title, meta, H1, canonical, OG — longueur, duplication, absence</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T06</td><td>Thin Content</td><td>Seuils adaptatifs par type (produit 300, article 600, légal pas de seuil) + MD5/cosinus</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T07</td><td>Performance CWV</td><td>PageSpeed Insights CrUX + Lighthouse lab — fallback heuristique si PSI indisponible</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T08</td><td>Mobile</td><td>Viewport, meta theme-color, AMP, ratio texte/HTML, images sans alt</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T09</td><td>Schemas</td><td>Validation JSON-LD (schorg), mapping type de page → schemas recommandés</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T10</td><td>International</td><td>Hreflang validation (polly/Moz), return tags, x-default, codes ISO 639-1</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T11</td><td>Sécurité</td><td>HTTPS, headers (shcheck), mixed content — défensif, pas de scanning</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T12</td><td>Maillage</td><td>Orphelines, pages mortes, distribution déséquilibrée (Gini)</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T13</td><td>Anomalies</td><td>5xx, 404, boucles redirect, canonicals contradictoires, noindex+sitemap</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td rowspan="2">Phase 2 bis</td><td>T21 🆕</td><td>Code Quality CMS</td><td>HTML5 sémantique, DOM depth, page builders, blocking resources, W3C errors</td><td>$0</td><td><span class="badge-green">OK · bonus</span></td></tr>
+<tr><td>T14</td><td>Impact Business</td><td>GSC traffic ou fallback type de page — qualitatif High/Med/Low</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td rowspan="3">Phase 4<br>Synthèse</td><td>T15</td><td>Synthèse</td><td>Score global pondéré, confiance globale, déduplication, enrichissement LLM (Haiku)</td><td>~$0.001</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T16</td><td>Priorisation</td><td>Poids configurables par profil (ecommerce/blog/inst/agence/saas) → P0-P3</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>T17</td><td>Roadmap</td><td>4 sprints, profils cibles (SEO/Dev/Hébergeur), localisation CMS (WP/PrestaShop/...)</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>Phase 5<br>Export</td><td>T18</td><td>Routage</td><td>Connexions JSON vers pipelines 2/4/5/6/7</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td></td><td>T19</td><td>Export</td><td>HTML/JSON/CSV + PDF (weasyprint)</td><td>$0</td><td><span class="badge-green">OK</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Tests en conditions réelles (23 juin 2026)</h2>
+
+<table>
+<tr><th>Site</th><th>CMS</th><th>Pages</th><th>Score</th><th>Issues</th><th>P0</th><th>P1</th><th>Roadmap</th></tr>
+<tr>
+    <td><strong>hartmann-tresore.fr</strong></td>
+    <td>PrestaShop 95%</td>
+    <td>10</td>
+    <td><strong>69/100</strong></td>
+    <td>57</td>
+    <td>21</td>
+    <td>33</td>
+    <td>3 sprints, ~50h</td>
+</tr>
+<tr>
+    <td><strong>coffrefortpro.com</strong></td>
+    <td>PrestaShop 95%</td>
+    <td>10</td>
+    <td><strong>72/100</strong></td>
+    <td>50</td>
+    <td>18</td>
+    <td>32</td>
+    <td>2 sprints, ~47h</td>
+</tr>
+</table>
+
+<h3>Scores par dimension</h3>
+<table>
+<tr><th>Dimension</th><th>hartmann-tresore.fr</th><th>coffrefortpro.com</th></tr>
+<tr><td>Crawlability</td><td>100/100</td><td>100/100</td></tr>
+<tr><td>Indexation</td><td>100/100</td><td>100/100</td></tr>
+<tr><td>Architecture</td><td>60/100</td><td>76/100</td></tr>
+<tr><td>Structure</td><td>47/100</td><td>66/100</td></tr>
+<tr><td>Content</td><td>70/100</td><td>72/100</td></tr>
+<tr><td>Performance</td><td>60/100</td><td>60/100</td></tr>
+<tr><td>Mobile</td><td>60/100</td><td>60/100</td></tr>
+<tr><td>Structured Data</td><td>55/100</td><td>50/100</td></tr>
+<tr><td>International</td><td>10/100</td><td>100/100</td></tr>
+<tr><td>Security</td><td>90/100</td><td>45/100</td></tr>
+<tr><td>Maillage</td><td>55/100</td><td>43/100</td></tr>
+<tr style="font-weight:700;background:#e3f2fd"><td>Global</td><td><strong>69/100 (high)</strong></td><td><strong>72/100 (high)</strong></td></tr>
+</table>
+
+<div class="note"><strong>Interprétation :</strong> deux sites e-commerce PrestaShop. Scores cohérents pour ce type de CMS. Les points faibles classiques apparaissent : structure on-page (titles courts, H1 dupliqués), contenu (fiches produits courtes), schemas manquants.</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Connecteurs et outils OSS</h2>
+
+<table>
+<tr><th>Connecteur</th><th>Fichier</th><th>Pipeline</th><th>API</th><th>Coût</th></tr>
+<tr><td>CMS Detector</td><td><code>cms_detector.py</code></td><td>2 + 3</td><td>Aucune (headers + regex)</td><td>$0</td></tr>
+<tr><td>Sitemap Parser</td><td><code>sitemap_parser.py</code></td><td>2 + 3</td><td>Aucune (BFS httpx)</td><td>$0</td></tr>
+<tr><td>GSC Connector</td><td><code>gsc_connector.py</code></td><td>1 + 2 + 3</td><td>Google Search Console OAuth</td><td>$0</td></tr>
+<tr><td>RankParse Connector</td><td><code>rankparse_connector.py</code></td><td>2</td><td>RankParse DA API</td><td>~$0.009</td></tr>
+<tr><td>DataForSEO Connector</td><td><code>dataforseo_connector.py</code></td><td>1</td><td>DataForSEO v3</td><td>$0.01-0.05</td></tr>
+<tr><td>Keywords Everywhere</td><td><code>keywordseverywhere_connector.py</code></td><td>1 + 2</td><td>KE API (auto-disable si 402)</td><td>$0.01</td></tr>
+<tr><td>SERP API</td><td><code>serp_api.py</code></td><td>1</td><td>TalorData / Scrape.do / Serpstack</td><td>$0.25-1.16/1K</td></tr>
+<tr><td>🆕 PageSpeed Insights</td><td><code>pagespeed_connector.py</code></td><td>3</td><td>Google PSI API v5 (gratuit)</td><td>$0</td></tr>
+<tr><td>🆕 Security Headers</td><td><code>security_headers.py</code></td><td>3</td><td>shcheck (OSS, GPL-3.0)</td><td>$0</td></tr>
+<tr><td>🆕 Hreflang Validator</td><td><code>hreflang_validator.py</code></td><td>3</td><td>polly (OSS, Moz)</td><td>$0</td></tr>
+</table>
+
+<table>
+<tr><th>Outil OSS</th><th>Usage</th><th>Pipeline</th></tr>
+<tr><td>shcheck 1.7</td><td>Analyse headers sécurité (HSTS, CSP, X-Frame-Options...)</td><td>3</td></tr>
+<tr><td>polly 0.6.4</td><td>Validation hreflang bilatérale (Moz)</td><td>3</td></tr>
+<tr><td>scikit-network 0.33.5</td><td>Louvain clustering pour détection de silos</td><td>3</td></tr>
+<tr><td>protego 0.6.1</td><td>robots.txt parser Google-compatible</td><td>2 + 3</td></tr>
+<tr><td>schorg 0.7.5</td><td>Schema.org Pydantic models</td><td>1 + 3</td></tr>
+<tr><td>textstat 0.7.13</td><td>Flesch multilingue (40+ langues)</td><td>1 + 2</td></tr>
+<tr><td>yake 0.7.3</td><td>Extraction mots-clés</td><td>1</td></tr>
+<tr><td>json-repair 0.61</td><td>Réparation JSON LLM</td><td>1</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Ce qui reste à faire</h2>
+
+<h3>Pipeline 3 — Audit Technique (~15% restant)</h3>
+<table>
+<tr><th>Élément</th><th>Priorité</th><th>Effort estimé</th><th>Description</th></tr>
+<tr><td><strong>UI Streamlit</strong> (<code>pages/audit_tech_page.py</code>)</td><td><span class="badge-red">P0</span></td><td>~5h</td><td>Page d'audit technique avec consentement, configuration des poids, affichage des résultats, exports</td></tr>
+<tr><td><strong>Intégration CLI</strong> (<code>hermes/main.py</code>)</td><td><span class="badge-orange">P1</span></td><td>~1h</td><td>Commande <code>hermes audit-tech run</code></td></tr>
+<tr><td><strong>GSC réel</strong> (T02 + T07)</td><td><span class="badge-orange">P1</span></td><td>~2h</td><td>Connecter GSC pour indexation réelle et CWV terrain (actuellement fallback heuristique)</td></tr>
+<tr><td><strong>PSI quota</strong></td><td><span class="badge-orange">P2</span></td><td>~30 min</td><td>Ajouter une clé API pour éviter le HTTP 429</td></tr>
+<tr><td><strong>Tests complets</strong></td><td><span class="badge-orange">P2</span></td><td>~3h</td><td>Test pipeline complet avec mock httpx, 80+ tests unitaires</td></tr>
+<tr><td><strong>Louvain debug</strong></td><td><span class="badge-yellow">P3</span></td><td>~1h</td><td>Corriger l'erreur "list index out of range" sur petits graphes</td></tr>
+</table>
+
+<h3>Pipelines 4-7 (non démarrés)</h3>
+<table>
+<tr><th>Pipeline</th><th>Agents</th><th>Dépend de</th><th>Effort estimé</th></tr>
+<tr><td>4. SERP & Positions</td><td>~8</td><td>T02 (GSC), T18 (routage)</td><td>~30h</td></tr>
+<tr><td>5. Stratégie</td><td>~10</td><td>T03 (silos), T14 (impact)</td><td>~35h</td></tr>
+<tr><td>6. Maillage & Backlinks</td><td>~7</td><td>T12 (maillage), T18 (routage)</td><td>~25h</td></tr>
+<tr><td>7. Maintenance</td><td>~6</td><td>T07 (CWV), T18 (routage)</td><td>~20h</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Coûts opérationnels cumulés</h2>
+
+<h3>Pipeline 1 — Rédaction</h3>
+<table><tr><th>Mode</th><th>Coût/article</th><th>Coût/100</th></tr>
+<tr><td>fast</td><td>~$0.50</td><td>~$50</td></tr>
+<tr><td>standard ⭐</td><td>~$0.60</td><td>~$60</td></tr>
+<tr><td>premium</td><td>~$0.80</td><td>~$80</td></tr></table>
+
+<h3>Pipeline 2 — Audit de Contenu</h3>
+<table><tr><th>Mode</th><th>Coût/page</th><th>Coût/100</th></tr>
+<tr><td>fast</td><td>$0.001</td><td>~$0.10</td></tr>
+<tr><td>standard ⭐</td><td>$0.005</td><td>~$0.50</td></tr>
+<tr><td>premium</td><td>$0.015</td><td>~$1.50</td></tr></table>
+
+<h3>Pipeline 3 — Audit Technique</h3>
+<table><tr><th>Mode</th><th>Coût/10 pages</th><th>Coût/100</th></tr>
+<tr><td>fast</td><td>$0.00</td><td>~$0.00</td></tr>
+<tr><td>standard ⭐</td><td>$0.00</td><td>~$0.00</td></tr>
+<tr><td>premium</td><td>$0.005</td><td>~$0.05</td></tr></table>
+
+<div class="warning"><strong>Articles réels produits :</strong> <code>article_cleantout37.html</code> — <strong>Audits contenu réels :</strong> hartmann-tresore.fr (20 pages) — <strong>Audits techniques réels :</strong> hartmann-tresore.fr + coffrefortpro.com (10 pages chacun)</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. Changelog V3 (vs V2)</h2>
+
+<div class="changelog">
+<h3>23 juin 2026 — Pipeline 3 complet</h3>
+<ul>
+<li><strong>+1 pipeline</strong> : Audit Technique (Pipeline 3) — 22 agents</li>
+<li><strong>+5 connecteurs</strong> : PageSpeed Insights, Security Headers (shcheck), Hreflang Validator (polly), CMS Detector (réutilisé P2), Sitemap Parser (réutilisé P2)</li>
+<li><strong>+5 outils OSS</strong> : shcheck 1.7, polly 0.6.4, scikit-network 0.33.5, protego 0.6.1, schorg 0.7.5</li>
+<li><strong>+1 agent bonus</strong> : T21 (Code Quality CMS SEO Impact) — non prévu au CDC</li>
+<li><strong>+11 dimensions techniques</strong> : crawlability, indexation, architecture, structure, content, performance, mobile, structured data, international, security, maillage</li>
+<li><strong>+5 profils client</strong> : ecommerce, blog, institutionnel, agence, saas — avec poids de priorisation configurables</li>
+<li><strong>+1 mode consentement</strong> : obligatoire avant tout crawl</li>
+<li><strong>+3 formats d'export</strong> : HTML (Google Docs compatible), JSON, CSV</li>
+<li><strong>+1 routage inter-pipelines</strong> : T18 connecte vers pipelines 2/4/5/6/7</li>
+<li><strong>2 sites testés en réel</strong> : hartmann-tresore.fr (69/100), coffrefortpro.com (72/100)</li>
+<li><strong>~5000 lignes de code</strong> créées en une session</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>8. Règles de robustesse (16/16)</h2>
+
+<ul>
+<li>✅ Contrats Pydantic — tous les agents ont des modèles d'entrée/sortie validés</li>
+<li>✅ Superviseur (T00) — consentement obligatoire, bornes de crawl, rate limiting</li>
+<li>✅ Mode consentement — affichage des limites avant crawl</li>
+<li>✅ Défensif uniquement — pas de test d'intrusion, pas de scanning de dossiers</li>
+<li>✅ Confidence scoring — chaque constat a un niveau High/Medium/Low</li>
+<li>✅ Source de preuve — chaque issue a agent source + URL + donnée observée + règle</li>
+<li>✅ do_not_recommend_if — pas de recommandation absurde (ajouter 300 mots à une page CGU)</li>
+<li>✅ Adaptatif — seuils par type de page (produit 300 mots, article 600, légal pas de seuil)</li>
+<li>✅ CMS-aware — recommandations localisées (WordPress→Yoast, PrestaShop→Module SEO)</li>
+<li>✅ Fallback — PSI→heuristique, GSC→estimation, Louvain→skip</li>
+<li>✅ Auto-disable — KE se désactive après 402, PSI après 429</li>
+<li>✅ Déduplication — T15 consolide les issues par URL+catégorie</li>
+<li>✅ Export multiple — HTML, JSON, CSV, PDF (weasyprint)</li>
+<li>✅ Routage inter-pipelines — T18 prépare les données pour P2/P4/P5/P6/P7</li>
+<li>✅ Rate limiting — configurable, respect robots.txt</li>
+<li>✅ Skip intelligent — T20 (logs) skippé automatiquement si pas de données</li>
+</ul>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>9. Méthode de travail</h2>
+
+<ol>
+<li>L'utilisateur définit le process (quel pipeline, quels agents, quel ordre)</li>
+<li>L'utilisateur écrit le cahier des charges</li>
+<li>Claude implémente agent par agent, dans l'ordre défini</li>
+<li>Claude fait les tests (entrée valide, invalide, sortie conforme, erreur)</li>
+<li>Claude connecte au pipeline existant sans casser ce qui marche</li>
+<li>L'utilisateur valide chaque agent ou groupe d'agents</li>
+<li>L'utilisateur teste en conditions réelles</li>
+</ol>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document généré le 23 juin 2026 · Hermes SEO v3 · V3 · FC Solutions<br>
+Compatible copier-coller vers Google Docs — les tableaux conservent leur structure
+</p>
+</body>
+</html>

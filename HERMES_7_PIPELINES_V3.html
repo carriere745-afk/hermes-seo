@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO · Les 7 Pipelines · V3 · 23 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO · Les 7 Pipelines · V3</h1>
+<p class="meta">Version V3 · 23 juin 2026 · 3 pipelines en production · 61 agents implementes</p>
+
+<div class="success">
+<strong>Nouveau dans la V3 :</strong> Le <strong>Pipeline 3 (Audit Technique)</strong> est implémenté (22 agents, ~85%). Testé en conditions réelles sur 2 sites PrestaShop : hartmann-tresore.fr (69/100) et coffrefortpro.com (72/100).
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Pipeline Éditorial (Rédaction) <span class="badge-green">~95% · production</span></h2>
+<p><strong>Rôle :</strong> Produire tout type de contenu SEO/AEO/GEO à partir d'un mot-clé.</p>
+<table>
+<tr><th>Phase</th><th>Agents</th><th>Rôle</th><th>LLM</th></tr>
+<tr><td>Orchestration</td><td>00</td><td>Superviseur — valide chaque transition</td><td>Aucun</td></tr>
+<tr><td>Contextualisation</td><td>01, 02, 03</td><td>Brief entreprise, Persona, Analyse SERP</td><td>DeepSeek / GPT</td></tr>
+<tr><td>Stratégie</td><td>04, 05, 06, 07</td><td>Intention, Offre, Différenciation, Template (10)</td><td>DeepSeek</td></tr>
+<tr><td>Vérification</td><td>08</td><td>Anti-cannibalisation (ChromaDB)</td><td>Haiku</td></tr>
+<tr><td>Production</td><td>09</td><td>★ Rédaction HTML</td><td>Claude Sonnet</td></tr>
+<tr><td>Optimisation</td><td>10, 11, 12</td><td>SEO, AEO, GEO (avec fallback heuristique)</td><td>GPT / Haiku</td></tr>
+<tr><td>Validation</td><td>13, 14, 15</td><td>EEAT, Conformité (9 secteurs), Fact-checking</td><td>Haiku</td></tr>
+<tr><td>Enrichissement</td><td>16-22, 27</td><td>Maillage, Multiformat, A/B, Localisation, Schema, Images</td><td>DeepSeek / Sonnet</td></tr>
+<tr><td>Publication</td><td>23, 24</td><td>CMS Export, Plan de mise à jour</td><td>Aucun</td></tr>
+<tr><td>Décision</td><td>25, 26</td><td>Critique Qualité (9 critères), Audit post-publication (GSC)</td><td>Aucun / Haiku</td></tr>
+</table>
+<div class="note"><strong>28 agents · ~$0.60/article · 10 types de contenu · article réel produit (cleantout37.html)</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline Audit de Contenu <span class="badge-green">~95% · production</span></h2>
+<p><strong>Rôle :</strong> Évaluer les pages existantes sur 7 dimensions SEO/AEO/GEO/EEAT/UX.</p>
+<table>
+<tr><th>Agent</th><th>Rôle</th><th>LLM</th></tr>
+<tr><td>AC01 · Crawler</td><td>Fetch + 55 signaux + détection CMS (12 CMS)</td><td>Aucun</td></tr>
+<tr><td>AC01b · SERP Context</td><td>Contexte SERP, faisabilité DA, cache mot-clé</td><td>Aucun</td></tr>
+<tr><td>AC02-AC06 · Scoring</td><td>SEO, AEO, GEO, EEAT, UX — scores 0-100</td><td>Aucun</td></tr>
+<tr><td>AC07 · Synthèse</td><td>Agrégation, forces/faiblesses, recommandations type-aware</td><td>Haiku</td></tr>
+<tr><td>AC08 · Roadmap</td><td>Classification : réécrire/enrichir/fusionner</td><td>Aucun</td></tr>
+<tr><td>AC09 · Cannibalisation</td><td>Paires cannibales entre pages</td><td>Aucun</td></tr>
+<tr><td>AC10 · Export</td><td>HTML + JSON + CSV + PDF, radar chart, faisabilité DA</td><td>Aucun</td></tr>
+</table>
+<div class="note"><strong>11 agents · ~$0.005/page · testé sur hartmann-tresore.fr (20 pages) · interprétation type-aware des scores</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Pipeline Audit Technique <span class="badge-yellow">~85% · agents OK, UI manquante</span></h2>
+<p><strong>Rôle :</strong> Scanner un site et produire un rapport d'audit technique complet avec roadmap CMS.</p>
+
+<h3>Collecte (Phase 1)</h3>
+<table>
+<tr><th>Agent</th><th>Rôle</th><th>Techno</th></tr>
+<tr><td>T00 · Superviseur</td><td>Consentement, bornes, startup check, profils client</td><td>Aucun</td></tr>
+<tr><td>T01 · Crawler Technique</td><td>60+ signaux HTTP, meta, Hn, images, liens, schema, hreflang, perf</td><td>httpx + BS4</td></tr>
+<tr><td>T02 · Indexation</td><td>GSC URL Inspection ou fallback heuristique — 7 statuts</td><td>GSC API</td></tr>
+<tr><td>T03 · Architecture</td><td>Graphe liens (NetworkX), Louvain clustering, silos fantômes</td><td>scikit-network</td></tr>
+<tr><td>T04 · Sitemap/Robots</td><td>BFS sitemap, robots.txt (protego), comparaison crawl</td><td>sitemap_parser.py</td></tr>
+<tr><td>T20 · Logs (opt)</td><td>Analyse logs serveur Apache/Nginx si fournis</td><td>regex</td></tr>
+</table>
+
+<h3>Analyse (Phase 2)</h3>
+<table>
+<tr><th>Agent</th><th>Rôle</th><th>Techno</th></tr>
+<tr><td>T05 · Structure</td><td>Title, meta, H1, canonical, OG — longueur, duplication</td><td>Aucun</td></tr>
+<tr><td>T06 · Thin Content</td><td>Seuils adaptatifs (produit 300, article 600, légal pas de seuil)</td><td>MD5 + cosinus</td></tr>
+<tr><td>T07 · Performance</td><td>PageSpeed Insights CrUX + Lighthouse lab → fallback heuristique</td><td>PSI API</td></tr>
+<tr><td>T08 · Mobile</td><td>Viewport, AMP, ratio texte/HTML, images sans alt</td><td>Aucun</td></tr>
+<tr><td>T09 · Schemas</td><td>Validation JSON-LD (schorg), mapping type→schemas recommandés</td><td>schorg</td></tr>
+<tr><td>T10 · International</td><td>Hreflang (polly/Moz), return tags, x-default, ISO 639-1</td><td>polly</td></tr>
+<tr><td>T11 · Sécurité</td><td>HTTPS, 6 headers (shcheck), mixed content — défensif</td><td>shcheck</td></tr>
+<tr><td>T12 · Maillage</td><td>Orphelines, pages mortes, distribution Gini</td><td>Aucun</td></tr>
+<tr><td>T13 · Anomalies</td><td>5xx, 404, boucles, canonicals contradictoires, noindex+sitemap</td><td>Aucun</td></tr>
+<tr><td>T21 · Code Quality 🆕</td><td>HTML5 sémantique, DOM depth, page builders, W3C, blocking JS/CSS</td><td>BS4 + regex</td></tr>
+</table>
+
+<h3>Synthèse & Export (Phases 3-5)</h3>
+<table>
+<tr><th>Agent</th><th>Rôle</th><th>LLM</th></tr>
+<tr><td>T14 · Impact Business</td><td>Fallback par type de page, qualitatif High/Med/Low</td><td>Aucun</td></tr>
+<tr><td>T15 · Synthèse</td><td>Score pondéré, déduplication, enrichissement LLM optionnel</td><td>Haiku (premium)</td></tr>
+<tr><td>T16 · Priorisation</td><td>Poids configurables (5 profils) → P0-P3</td><td>Aucun</td></tr>
+<tr><td>T17 · Roadmap</td><td>4 sprints, profils cibles (SEO/Dev/Hébergeur), localisation CMS</td><td>Aucun</td></tr>
+<tr><td>T18 · Routage</td><td>Connexions JSON vers pipelines 2/4/5/6/7</td><td>Aucun</td></tr>
+<tr><td>T19 · Export</td><td>HTML (Google Docs), JSON, CSV, PDF (weasyprint)</td><td>Aucun</td></tr>
+</table>
+
+<div class="success">
+<strong>22 agents (20 CDC + 2 bonus) · $0 (standard) / ~$0.005 (premium avec Haiku)</strong>
+</div>
+
+<h3>Résultats des tests réels</h3>
+<table>
+<tr><th>Site</th><th>Pages</th><th>Score</th><th>Issues</th><th>P0</th><th>Roadmap</th></tr>
+<tr><td>hartmann-tresore.fr</td><td>10</td><td><strong>69/100</strong></td><td>57</td><td>21</td><td>3 sprints, ~50h</td></tr>
+<tr><td>coffrefortpro.com</td><td>10</td><td><strong>72/100</strong></td><td>50</td><td>18</td><td>2 sprints, ~47h</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4-7. Pipelines à venir</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Agents</th><th>Dépend de</th><th>Statut</th></tr>
+<tr><td>4</td><td><strong>SERP & Positions</strong></td><td>~8</td><td>P2 (GSC), P3 (routage)</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>5</td><td><strong>Stratégie</strong></td><td>~10</td><td>P3 (silos), P4 (positions)</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>6</td><td><strong>Maillage & Backlinks</strong></td><td>~7</td><td>P3 (maillage), P2 (contenu)</td><td><span class="badge-red">0%</span></td></tr>
+<tr><td>7</td><td><strong>Maintenance</strong></td><td>~6</td><td>P3 (CWV), P4 (positions)</td><td><span class="badge-red">0%</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>Résumé Global</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Statut</th><th>Agents</th><th>Outils OSS</th><th>Coût unitaire</th></tr>
+<tr><td>1</td><td><strong>Éditorial</strong></td><td><span class="badge-green">~95% · prod</span></td><td>28</td><td>4</td><td>~$0.60/article</td></tr>
+<tr><td>2</td><td><strong>Audit de Contenu</strong></td><td><span class="badge-green">~95% · prod</span></td><td>11</td><td>2</td><td>~$0.005/page</td></tr>
+<tr><td>3</td><td><strong>Audit Technique</strong></td><td><span class="badge-yellow">~85% · agents OK</span></td><td>22</td><td>5</td><td>$0.00/10 pages</td></tr>
+<tr><td>4</td><td><strong>SERP & Positions</strong></td><td><span class="badge-red">0%</span></td><td>~8</td><td>2</td><td>—</td></tr>
+<tr><td>5</td><td><strong>Stratégie</strong></td><td><span class="badge-red">0%</span></td><td>~10</td><td>2</td><td>—</td></tr>
+<tr><td>6</td><td><strong>Maillage & Backlinks</strong></td><td><span class="badge-red">0%</span></td><td>~7</td><td>2</td><td>—</td></tr>
+<tr><td>7</td><td><strong>Maintenance</strong></td><td><span class="badge-red">0%</span></td><td>~6</td><td>0</td><td>—</td></tr>
+<tr><td colspan="3"><strong>Total</strong></td><td><strong>~92 agents</strong></td><td><strong>17 outils OSS</strong></td><td></td></tr>
+</table>
+
+<div class="warning" style="margin-top:30px">
+<strong>3 pipelines sur 7 en production :</strong>
+<ul>
+<li><strong>Pipeline 1</strong> : Articles SEO/AEO/GEO depuis le 17 juin 2026</li>
+<li><strong>Pipeline 2</strong> : Audits de contenu depuis le 22 juin 2026 (hartmann-tresore.fr)</li>
+<li><strong>Pipeline 3</strong> : Audits techniques depuis le 23 juin 2026 (hartmann-tresore.fr, coffrefortpro.com)</li>
+</ul>
+Il reste l'UI Streamlit pour le Pipeline 3 (~5h) pour le rendre utilisable en production.
+</div>
+
+<p style="margin-top:50px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">Hermes SEO v3 · V3 · FC Solutions · 23 juin 2026 · Compatible copier-coller Google Docs</p>
+
+</body>
+</html>
