@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO — Guide OAuth GSC pas à pas</title>
+<style>
+body{max-width:1000px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.8;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.step{background:#e3f2fd;border-left:4px solid #1E88E5;padding:15px 20px;margin:20px 0;border-radius:4px}
+.step strong{color:#1E88E5;font-size:1.1rem}
+.code{background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:6px;font-family:Consolas,monospace;font-size:13px;overflow-x:auto;margin:10px 0}
+.copy{font-size:12px;color:#888;margin-top:2px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px}
+.note{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO — Guide OAuth GSC pas à pas</h1>
+<p style="color:#888;margin-top:-5px">22 juin 2026 · Adapté à Hermes SEO v3 · Streamlit local + Streamlit Cloud</p>
+
+
+
+<h2>Étape 1 — Créer le projet Google Cloud</h2>
+
+<div class="step">
+<strong>1.</strong> Va sur <a href="https://console.cloud.google.com">console.cloud.google.com</a><br>
+<strong>2.</strong> En haut à gauche, clique sur le sélecteur de projet → <strong>Nouveau projet</strong><br>
+<strong>3.</strong> Nom du projet : <code>hermes-seo</code> (ou ce que tu veux)<br>
+<strong>4.</strong> Clique <strong>Créer</strong>. Attends 5 secondes que le projet soit actif.<br>
+<strong>5.</strong> Vérifie en haut que le projet <code>hermes-seo</code> est bien sélectionné.
+</div>
+
+
+
+<h2>Étape 2 — Activer les API Search Console</h2>
+
+<div class="step">
+<strong>1.</strong> Dans le menu gauche → <strong>API et services</strong> → <strong>Bibliothèque</strong><br>
+<strong>2.</strong> Cherche <code>Google Search Console API</code> → clique <strong>Activer</strong><br>
+<strong>3.</strong> Cherche <code>Google Analytics Data API</code> → clique <strong>Activer</strong><br>
+<strong>4.</strong> Cherche <code>URL Inspection API</code> → clique <strong>Activer</strong><br>
+<br>
+Résultat : 3 API activées pour le projet <code>hermes-seo</code>.
+</div>
+
+
+
+<h2>Étape 3 — Créer l'écran de consentement OAuth</h2>
+
+<div class="step">
+<strong>1.</strong> Menu gauche → <strong>API et services</strong> → <strong>Écran de consentement OAuth</strong><br>
+<strong>2.</strong> Type d'utilisateur : <strong>Externe</strong> (tu veux que tes clients puissent se connecter)<br>
+<strong>3.</strong> Remplis les champs obligatoires :</div>
+
+<table>
+<tr><th>Champ</th><th>Valeur</th></tr>
+<tr><td>Nom de l'application</td><td><code>Hermes SEO</code></td></tr>
+<tr><td>Email d'assistance</td><td>Ton email (celui du compte Google Cloud)</td></tr>
+<tr><td>Logo (optionnel)</td><td>Laisse vide</td></tr>
+<tr><td>Domaines autorisés</td><td>Laisse vide (pas nécessaire pour une app serveur)</td></tr>
+<tr><td>Liens (page d'accueil, etc.)</td><td>Tu peux les laisser vides</td></tr>
+<tr><td>Email du développeur</td><td>Ton email</td></tr>
+</table>
+
+<div class="step">
+<strong>4.</strong> Clique <strong>Enregistrer et continuer</strong><br>
+<strong>5.</strong> Écran "Portées" : clique <strong>Ajouter ou supprimer des champs d'application</strong><br>
+<strong>6.</strong> Cherche et coche <strong>Search Console API</strong> (readonly suffit pour commencer)<br>
+<strong>7.</strong> Clique <strong>Enregistrer et continuer</strong><br>
+<strong>8.</strong> Écran "Utilisateurs tests" : ajoute ton email → <strong>Enregistrer et continuer</strong><br>
+</div>
+
+<div class="warning">
+<strong>Important :</strong> Tant que ton app n'est pas "vérifiée" par Google, seuls les utilisateurs tests (ton email) pourront se connecter. C'est suffisant pour le développement. Pour la prod multi-client, il faudra faire vérifier l'app (processus Google ~2-4 semaines).
+</div>
+
+
+
+<h2>Étape 4 — Créer l'identifiant OAuth 2.0</h2>
+
+<div class="step">
+<strong>1.</strong> Menu gauche → <strong>API et services</strong> → <strong>Identifiants</strong><br>
+<strong>2.</strong> Clique <strong>+ Créer des identifiants</strong> → <strong>ID client OAuth</strong><br>
+<strong>3.</strong> Type d'application : <strong>Application Web</strong><br>
+<strong>4.</strong> Nom : <code>Hermes SEO Web</code><br>
+</div>
+
+<h3>Origines JavaScript autorisées</h3>
+
+<table>
+<tr><th>Environnement</th><th>Valeur à saisir</th></tr>
+<tr><td>Local (Streamlit)</td><td><code>http://localhost:8502</code></td></tr>
+<tr><td>Streamlit Cloud</td><td><code>https://carriere745-afk-hermes-seo-app-XXXX.streamlit.app</code> (remplace XXXX par ton vrai ID d'app)</td></tr>
+</table>
+
+<div class="note">
+<strong>Ajoute les deux</strong> — tu peux mettre plusieurs origines. Clique sur <strong>"+ Ajouter une origine"</strong> pour chacune.
+</div>
+
+<h3>URI de redirection autorisés</h3>
+
+<p>Voici les valeurs <strong>exactes</strong> pour Hermes SEO :</p>
+
+<table>
+<tr><th>Environnement</th><th>URI à saisir</th></tr>
+<tr><td>Local (Streamlit)</td><td><code>http://localhost:8502/auth/google/callback</code></td></tr>
+<tr><td>Streamlit Cloud</td><td><code>https://carriere745-afk-hermes-seo-app-XXXX.streamlit.app/auth/google/callback</code></td></tr>
+</table>
+
+<div class="warning">
+<strong>Critique :</strong> l'URI de redirection doit correspondre <strong>exactement</strong> à l'endpoint que tu vas créer dans Hermes. Si tu changes le chemin, change-le des deux côtés. Une différence d'un slash (/) peut bloquer l'auth.
+</div>
+
+<div class="step">
+<strong>5.</strong> Clique <strong>Créer</strong><br>
+<strong>6.</strong> Une popup apparaît avec ton <strong>Client ID</strong> et ton <strong>Client Secret</strong>. <strong>Copie-les tout de suite.</strong>
+</div>
+
+
+
+<h2>Étape 5 — Récupérer les identifiants</h2>
+
+<p>Google t'affiche une popup avec :</p>
+
+<table>
+<tr><th>Information</th><th>Exemple</th><th>Variable .env</th></tr>
+<tr><td>Client ID</td><td><code>123456789-xxxxx.apps.googleusercontent.com</code></td><td><code>GSC_CLIENT_ID</code></td></tr>
+<tr><td>Client Secret</td><td><code>GOCSPX-xxxxx</code></td><td><code>GSC_CLIENT_SECRET</code></td></tr>
+</table>
+
+<div class="step">
+<strong>1.</strong> Copie ces deux valeurs<br>
+<strong>2.</strong> Dans ton fichier <code>.env</code> (racine du projet), ajoute :</div>
+
+<div class="code">
+GSC_CLIENT_ID=123456789-xxxxx.apps.googleusercontent.com<br>
+GSC_CLIENT_SECRET=GOCSPX-xxxxxxxxxx
+</div>
+
+<div class="step">
+<strong>3.</strong> Sur <strong>Streamlit Cloud</strong> : <strong>Manage App → Secrets</strong> → ajoute :</div>
+
+<div class="code">
+GSC_CLIENT_ID = "123456789-xxxxx.apps.googleusercontent.com"<br>
+GSC_CLIENT_SECRET = "GOCSPX-xxxxxxxxxx"
+</div>
+
+
+
+<h2>Étape 6 — Obtenir le Refresh Token</h2>
+
+<p>C'est l'étape finale. Le refresh token permet à Hermes d'appeler l'API GSC <strong>sans que l'utilisateur ait à se reconnecter</strong>.</p>
+
+<div class="step">
+<strong>1.</strong> Ouvre ce lien dans ton navigateur (remplace <code>TON_CLIENT_ID</code> par la vraie valeur) :</div>
+
+<div class="code">
+https://accounts.google.com/o/oauth2/v2/auth?<br>
+&nbsp;&nbsp;client_id=<strong>TON_CLIENT_ID</strong><br>
+&nbsp;&nbsp;&redirect_uri=http://localhost:8502/auth/google/callback<br>
+&nbsp;&nbsp;&response_type=code<br>
+&nbsp;&nbsp;&scope=https://www.googleapis.com/auth/webmasters.readonly<br>
+&nbsp;&nbsp;&access_type=offline<br>
+&nbsp;&nbsp;&prompt=consent
+</div>
+
+<div class="step">
+<strong>2.</strong> Connecte-toi avec le compte Google qui a accès à la Search Console<br>
+<strong>3.</strong> Accepte les permissions<br>
+<strong>4.</strong> Tu es redirigé vers <code>http://localhost:8502/auth/google/callback?code=...</code><br>
+<strong>5.</strong> <strong>Copie le <code>code=</code></strong> dans l'URL (tout ce qui suit <code>code=</code> jusqu'au <code>&</code> ou à la fin)<br>
+<strong>6.</strong> Maintenant, échange ce code contre un refresh token (dans un terminal) :</div>
+
+<div class="code">
+curl -X POST https://oauth2.googleapis.com/token \<br>
+&nbsp;&nbsp;-d "client_id=<strong>TON_CLIENT_ID</strong>" \<br>
+&nbsp;&nbsp;-d "client_secret=<strong>TON_CLIENT_SECRET</strong>" \<br>
+&nbsp;&nbsp;-d "code=<strong>LE_CODE_COPIE</strong>" \<br>
+&nbsp;&nbsp;-d "redirect_uri=http://localhost:8502/auth/google/callback" \<br>
+&nbsp;&nbsp;-d "grant_type=authorization_code"<br>
+<strong>{"access_token":"...","refresh_token":"1//...","expires_in":3599}</strong>
+</div>
+
+<div class="note">
+<strong>Le refresh_token</strong> (commençant par <code>1//</code>) est le seul token que tu dois sauvegarder. Il est permanent (ou quasi-permanent). Les access tokens expirent en 1 heure et sont rafraîchis automatiquement.
+</div>
+
+
+
+<h2>Étape 7 — Configurer Hermes</h2>
+
+<p>Ajoute la dernière clé dans <code>.env</code> :</p>
+
+<div class="code">
+GSC_CLIENT_ID=123456789-xxxxx.apps.googleusercontent.com<br>
+GSC_CLIENT_SECRET=GOCSPX-xxxxxxxxxx<br>
+GSC_REFRESH_TOKEN=1//xxxxxxxxxx
+</div>
+
+<p>Et sur <strong>Streamlit Cloud → Secrets</strong> :</p>
+
+<div class="code">
+GSC_CLIENT_ID = "123456789-xxxxx.apps.googleusercontent.com"<br>
+GSC_CLIENT_SECRET = "GOCSPX-xxxxxxxxxx"<br>
+GSC_REFRESH_TOKEN = "1//xxxxxxxxxx"
+</div>
+
+<div class="step">
+<strong>Le connecteur est prêt.</strong> L'Agent 26 utilise automatiquement ces clés. Si les clés sont absentes, il reste en stub (pas d'erreur, juste pas de données GSC).
+</div>
+
+
+
+<h2>Résumé — Toutes les valeurs à saisir dans Google Cloud</h2>
+
+<table>
+<tr><th>Champ Google</th><th>Valeur pour Hermes</th></tr>
+<tr><td>Type d'application</td><td><strong>Application Web</strong></td></tr>
+<tr><td>Origine JS (local)</td><td><code>http://localhost:8502</code></td></tr>
+<tr><td>Origine JS (prod)</td><td><code>https://carriere745-afk-hermes-seo-app-XXXX.streamlit.app</code></td></tr>
+<tr><td>URI redirection (local)</td><td><code>http://localhost:8502/auth/google/callback</code></td></tr>
+<tr><td>URI redirection (prod)</td><td><code>https://carriere745-afk-hermes-seo-app-XXXX.streamlit.app/auth/google/callback</code></td></tr>
+</table>
+
+
+
+<h2>Résumé — Toutes les valeurs à mettre dans .env</h2>
+
+<div class="code">
+# Google Search Console<br>
+GSC_CLIENT_ID=123456789-xxxxx.apps.googleusercontent.com<br>
+GSC_CLIENT_SECRET=GOCSPX-xxxxxxxxxx<br>
+GSC_REFRESH_TOKEN=1//xxxxxxxxxx<br>
+<br>
+# Google Analytics 4 (optionnel, plus tard)<br>
+# GA4_PROPERTY_ID=properties/123456789<br>
+<br>
+# DataForSEO (optionnel, pour mots-clés et backlinks)<br>
+# DATAFORSEO_LOGIN=ton-email@exemple.com<br>
+# DATAFORSEO_PASSWORD=ton-mot-de-passe<br>
+<br>
+# Keywords Everywhere (optionnel, volume/CPC/tendance)<br>
+# KEYWORDS_EVERYWHERE_API_KEY=ton-token
+</div>
+
+<div class="note" style="margin-top:40px">
+<strong>Pro tip :</strong> Pour éviter d'avoir à refaire l'étape 6 à chaque fois, le refresh token Google ne s'expire que si :
+<ul>
+<li>Tu le révoques manuellement dans <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a></li>
+<li>Tu changes ton mot de passe Google</li>
+<li>L'app passe en statut "testing" et le token a plus de 7 jours</li>
+</ul>
+Passe l'app en statut <strong>"En production"</strong> (même sans vérification) pour que les refresh tokens durent indéfiniment.
+</div>
+
+
+
+<p style="margin-top:50px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document généré le 22 juin 2026 · Hermes SEO v3 · FC Solutions<br>
+Compatible copier‑coller vers Google Docs
+</p>
+
+</body>
+</html>

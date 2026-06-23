@@ -10,9 +10,11 @@ Produit :
 - Chunks : sections autonomes optimisees pour le retrieval
 
 Type-aware : adapte le niveau de sources et citations au type de page.
+Fallback heuristique si le LLM renvoie des tableaux vides.
 """
 
 import json
+import re
 import re
 from datetime import datetime
 from html.parser import HTMLParser
@@ -134,6 +136,76 @@ def _build_user_message(state: SessionState) -> str:
         f'- entites_nommees: ["Nom Propre", "Organisation", "Lieu", "Concept", ...]\n'
         f'- phrases_citables: ["Phrase autonome 1.", "Phrase autonome 2.", ...]\n'
         f'- chunks: [{{"titre": "...", "contenu": "..."}}]'
+    )
+
+
+def _geo_fallback(state: SessionState) -> GeoData:
+    """Fallback heuristique quand le LLM GEO renvoie des tableaux vides.
+
+    Extrait les entites du brouillon et genere des sources/suggestions
+    de base a partir du mot-cle et du secteur.
+    """
+    keyword = state.keyword or ""
+    html = state.brouillon_html or ""
+    secteur = state.config.secteur or "autre"
+    type_page = state.type_page or "article"
+
+    # Entites nommees : patterns de noms propres et organisations
+    entites = set()
+    # Capitalized words (2+ mots) = potentiellement des entites
+    for match in re.finditer(r"\b([A-Z][a-zàâäéèêëîïôöùûüÿ]+(?:\s+[A-Z][a-zàâäéèêëîïôöùûüÿ]+){1,4})\b", html):
+        e = match.group(1).strip()
+        if len(e) > 5 and len(e) < 80 and not any(w in e.lower() for w in ("Contenu", "Cette", "Dans", "Vous", "Nous", "Guide", "Complet", "Conseil")):
+            entites.add(e)
+        if len(entites) >= 15:
+            break
+    entites_list = list(entites)[:10]
+    if not entites_list:
+        entites_list = [keyword.title()]
+
+    # Sources primaires : suggestions sectorielles
+    source_suggestions = {
+        "finance": [{"titre": "Autorite des Marches Financiers (AMF)", "url": "https://www.amf-france.org", "type": "institutionnel"},
+                     {"titre": "Banque de France — Statistiques", "url": "https://www.banque-france.fr", "type": "institutionnel"}],
+        "sante": [{"titre": "Haute Autorite de Sante (HAS)", "url": "https://www.has-sante.fr", "type": "institutionnel"},
+                  {"titre": "Assurance Maladie — Ameli", "url": "https://www.ameli.fr", "type": "institutionnel"}],
+        "saas": [{"titre": "Gartner Digital Markets", "url": "https://www.gartner.com", "type": "etude"},
+                 {"titre": "Capterra — Comparateur logiciels", "url": "https://www.capterra.fr", "type": "etude"}],
+        "autre": [{"titre": "INSEE — Statistiques officielles", "url": "https://www.insee.fr", "type": "institutionnel"},
+                  {"titre": "Service Public", "url": "https://www.service-public.fr", "type": "institutionnel"}],
+    }
+    sources = source_suggestions.get(secteur, source_suggestions["autre"])
+
+    # Phrases citables : premiere phrase de chaque H2
+    citations = []
+    h2_matches = list(re.finditer(r"<h2[^>]*>(.*?)</h2>\s*(?:<p>(.*?)</p>)?", html, re.DOTALL))
+    for m in h2_matches[:5]:
+        h2_title = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+        h2_content = ""
+        if m.group(2):
+            h2_content = re.sub(r"<[^>]+>", "", m.group(2)).strip()
+        if h2_title and h2_content:
+            citations.append(f"{h2_title} : {h2_content[:150]}")
+    if not citations:
+        citations = [f"Guide complet sur {keyword} avec donnees verificables et sources fiables."]
+
+    # Chunks : sections H2 autonomes
+    chunks = []
+    for m in h2_matches[:4]:
+        title = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+        content = ""
+        if m.group(2):
+            content = re.sub(r"<[^>]+>", "", m.group(2)).strip()
+        if title:
+            chunks.append({"titre": title[:80], "contenu": content[:200]})
+    if not chunks:
+        chunks = [{"titre": keyword, "contenu": f"Analyse approfondie de {keyword}."}]
+
+    return GeoData(
+        sources_primaires=sources,
+        entites_nommees=entites_list,
+        phrases_citables=citations,
+        chunks=chunks,
     )
 
 
@@ -279,6 +351,10 @@ async def run(state: SessionState) -> SessionState:
                 phrases_citables=data.get("phrases_citables", []),
                 chunks=data.get("chunks", []),
             )
+            # Fallback heuristique si le LLM renvoie des tableaux vides
+            if not any([geo.sources_primaires, geo.entites_nommees,
+                        geo.phrases_citables, geo.chunks]):
+                geo = _geo_fallback(state)
             result.model_used = model_used
             result.tokens_input = tokens_in
             result.tokens_output = tokens_out

@@ -51,7 +51,8 @@ def _render_serp_tab(session_data: dict) -> None:
     # Header
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Mot-cle", keyword)
+        st.caption("Mot-cle")
+        st.markdown(f"**{keyword}**")
     with col2:
         st.metric("Intention", intention or "?")
     with col3:

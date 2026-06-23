@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO — Pipeline Audit de Contenu · Architecture</title>
+<style>
+body{max-width:1000px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #e65100;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#e65100;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#fff3e0}
+.badge-new{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-reuse{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-adapt{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-oss{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1565c0;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+pre{background:#f5f7fa;padding:15px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.5}
+ul,ol{margin:8px 0;padding-left:25px}
+li{margin:4px 0}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO — Pipeline Audit de Contenu</h1>
+<p class="meta">Architecture v0.1 · 21 juin 2026 · 10 agents · ~70% de code réutilisé · ~12h estimées</p>
+
+<div class="warning"><strong>Rappel important :</strong> saas-seo contient du code testé superficiellement. On ne copie pas aveuglément — on s'inspire de la logique et on réimplémente proprement dans Hermes avec nos standards (Pydantic, tests, fallbacks open-source).</div>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>1. Rôle du pipeline</h2>
+
+<p>Évaluer les pages existantes d'un site sur tous les aspects <strong>SEO / AEO / GEO / EEAT / UX</strong> et produire un rapport d'audit complet avec :</p>
+<ul>
+<li>Un score par page et par dimension</li>
+<li>Des forces et faiblesses identifiées</li>
+<li>Des recommandations actionnables priorisées</li>
+<li>Une roadmap de réécriture</li>
+</ul>
+
+<p>Le pipeline ne publie rien — il <strong>diagnostique</strong>. La réécriture est gérée par le pipeline Éditorial (existant), qui reçoit l'<code>audit_brief</code> en entrée.</p>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>2. Architecture globale</h2>
+
+<pre>
+URL(s) du site à auditer
+        │
+        ▼
+┌──────────────────────────────────────────────────────────────┐
+│              PIPELINE AUDIT DE CONTENU                       │
+│              (10 agents)                                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐     │
+│  │ PHASE 1 — COLLECTE (1 agent, $0 LLM)                │     │
+│  │                                                     │     │
+│  │ AC01 · Content Crawler                              │     │
+│  │ ├─ Fetch la page (requests + BeautifulSoup)         │     │
+│  │ ├─ Extrait : title, meta, H1-H6, mots, images,     │     │
+│  │ │   liens internes/externes, OG, Twitter Cards      │     │
+│  │ ├─ Extrait : tous les JSON-LD présents              │     │
+│  │ ├─ Détecte : type de page, présence breadcrumbs    │     │
+│  │ └─ <span class="badge-oss">Open-source</span> : SEOpie Core + AI Website Audit CLI    │     │
+│  └─────────────────────────────────────────────────────┘     │
+│                          │                                   │
+│                          ▼                                   │
+│  ┌─────────────────────────────────────────────────────┐     │
+│  │ PHASE 2 — SCORING (5 agents, $0 LLM)               │     │
+│  │     Tous déterministes (règles + heuristiques)      │     │
+│  │                                                     │     │
+│  │ AC02 · Scoring SEO On-Page                          │     │
+│  │ ├─ Title (longueur, keyword, unicité)              │     │
+│  │ ├─ Meta description (longueur, CTA)                │     │
+│  │ ├─ Structure Hn (hiérarchie, doublons, absences)   │     │
+│  │ ├─ Images (alt, lazy loading, dimensions)          │     │
+│  │ ├─ Densité mots-clés / keyword stuffing            │     │
+│  │ ├─ Liens internes / externes / brisés               │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : html-extractor.js + audit-parser.js      │     │
+│  │                                                     │     │
+│  │ AC03 · Scoring AEO                                  │     │
+│  │ ├─ Présence "En bref" / Position 0                  │     │
+│  │ ├─ FAQ (présence, nombre, qualité, longueur)        │     │
+│  │ ├─ H2 en questions (ratio, pertinence)              │     │
+│  │ ├─ Définitions / glossaire                           │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : Agent 11 (AEO) logique + prompt AEO       │     │
+│  │                                                     │     │
+│  │ AC04 · Scoring GEO                                  │     │
+│  │ ├─ Sources (nombre, qualité A/B/C/D)                │     │
+│  │ ├─ Entités nommées (densité, cohérence)             │     │
+│  │ ├─ Phrases citables (présence, autonomie)           │     │
+│  │ ├─ Chunks autonomes                                 │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : Agent 12 (GEO) + source_credibility.py     │     │
+│  │                                                     │     │
+│  │ AC05 · Scoring EEAT                                 │     │
+│  │ ├─ Auteur identifié + bio                           │     │
+│  │ ├─ Signaux de confiance (À propos, Contact, légal)  │     │
+│  │ ├─ Sources institutionnelles                        │     │
+│  │ ├─ YMYL detection + exigences                       │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : Agent 13 (EEAT) + articles.php checks        │     │
+│  │                                                     │     │
+│  │ AC06 · Scoring UX / Lisibilité                      │     │
+│  │ ├─ Flesch français (textstat)                       │     │
+│  │ ├─ Longueur phrases / paragraphes                   │     │
+│  │ ├─ Présence CTA                                     │     │
+│  │ ├─ Cohérence H1 / title / meta                       │     │
+│  │ └─ <span class="badge-oss">Open-source</span> : textstat (déjà intégré)                   │     │
+│  └─────────────────────────────────────────────────────┘     │
+│                          │                                   │
+│                          ▼                                   │
+│  ┌─────────────────────────────────────────────────────┐     │
+│  │ PHASE 3 — SYNTHÈSE & DÉCISION (4 agents)           │     │
+│  │                                                     │     │
+│  │ AC07 · Synthèse d'Audit                             │     │
+│  │ ├─ Agrège tous les scores (SEO+AEO+GEO+EEAT+UX)    │     │
+│  │ ├─ Identifie forces / faiblesses par page           │     │
+│  │ ├─ Génère recommandations actionnables              │     │
+│  │ ├─ Produit un audit_brief structuré                 │     │
+│  │ └─ <span class="badge-adapt">LLM</span> : Claude Haiku pour les recommandations            │     │
+│  │                                                     │     │
+│  │ AC08 · Roadmap de Réécriture                        │     │
+│  │ ├─ Classe les pages : à réécrire / enrichir /       │     │
+│  │ │   fusionner / supprimer / conserver               │     │
+│  │ ├─ Priorise par impact × effort                     │     │
+│  │ ├─ Estime le temps de réécriture par page           │     │
+│  │ └─ <span class="badge-new">Nouveau</span> : logique métier pure                          │     │
+│  │                                                     │     │
+│  │ AC09 · Superviseur Audit                            │     │
+│  │ ├─ Vérifie les transitions                          │     │
+│  │ ├─ Bloque si données critiques manquantes           │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : pattern Agent 00                           │     │
+│  │                                                     │     │
+│  │ AC10 · Export Rapport                               │     │
+│  │ ├─ HTML (lisible, imprimable, logo client)          │     │
+│  │ ├─ JSON (données brutes pour intégration)           │     │
+│  │ ├─ CSV (tableaux pour Excel)                        │     │
+│  │ └─ <span class="badge-reuse">Réutilisé</span> : Agent 23 (CMS Export) pattern                │     │
+│  └─────────────────────────────────────────────────────┘     │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │   audit_brief       │  ← consommé par le
+              │   (JSON structuré)  │     pipeline Éditorial
+              └─────────────────────┘
+</pre>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>3. Détail des 10 agents</h2>
+
+<table>
+<tr><th>#</th><th>Agent</th><th>Rôle</th><th>LLM</th><th>Origine</th></tr>
+<tr>
+<td>AC01</td>
+<td><strong>Content Crawler</strong></td>
+<td>Fetch la page, extrait 55+ signaux (titres, metas, Hn, images, liens, schemas, OG, breadcrumbs, CTAs)</td>
+<td>Aucun</td>
+<td><span class="badge-new">Nouveau</span> <span class="badge-oss">+OSS</span></td>
+</tr>
+<tr>
+<td>AC02</td>
+<td><strong>Scoring SEO On-Page</strong></td>
+<td>Score 0-100 : title, meta, Hn, images, liens, densité mots-clés</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé 80%</span></td>
+</tr>
+<tr>
+<td>AC03</td>
+<td><strong>Scoring AEO</strong></td>
+<td>Score 0-100 : En bref, FAQ, H2 questions, définitions</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé 60%</span></td>
+</tr>
+<tr>
+<td>AC04</td>
+<td><strong>Scoring GEO</strong></td>
+<td>Score 0-100 : sources, entités, phrases citables, chunks</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé 60%</span></td>
+</tr>
+<tr>
+<td>AC05</td>
+<td><strong>Scoring EEAT</strong></td>
+<td>Score 0-16 : auteur, confiance, sources institutionnelles, YMYL</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé 50%</span></td>
+</tr>
+<tr>
+<td>AC06</td>
+<td><strong>Scoring UX / Lisibilité</strong></td>
+<td>Score 0-100 : Flesch, longueur, CTA, cohérence</td>
+<td>Aucun</td>
+<td><span class="badge-new">Nouveau</span> <span class="badge-oss">+OSS</span></td>
+</tr>
+<tr>
+<td>AC07</td>
+<td><strong>Synthèse d'Audit</strong></td>
+<td>Agrège scores, forces/faiblesses, recommandations actionnables, produit audit_brief</td>
+<td>Haiku</td>
+<td><span class="badge-new">Nouveau</span></td>
+</tr>
+<tr>
+<td>AC08</td>
+<td><strong>Roadmap de Réécriture</strong></td>
+<td>Classe les pages par priorité (réécrire/enrichir/fusionner/supprimer), estime l'effort</td>
+<td>Aucun</td>
+<td><span class="badge-new">Nouveau</span></td>
+</tr>
+<tr>
+<td>AC09</td>
+<td><strong>Superviseur Audit</strong></td>
+<td>Vérifie les transitions, bloque si incohérence</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé</span></td>
+</tr>
+<tr>
+<td>AC10</td>
+<td><strong>Export Rapport</strong></td>
+<td>HTML + JSON + CSV, logo client, imprimable</td>
+<td>Aucun</td>
+<td><span class="badge-reuse">Réutilisé 80%</span></td>
+</tr>
+</table>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>4. Stack technique</h2>
+
+<table>
+<tr><th>Composant</th><th>Technologie</th><th>Origine</th></tr>
+<tr><td>Extraction HTML</td><td>BeautifulSoup (Python natif)</td><td><span class="badge-new">Nouveau</span></td></tr>
+<tr><td>Extraction contenu (fallback)</td><td>SEOpie Core (MIT, Python CLI)</td><td><span class="badge-oss">Open-source</span></td></tr>
+<tr><td>Scoring SEO multi-catégories</td><td>AI Website Audit CLI (MIT, Python)</td><td><span class="badge-oss">Open-source</span></td></tr>
+<tr><td>Scoring AEO/GEO</td><td>GEO Optimizer Skill (MIT, 47 méthodes)</td><td><span class="badge-oss">Open-source</span></td></tr>
+<tr><td>Lisibilité FR</td><td>textstat (déjà intégré)</td><td><span class="badge-oss">Open-source</span></td></tr>
+<tr><td>Mots-clés</td><td>YAKE (déjà intégré)</td><td><span class="badge-oss">Open-source</span></td></tr>
+<tr><td>Logique scoring (fallback)</td><td>html-extractor.js + audit-parser.js (saas-seo)</td><td><span class="badge-reuse">Projet frère</span></td></tr>
+<tr><td>Garde-fous</td><td>content_guard.py + source_credibility.py (existant)</td><td><span class="badge-reuse">Réutilisé</span></td></tr>
+<tr><td>LLM synthèse</td><td>Claude Haiku 4.5</td><td><span class="badge-adapt">Adapté</span></td></tr>
+<tr><td>Export HTML/PDF</td><td>Jinja2 templates + weasyprint</td><td><span class="badge-new">Nouveau</span></td></tr>
+</table>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>5. Connexion avec le pipeline Éditorial</h2>
+
+<p>Le pipeline Audit NE PUBLIE PAS. Il produit un <code>audit_brief</code> structuré que le pipeline Éditorial consomme pour réécrire les pages.</p>
+
+<pre>
+Pipeline Audit de Contenu
+        │
+        │  audit_brief = {
+        │    "page_url": "https://client.fr/faible",
+        │    "scores": { seo: 45, aeo: 30, geo: 25, eeaT: 8, ux: 60 },
+        │    "forces": ["H1 présent et pertinent", "Images avec alt"],
+        │    "faiblesses": ["Pas de FAQ", "0 source citée", "Auteur absent"],
+        │    "recommandations": [
+        │      "Ajouter FAQ 5 questions → +25 points AEO",
+        │      "Ajouter 2 sources institutionnelles → +15 points GEO",
+        │      "Ajouter bio auteur → +3 points EEAT"
+        │    ],
+        │    "action": "réécrire",
+        │    "priorite": 1
+        │  }
+        │
+        ▼
+Pipeline Éditorial (existant)
+        │
+        │  Agent 01 reçoit audit_brief à la place du brief normal
+        │  Agent 07 adapte le template selon les faiblesses
+        │  Agents 09-25 tournent normalement
+        │
+        ▼
+Contenu optimisé publié
+</pre>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>6. Interface utilisateur</h2>
+
+<p>Nouvel onglet dans la sidebar Streamlit : <strong>"Audit de Contenu"</strong></p>
+
+<table>
+<tr><th>Étape</th><th>Ce que l'utilisateur voit</th></tr>
+<tr><td>1</td><td>Champ : URL du site à auditer (ou liste d'URLs)</td></tr>
+<tr><td>2</td><td>Bouton : <strong>"Lancer l'audit"</strong></td></tr>
+<tr><td>3</td><td>Progression : barre avec les pages traitées (3/15)</td></tr>
+<tr><td>4</td><td>Résultat : dashboard d'audit avec scores par page, distribution, alertes</td></tr>
+<tr><td>5</td><td>Par page : fiche détaillée forces/faiblesses/recommandations</td></tr>
+<tr><td>6</td><td>Bouton : <strong>"Réécrire cette page"</strong> → bascule vers le pipeline Éditorial avec l'audit_brief</td></tr>
+<tr><td>7</td><td>Export : téléchargement du rapport complet (HTML/PDF/CSV)</td></tr>
+</table>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>7. Coûts estimés</h2>
+
+<table>
+<tr><th>Opération</th><th>Coût</th></tr>
+<tr><td>Audit d'une page (AC01-AC06 + AC08-AC10)</td><td>$0.00 (100% déterministe)</td></tr>
+<tr><td>Synthèse avec recommandations (AC07, LLM Haiku)</td><td>~$0.005/page</td></tr>
+<tr><td>Audit de 50 pages</td><td>~$0.25</td></tr>
+<tr><td>Rédaction optimisée (pipeline Éditorial standard)</td><td>~$0.60/article</td></tr>
+</table>
+
+<div class="note"><strong>Coût quasi nul pour l'audit.</strong> Seul l'agent AC07 utilise un LLM (Haiku, le moins cher). Tout le reste est déterministe. Le vrai coût est dans la réécriture, pas dans l'audit.</div>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>8. Effort de développement</h2>
+
+<table>
+<tr><th>Phase</th><th>Contenu</th><th>Effort</th></tr>
+<tr><td>1. Installation outils OSS</td><td>pip install seopie + AI-Website-Audit-CLI + geo-optimizer-skill</td><td>15 min</td></tr>
+<tr><td>2. AC01 Content Crawler</td><td>BeautifulSoup + fallback SEOpie Core (~400 lignes)</td><td>4h</td></tr>
+<tr><td>3. AC02-AC06 Scoring</td><td>5 agents × ~150 lignes chacun, réutilisation massive</td><td>6h</td></tr>
+<tr><td>4. AC07 Synthèse</td><td>Agrégation + LLM Haiku pour recommandations (~300 lignes)</td><td>3h</td></tr>
+<tr><td>5. AC08 Roadmap</td><td>Logique métier pure (~200 lignes)</td><td>2h</td></tr>
+<tr><td>6. AC09-AC10</td><td>Superviseur + Export (pattern réutilisé, ~150 lignes)</td><td>2h</td></tr>
+<tr><td>7. UI Streamlit</td><td>Nouvel onglet "Audit de Contenu"</td><td>3h</td></tr>
+<tr><td>8. Tests</td><td>10 agents × 4 tests = 40 tests</td><td>4h</td></tr>
+<tr><td><strong>Total</strong></td><td></td><td><strong>~24h</strong></td></tr>
+</table>
+
+<div class="warning"><strong>Gain open-source :</strong> sans les 7 outils identifiés, l'effort serait de ~40h. Les outils OSS permettent de réduire le code custom de ~60%.</div>
+
+
+
+<!-- ──────────────────────────────────────────────── -->
+<h2>9. Prochaines étapes</h2>
+
+<ol>
+<li><strong>Cahier des charges</strong> — l'utilisateur valide cette architecture et détaille les spécifications par agent</li>
+<li><strong>Installation OSS</strong> — pip install des 4 outils identifiés pour le pipeline Audit</li>
+<li><strong>AC01 Content Crawler</strong> — premier agent, le plus critique (toute la chaîne en dépend)</li>
+<li><strong>AC02-AC06 Scoring</strong> — en parallèle, car indépendants les uns des autres</li>
+<li><strong>AC07-AC10</strong> — synthèse et export</li>
+<li><strong>UI + intégration</strong> — connexion avec le pipeline Éditorial existant</li>
+<li><strong>Tests + dry-run</strong> — sur un site réel</li>
+</ol>
+
+
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document généré le 21 juin 2026 · Hermes SEO v3 · FC Solutions<br>
+Compatible copier‑coller vers Google Docs — les tableaux conservent leur structure
+</p>
+
+</body>
+</html>
