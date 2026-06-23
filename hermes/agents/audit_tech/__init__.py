@@ -20,6 +20,11 @@ from hermes.agents.audit_tech.tt02_indexation import run as tt02
 from hermes.agents.audit_tech.tt05_structure import run as tt05
 from hermes.agents.audit_tech.tt06_thin_content import run as tt06
 
+# Sprint 4
+from hermes.agents.audit_tech.tt07_performance import run as tt07
+from hermes.agents.audit_tech.tt08_mobile import run as tt08
+from hermes.agents.audit_tech.tt09_schemas import run as tt09
+
 TECH_REGISTRY: dict[str, callable] = {
     "tt00": tt00,
     "tt01": tt01,
@@ -28,6 +33,9 @@ TECH_REGISTRY: dict[str, callable] = {
     "tt04": tt04,
     "tt05": tt05,
     "tt06": tt06,
+    "tt07": tt07,
+    "tt08": tt08,
+    "tt09": tt09,
     # Sprint 4+
     # "tt07": tt07, "tt08": tt08, "tt09": tt09,
     # Sprint 5+
@@ -48,5 +56,8 @@ TECH_ORDER: list[str] = [
     "tt04",
     "tt05",
     "tt06",
+    "tt07",
+    "tt08",
+    "tt09",
     # Ajout des autres sprints au fur et a mesure
 ]

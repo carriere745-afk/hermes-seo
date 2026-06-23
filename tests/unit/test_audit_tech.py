@@ -662,6 +662,198 @@ class TestT06ThinContent:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# 13. Sprint 4 — T07 Performance
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestT07Performance:
+    """Tests de l'analyse performance (T07)."""
+
+    def _make_page(self, url="https://example.com/page", **kw):
+        defaults = {
+            "url": url, "status_code": 200, "page_size_kb": 200,
+            "ttfb_ms": 150, "load_time_ms": 800,
+            "images_total": 5, "external_links_count": 3,
+        }
+        defaults.update(kw)
+        return TechCrawlPage(**defaults)
+
+    def test_cwv_heuristic(self):
+        """L'estimation heuristique fonctionne."""
+        from hermes.connectors.pagespeed_connector import estimate_cwv_heuristic
+        result = estimate_cwv_heuristic(
+            page_size_kb=300, ttfb_ms=200, load_time_ms=1200,
+            images_count=10, external_resources=5
+        )
+        assert result["source"] == "heuristic"
+        assert result["confidence"] == "low"
+        assert "lcp" in result
+        assert "cls" in result
+        assert result["lcp"]["value"] > 0
+
+    def test_cwv_label(self):
+        """Labels CWV corrects."""
+        from hermes.connectors.pagespeed_connector import _label_cwv
+        assert _label_cwv("lcp", 1000) == "good"
+        assert _label_cwv("lcp", 3000) == "needs improvement"
+        assert _label_cwv("lcp", 5000) == "poor"
+        assert _label_cwv("cls", 0.05) == "good"
+        assert _label_cwv("cls", 0.3) == "poor"
+
+    def test_agent_run_no_pages(self):
+        """T07 sans pages."""
+        from hermes.agents.audit_tech.tt07_performance import run as tt07_run
+        state = TechAuditState(site_url="https://example.com")
+        result = asyncio.run(tt07_run(state))
+        assert len(result.issues) == 0
+
+    def test_agent_run_heavy_page(self):
+        """Page lourde genere une issue."""
+        from hermes.agents.audit_tech.tt07_performance import run as tt07_run
+
+        page = self._make_page(page_size_kb=800)
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt07_run(state))
+        assert any("lourde" in i.description.lower() for i in result.issues)
+
+    def test_agent_sets_score(self):
+        """Score performance mis a jour."""
+        from hermes.agents.audit_tech.tt07_performance import run as tt07_run
+
+        page = self._make_page()
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt07_run(state))
+        assert result.scores.performance.score >= 0
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 14. Sprint 4 — T08 Mobile
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestT08Mobile:
+    """Tests de l'analyse mobile (T08)."""
+
+    def _make_page(self, url="https://example.com/page", **kw):
+        defaults = {
+            "url": url, "status_code": 200, "word_count": 500,
+            "has_viewport": True, "images_total": 5, "images_without_alt": 0,
+            "text_html_ratio": 0.15,
+        }
+        defaults.update(kw)
+        return TechCrawlPage(**defaults)
+
+    def test_viewport_content_validation(self):
+        """Validation contenu viewport."""
+        from hermes.agents.audit_tech.tt08_mobile import _validate_viewport_content
+
+        issues = _validate_viewport_content("width=device-width, initial-scale=1")
+        assert len(issues) == 0
+
+        issues = _validate_viewport_content("width=800")
+        assert any("width=device-width" in i for i in issues)
+
+        issues = _validate_viewport_content("user-scalable=no")
+        assert any("zoom" in i for i in issues)
+
+    def test_agent_run_missing_viewport(self):
+        """Viewport absent."""
+        from hermes.agents.audit_tech.tt08_mobile import run as tt08_run
+
+        page = self._make_page(has_viewport=False)
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt08_run(state))
+        assert any("viewport" in i.description.lower() for i in result.issues)
+
+    def test_agent_run_no_pages(self):
+        """T08 sans pages."""
+        from hermes.agents.audit_tech.tt08_mobile import run as tt08_run
+        state = TechAuditState(site_url="https://example.com")
+        result = asyncio.run(tt08_run(state))
+        assert len(result.issues) == 0
+
+    def test_agent_sets_score(self):
+        """Score mobile mis a jour."""
+        from hermes.agents.audit_tech.tt08_mobile import run as tt08_run
+
+        page = self._make_page()
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt08_run(state))
+        assert result.scores.mobile.score >= 0
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# 15. Sprint 4 — T09 Schemas
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestT09Schemas:
+    """Tests de la validation schema.org (T09)."""
+
+    def _make_page(self, url="https://example.com/page", **kw):
+        defaults = {
+            "url": url, "status_code": 200, "json_ld_types": [],
+            "json_ld_valid": False, "microdata_present": False,
+        }
+        defaults.update(kw)
+        return TechCrawlPage(**defaults)
+
+    def test_page_type_detection(self):
+        """Detection du type pour schema."""
+        from hermes.agents.audit_tech.tt09_schemas import _get_page_type
+        assert _get_page_type("https://example.com/") == "accueil"
+        assert _get_page_type("https://example.com/blog/article") == "article"
+        assert _get_page_type("https://example.com/123-produit.html") == "produit"
+        assert _get_page_type("https://example.com/cgu") == "legale"
+
+    def test_validate_json_ld_types_empty(self):
+        """Liste vide = pas d'erreurs."""
+        from hermes.agents.audit_tech.tt09_schemas import _validate_json_ld_types
+        result = _validate_json_ld_types([])
+        assert result["errors"] == []
+
+    def test_validate_json_ld_known_types(self):
+        """Types connus = valides."""
+        from hermes.agents.audit_tech.tt09_schemas import _validate_json_ld_types
+        result = _validate_json_ld_types(["Article", "BreadcrumbList"])
+        assert "Article" in result["valid_types"]
+        assert "BreadcrumbList" in result["valid_types"]
+
+    def test_agent_run_missing_recommended_schema(self):
+        """Produit sans schema Product genere une issue."""
+        from hermes.agents.audit_tech.tt09_schemas import run as tt09_run
+
+        page = self._make_page("https://example.com/1-produit.html")
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt09_run(state))
+        assert any("Schema" in i.description for i in result.issues)
+        assert any("Product" in i.description for i in result.issues)
+
+    def test_agent_run_legal_no_warnings(self):
+        """Page legale sans schema = pas d'issue."""
+        from hermes.agents.audit_tech.tt09_schemas import run as tt09_run
+
+        page = self._make_page("https://example.com/cgu")
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt09_run(state))
+        assert len(result.issues) == 0
+
+    def test_agent_run_no_pages(self):
+        """T09 sans pages."""
+        from hermes.agents.audit_tech.tt09_schemas import run as tt09_run
+        state = TechAuditState(site_url="https://example.com")
+        result = asyncio.run(tt09_run(state))
+        assert len(result.issues) == 0
+
+    def test_agent_sets_score(self):
+        """Score schema mis a jour."""
+        from hermes.agents.audit_tech.tt09_schemas import run as tt09_run
+
+        page = self._make_page("https://example.com/", json_ld_types=["WebSite"],
+                               json_ld_valid=True)
+        state = TechAuditState(site_url="https://example.com", crawled_pages=[page])
+        result = asyncio.run(tt09_run(state))
+        assert result.scores.structured_data.score >= 0
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # 8. Sprint 2 — T03 Architecture
 # ═══════════════════════════════════════════════════════════════════════
 
