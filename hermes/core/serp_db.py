@@ -158,7 +158,7 @@ def insert_positions_batch(entries: list[dict]) -> int:
             """INSERT INTO positions_history
                (url, keyword, position, position_previous, variation,
                 impressions, clicks, ctr, search_volume, device, source, date)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
             (entry["url"], entry["keyword"], entry["position"],
              entry.get("position_previous", 0), entry.get("variation", 0),
              entry.get("impressions", 0), entry.get("clicks", 0), entry.get("ctr", 0.0),

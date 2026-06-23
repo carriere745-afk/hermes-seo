@@ -96,26 +96,35 @@ async def _enrich_dataforseo(keywords: list[str], state: SerpVisibilityState) ->
 async def run(state: SerpVisibilityState) -> SerpVisibilityState:
     state.current_agent = "sv01"
 
-    # 1. Si pas de mots-cles definis, recuperer depuis GSC
-    if not state.keywords:
-        try:
-            from hermes.connectors.gsc_connector import gsc
-            if gsc.is_configured:
-                domain = state.domain
-                site_url = f"sc-domain:{domain}"
-                data = await gsc.query(
-                    site_url,
-                    start_date=(datetime.now() - timedelta(days=28)).strftime("%Y-%m-%d"),
-                    end_date=datetime.now().strftime("%Y-%m-%d"),
-                    dimensions=["query"],
-                    row_limit=200,
-                )
-                if data:
-                    keywords = list(set(row.get("query", "").strip() for row in data if row.get("query")))
-                    state.keywords = keywords[:200]
-                    logger.info(f"S01: {len(state.keywords)} keywords auto-detected from GSC")
-        except Exception as e:
-            logger.warning(f"S01: auto-detect keywords failed ({e})")
+    # 1. Auto-detecter les keywords depuis GSC (top queries du site)
+    gsc_keywords = []
+    try:
+        from hermes.connectors.gsc_connector import gsc
+        if gsc.is_configured:
+            # Chercher d'abord en sc-domain, puis en url-prefix
+            for site_url_gsc in (f"sc-domain:{state.domain}", state.site_url):
+                try:
+                    data = await gsc.query(
+                        site_url_gsc,
+                        start_date=(datetime.now() - timedelta(days=28)).strftime("%Y-%m-%d"),
+                        end_date=datetime.now().strftime("%Y-%m-%d"),
+                        dimensions=["query"],
+                        row_limit=200,
+                    )
+                    if data:
+                        gsc_keywords = list(set(row.get("query", "").strip() for row in data if row.get("query")))
+                        if gsc_keywords:
+                            logger.info(f"S01: {len(gsc_keywords)} keywords auto-detected from GSC ({site_url_gsc})")
+                            break
+                except Exception:
+                    continue
+    except Exception as e:
+        logger.warning(f"S01: GSC auto-detect failed ({e})")
+
+    # Fusionner avec les keywords fournis manuellement (sans ecraser)
+    manual_keywords = [k for k in state.keywords if k not in gsc_keywords]
+    all_keywords = gsc_keywords[:150] + manual_keywords
+    state.keywords = all_keywords[:200]
 
     if not state.keywords:
         logger.warning("S01: aucun mot-cle — skip")
@@ -124,6 +133,36 @@ async def run(state: SerpVisibilityState) -> SerpVisibilityState:
 
     # 2. Collecte GSC
     gsc_data = await _fetch_gsc_positions(state)
+
+    # 2b. Pour les keywords sans donnees GSC, utiliser TalorData
+    gsc_keywords = set(r["keyword"] for r in gsc_data)
+    missing_kw = [k for k in state.keywords[:50] if k not in gsc_keywords and k.strip()]
+    if missing_kw:
+        try:
+            from hermes.connectors.serp_api import SerpAPIClient
+            client = SerpAPIClient(dry_run=False)
+            logger.info(f"S01: {len(missing_kw)} keywords without GSC data — checking TalorData")
+            for kw in missing_kw[:20]:
+                try:
+                    serp = await client.search(kw, "fr", "fr")
+                    for i, result in enumerate(serp.get("organic_results", [])[:10]):
+                        domain = result.get("domain", "")
+                        if state.domain in domain:
+                            gsc_data.append({
+                                "keyword": kw,
+                                "url": result.get("url", ""),
+                                "clicks": 0,
+                                "impressions": 0,
+                                "ctr": 0,
+                                "position": i + 1,
+                                "source": "TalorData",
+                                "device": "all",
+                            })
+                            break
+                except Exception:
+                    continue
+        except Exception as e:
+            logger.debug(f"S01: TalorData fallback skipped ({e})")
 
     # 3. Enrichir volumes KE
     unique_kw = list(set(r["keyword"] for r in gsc_data))[:100]
@@ -136,21 +175,20 @@ async def run(state: SerpVisibilityState) -> SerpVisibilityState:
     for row in gsc_data:
         kw = row["keyword"]
         entry = {
-            "url": row["url"],
+            "url": row.get("url", ""),
             "keyword": kw,
-            "position": int(row["position"]),
-            "impressions": row["impressions"],
-            "clicks": row["clicks"],
-            "ctr": row["ctr"],
+            "position": int(float(row.get("position", 0))),
+            "impressions": int(row.get("impressions", 0) or 0),
+            "clicks": int(row.get("clicks", 0) or 0),
+            "ctr": float(row.get("ctr", 0) or 0),
             "search_volume": volumes.get(kw, 0),
             "device": row.get("device", "all"),
-            "source": row["source"],
+            "source": row.get("source", "GSC"),
             "date": today,
             "variation": 0,
             "position_previous": 0,
         }
         entries.append(entry)
-
         state.positions.append(PositionEntry(**entry))
 
     # Stocker dans SQLite
