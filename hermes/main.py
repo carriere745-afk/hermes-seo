@@ -388,6 +388,103 @@ def check() -> None:
     check_and_exit()
 
 
+# ─── Audit Technique ──────────────────────────────────────────────────
+
+@cli.group()
+def audit_tech() -> None:
+    """Pipeline 3 — Audit Technique complet (12 dimensions)."""
+    pass
+
+
+@audit_tech.command("run")
+@click.option("--site-url", "-s", required=True, help="URL du site a auditer")
+@click.option("--max-urls", "-n", default=50, type=int, help="Nombre max d'URLs")
+@click.option("--mode", "-m", default="standard",
+              type=click.Choice(["fast", "standard", "premium", "debug"]),
+              help="Mode qualite")
+@click.option("--profile", "-p", default="blog",
+              type=click.Choice(["ecommerce", "blog", "institutionnel", "agence", "saas"]),
+              help="Profil client")
+@click.option("--entry-mode", "-e", default="sitemap",
+              type=click.Choice(["single", "list", "sitemap", "crawl", "csv"]),
+              help="Mode d'entree")
+@click.option("--yes", is_flag=True, help="Consentement automatique (bypass confirmation)")
+def audit_tech_run(site_url: str, max_urls: int, mode: str,
+                   profile: str, entry_mode: str, yes: bool) -> None:
+    """Lance un audit technique complet sur un site.
+
+    Exemples :
+      hermes audit-tech run -s https://mon-site.fr
+      hermes audit-tech run -s https://mon-site.fr -n 100 -m premium -p ecommerce --yes
+    """
+    import logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    logger = logging.getLogger("hermes.cli.audit_tech")
+
+    # Consentement
+    if not yes:
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  AUDIT TECHNIQUE — {site_url}")
+        click.echo(f"  Max URLs: {max_urls} | Mode: {mode} | Profil: {profile}")
+        click.echo(f"  Rate limit: 2 req/s | Respect robots.txt: OUI")
+        click.echo(f"  Aucun scan intrusif. Tests defensifs uniquement.")
+        click.echo(f"{'='*60}")
+        if not click.confirm("Lancer l'audit technique ?"):
+            click.echo("Annule.")
+            return
+
+    async def _run():
+        from hermes.core.audit_entry import resolve_entry_urls
+        from hermes.core.audit_tech_entry import init_tech_audit
+        from hermes.agents.audit_tech import TECH_ORDER, TECH_REGISTRY
+
+        # Resolution
+        click.echo("Resolution des URLs...")
+        resolved = await resolve_entry_urls(entry_mode, site_url, max_urls=max_urls)
+        if not resolved["success"]:
+            click.echo(f"Erreur: {resolved.get('error')}")
+            return
+        urls = resolved["urls"]
+        click.echo(f"  {len(urls)} URLs resolues (source: {resolved['meta'].get('source', '?')})")
+
+        # Init
+        state = await init_tech_audit(
+            site_url=site_url, urls=urls, consent_given=True,
+            profile=profile, mode=mode, max_urls=max_urls,
+        )
+
+        # Pipeline
+        for i, agent_id in enumerate(TECH_ORDER):
+            if agent_id in TECH_REGISTRY:
+                click.echo(f"  [{i+1}/{len(TECH_ORDER)}] {agent_id}...")
+                state = await TECH_REGISTRY[agent_id](state)
+
+        # Resume
+        click.echo(f"\n{'='*60}")
+        click.echo(f"  AUDIT TERMINE")
+        click.echo(f"  CMS: {state.cms_detected or 'non detecte'} ({state.cms_confidence}%)")
+        click.echo(f"  Pages: {len(state.crawled_pages)} | Issues: {len(state.issues)}")
+        click.echo(f"  Score global: {state.scores.global_score}/100 ({state.scores.global_confidence})")
+
+        dims = ['crawlability','indexation','architecture','structure','content',
+                'performance','mobile','structured_data','international','security','maillage']
+        for d in dims:
+            s = getattr(state.scores, d)
+            click.echo(f"    {d}: {s.score}/100 ({s.confidence})")
+
+        p0 = sum(1 for i in state.issues if i.priority == 'P0')
+        p1 = sum(1 for i in state.issues if i.priority == 'P1')
+        click.echo(f"  Priorites: P0={p0}, P1={p1}, P2={sum(1 for i in state.issues if i.priority=='P2')}, P3={sum(1 for i in state.issues if i.priority=='P3')}")
+
+        if state.roadmap:
+            click.echo(f"  Roadmap:")
+            for sprint in state.roadmap:
+                click.echo(f"    {sprint['sprint']}: {sprint['count']} taches, ~{sprint['estimated_hours']}h")
+        click.echo(f"{'='*60}")
+
+    asyncio.run(_run())
+
+
 # ─── Archive ───────────────────────────────────────────────────────
 
 @cli.group()
