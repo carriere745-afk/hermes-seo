@@ -39,6 +39,7 @@ from pages.archive_page import render_archive_page
 from pages.audit_page import render_audit_page
 from pages.audit_tech_page import render_audit_tech_page
 from pages.serp_visibility_page import render_serp_visibility_page
+from pages.strategie_page import render_strategie_page
 from pages.admin_dashboard import render_admin_dashboard
 from pages.session_detail_page import render_session_detail
 
@@ -385,7 +386,7 @@ with st.sidebar:
     st.markdown("## Navigation")
     nav = st.radio(
         "Page",
-        options=["Generator", "Archive", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Admin", "Session Detail"],
+        options=["Generator", "Archive", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Admin", "Session Detail"],
         label_visibility="collapsed",
         key="nav_page",
     )
@@ -492,6 +493,8 @@ with st.sidebar:
             st.caption("Analysez vos pages existantes (SEO/AEO/GEO/EEAT/UX).")
         elif nav == "SERP & Visibilite":
             st.caption("Surveillance positions, concurrence, AI visibility, alertes.")
+        elif nav == "Strategie":
+            st.caption("Roadmap editoriale, forecast, kill list, CEO summary.")
         elif nav == "Admin":
             st.caption("Consommation API, etat des connecteurs, couts.")
         elif nav == "Session Detail":
@@ -518,6 +521,8 @@ elif nav == "Audit Technique":
     render_audit_tech_page()
 elif nav == "SERP & Visibilite":
     render_serp_visibility_page()
+elif nav == "Strategie":
+    render_strategie_page()
 elif nav == "Admin":
     render_admin_dashboard()
 elif nav == "Session Detail":

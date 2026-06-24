@@ -19,6 +19,12 @@ from hermes.models.common import (
 from hermes.models.session import (
     AgentResult, SessionConfig, SessionState,
 )
+from hermes.models.strategie import (
+    ActionType, AgentMode, DecisionTrace, ExecutiveSummary,
+    ForecastEntry, GapConcurrentiel, HermesEvent, KillListEntry,
+    PortfolioCategory, PredictionEntry, PrioriteAction,
+    Recommandation, SeverityLevel, StrategiePhase, StrategieState, Sujet,
+)
 
 __all__ = [
     # Common
@@ -96,4 +102,9 @@ __all__ = [
     "ScoresFinaux",
     # Agent 26
     "FeedbackData",
+    # Pipeline 5 — Strategie
+    "ActionType", "AgentMode", "DecisionTrace", "ExecutiveSummary",
+    "ForecastEntry", "GapConcurrentiel", "HermesEvent", "KillListEntry",
+    "PortfolioCategory", "PredictionEntry", "PrioriteAction",
+    "Recommandation", "SeverityLevel", "StrategiePhase", "StrategieState", "Sujet",
 ]

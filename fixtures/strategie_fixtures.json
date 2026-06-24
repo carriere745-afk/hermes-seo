@@ -1,0 +1,42 @@
+{
+  "description": "Fixtures de test pour le Pipeline 5 — Strategie Editoriale",
+  "site": {
+    "url": "https://example-blog.fr",
+    "domain": "example-blog.fr",
+    "profile": "blog",
+    "secteur": "saas",
+    "valeur_lead": 150,
+    "taux_conversion": 0.03
+  },
+  "keywords": [
+    "guide seo complet",
+    "meilleurs outils seo",
+    "formation seo certifiante",
+    "agence seo paris",
+    "audit seo gratuit",
+    "referencement naturel",
+    "netlinking qualite",
+    "seo local",
+    "seo ecommerce",
+    "migration seo"
+  ],
+  "competitors": [
+    "semrush.com",
+    "seoquantum.com",
+    "abondance.com"
+  ],
+  "silos_config": [
+    "seo",
+    "formation",
+    "outils",
+    "agence"
+  ],
+  "pages_existantes": [
+    {"url": "/guide-seo", "title": "Guide SEO complet", "silo": "seo", "type_page": "pilier"},
+    {"url": "/outils-seo", "title": "Meilleurs outils SEO", "silo": "outils", "type_page": "article"},
+    {"url": "/formation-seo", "title": "Formation SEO", "silo": "formation", "type_page": "article"}
+  ],
+  "expected_recommandations_min": 5,
+  "expected_kill_list_min": 0,
+  "expected_sujets_min": 8
+}
