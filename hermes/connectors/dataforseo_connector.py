@@ -224,5 +224,75 @@ class DataForSEOConnector:
             return None
 
 
+    async def get_backlinks_summary(self, domain: str, limit: int = 100) -> dict:
+        """Recupere le resume des backlinks d'un domaine via l'endpoint dedie.
+
+        Endpoint: backlinks/summary/live
+        Retourne: {domain, rank, backlinks, referring_domains, referring_pages, ...}
+        """
+        try:
+            payload = [{
+                "target": domain,
+                "limit": min(limit, 1000),
+            }]
+            resp = await self._post(
+                "backlinks/summary/live",
+                payload,
+            )
+            result = {}
+            for task in (resp.get("tasks") or []):
+                for item in (task.get("result") or []):
+                    items = item.get("items") or [{}]
+                    summary = items[0] if items else {}
+                    result = {
+                        "domain": item.get("target", domain),
+                        "rank": summary.get("rank", 0),
+                        "backlinks": summary.get("backlinks", 0),
+                        "referring_domains": summary.get("referring_domains", 0),
+                        "referring_pages": summary.get("referring_pages", 0),
+                        "referring_ips": summary.get("referring_ips", 0),
+                        "referring_subnets": summary.get("referring_subnets", 0),
+                    }
+            return result
+        except Exception as e:
+            logger.warning(f"DataForSEO backlinks_summary failed: {e}")
+            return {}
+
+    async def get_backlinks_list(self, domain: str, limit: int = 200) -> list[dict]:
+        """Recupere la liste des backlinks d'un domaine.
+
+        Endpoint: backlinks/backlinks/live
+        Retourne: [{source_url, target_url, anchor, dofollow, ...}]
+        """
+        try:
+            payload = [{
+                "target": domain,
+                "limit": min(limit, 1000),
+                "order_by": ["rank", "desc"],
+            }]
+            resp = await self._post(
+                "backlinks/backlinks/live",
+                payload,
+            )
+            backlinks = []
+            for task in (resp.get("tasks") or []):
+                for item in (task.get("result") or []):
+                    for bl in (item.get("items") or []):
+                        backlinks.append({
+                            "source_url": bl.get("url_from", ""),
+                            "target_url": bl.get("url_to", ""),
+                            "anchor_text": bl.get("anchor", ""),
+                            "is_dofollow": bl.get("dofollow", True),
+                            "source_dr": bl.get("rank", 0),
+                            "first_seen": bl.get("first_seen", ""),
+                            "lost_date": bl.get("lost_date", ""),
+                        })
+            logger.info(f"DataForSEO: {len(backlinks)} backlinks trouves pour {domain}")
+            return backlinks[:limit]
+        except Exception as e:
+            logger.warning(f"DataForSEO backlinks_list failed: {e}")
+            return []
+
+
 # Singleton
 dataforseo = DataForSEOConnector()

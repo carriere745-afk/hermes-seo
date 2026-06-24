@@ -103,36 +103,74 @@ async def run(state: BacklinksState) -> BacklinksState:
 
 
 async def _import_dataforseo_backlinks(domain: str, state: BacklinksState) -> tuple[list, list]:
-    """Appelle DataForSEO Backlinks API."""
+    """Appelle DataForSEO Backlinks API — utilise les endpoints dedies."""
     try:
         from hermes.connectors.dataforseo_connector import dataforseo
-        # Utiliser get_domain_metrics pour les metriques de domaine
-        metrics = await dataforseo.get_domain_metrics([domain] + state.competitors[:5])
-        backlinks = []
+        backlinks_raw = []
         domains = []
-        for dom, m in metrics.items():
-            dr = min(100, max(0, 100 - m.get("rank", 5000000) / 50000))
-            doms = ReferringDomain(
-                domain=dom,
+
+        # 1. Backlinks summary
+        summary = await dataforseo.get_backlinks_summary(domain)
+        if summary:
+            dr = min(100, max(0, summary.get("rank", 5000000) / 50000))
+            domains.append(ReferringDomain(
+                domain=domain,
                 domain_rating=dr,
-                backlinks_count=m.get("backlinks_count", 0),
-                domain_type="blog",
-            )
-            domains.append(doms)
-            # Generer quelques backlinks representatifs
-            if dom == domain:
-                for i in range(min(10, m.get("backlinks_count", 5))):
-                    backlinks.append(Backlink(
-                        source_url=f"https://ref-{i}.{dom}",
-                        source_domain=dom,
-                        target_url=f"https://{domain}/",
-                        anchor_text=f"{domain}" if i % 3 == 0 else f"visiter {domain}",
-                        anchor_type="brand" if i % 3 == 0 else "generic",
-                        source_dr=dr,
+                backlinks_count=summary.get("backlinks", 0),
+                domain_type="target",
+            ))
+
+        # 2. Backlinks list
+        backlinks_raw = await dataforseo.get_backlinks_list(domain)
+        backlinks = []
+        for bl in backlinks_raw:
+            backlinks.append(Backlink(
+                source_url=bl.get("source_url", ""),
+                source_domain=_extract_domain(bl.get("source_url", "")),
+                target_url=bl.get("target_url", ""),
+                anchor_text=bl.get("anchor_text", ""),
+                is_dofollow=bl.get("is_dofollow", True),
+                source_dr=bl.get("source_dr", 0),
+                first_seen=_parse_date(bl.get("first_seen")),
+                is_lost=bool(bl.get("lost_date")),
+            ))
+
+        # 3. Competitors backlinks for gap analysis (V2)
+        for comp in state.competitors[:3]:
+            try:
+                comp_summary = await dataforseo.get_backlinks_summary(comp)
+                if comp_summary:
+                    domains.append(ReferringDomain(
+                        domain=comp,
+                        domain_rating=min(100, comp_summary.get("rank", 5000000) / 50000),
+                        backlinks_count=comp_summary.get("backlinks", 0),
+                        domain_type="competitor",
+                        is_competitor=True,
                     ))
+            except Exception:
+                pass
+
         return backlinks, domains
     except Exception as e:
+        logger.warning(f"DataForSEO backlinks failed ({e}), fallback to mock")
         raise
+
+
+def _extract_domain(url: str) -> str:
+    try:
+        from urllib.parse import urlparse
+        return urlparse(url).netloc.replace("www.", "")
+    except Exception:
+        return url
+
+
+def _parse_date(date_str: str):
+    if not date_str:
+        return None
+    try:
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+    except Exception:
+        return None
 
 
 def _generate_mock_backlinks(domain: str, state: BacklinksState) -> tuple[list, list]:

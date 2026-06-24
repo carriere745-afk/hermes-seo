@@ -19,15 +19,29 @@ async def run(project: Project) -> Project:
     new_patterns = 0
 
     try:
-        from hermes.core.project_db import _get_conn
+        from hermes.core.project_db import _get_conn, init_db
+        # Ensure schema is up to date
+        try:
+            init_db()
+        except Exception:
+            pass
+
         conn = _get_conn()
 
         # Analyser les actions executees pour trouver des patterns
-        rows = conn.execute(
-            "SELECT category, action_type, status, confidence_before, "
-            "impact_j30, impact_j60 "
-            "FROM execution_actions WHERE status='executed' AND impact_j30 != '{}'"
-        ).fetchall()
+        # Use try/except for each query in case columns don't exist yet
+        try:
+            rows = conn.execute(
+                "SELECT category, action_type, status, confidence_before, "
+                "impact_j30, impact_j60 "
+                "FROM execution_actions WHERE status='executed' AND impact_j30 != '{}'"
+            ).fetchall()
+        except Exception:
+            # Fallback: query without impact columns
+            rows = conn.execute(
+                "SELECT category, action_type, status, confidence_before "
+                "FROM execution_actions WHERE status='executed'"
+            ).fetchall()
         conn.close()
 
         patterns_by_type = {}

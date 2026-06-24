@@ -110,6 +110,15 @@ class GSCConnector:
                     "rowLimit": min(row_limit, 25000),
                 },
             )
+            if resp.status_code == 403:
+                logger.warning(
+                    f"GSC 403: Le site '{site_url}' n'est pas verifie dans Google Search Console "
+                    f"pour le compte OAuth actuel."
+                )
+                raise ValueError(
+                    f"Site non verifie dans GSC: '{site_url}'. "
+                    f"Ouvrez https://search.google.com/search-console et ajoutez cette propriete."
+                )
             resp.raise_for_status()
             data = resp.json()
 

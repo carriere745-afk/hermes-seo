@@ -159,3 +159,33 @@ REQUIRED_DIRS: list[Path] = [
     Path(CHROMA_PERSIST_DIRECTORY),
     Path(SQLITE_DB_PATH).parent,
 ]
+
+
+# ─── Credential sanitizer ──────────────────────────────────────────────
+
+SENSITIVE_KEYS = {
+    "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "DEEPSEEK_API_KEY",
+    "GEMINI_API_KEY", "TALORDATA_API_KEY", "SCRAPEDO_API_KEY",
+    "SERPSTACK_API_KEY", "GSC_CLIENT_ID", "GSC_CLIENT_SECRET",
+    "GSC_REFRESH_TOKEN", "DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD",
+    "KEYWORDS_EVERYWHERE_API_KEY", "RANKPARSE_API_KEY",
+    "BING_WEBMASTER_API_KEY", "GA4_PROPERTY_ID",
+}
+
+
+def sanitize_credentials(data: str) -> str:
+    """Remplace les credentials par [REDACTED] dans une chaine."""
+    import re
+    result = data
+    for key in SENSITIVE_KEYS:
+        val = _cfg._resolve(key)
+        if val and len(val) > 4:
+            result = result.replace(val, f"[REDACTED:{key}]")
+    # Redact bearer tokens
+    result = re.sub(r"Bearer\s+[A-Za-z0-9\-._~+/]+=*", "Bearer [REDACTED]", result)
+    # Redact basic auth
+    result = re.sub(r"Basic\s+[A-Za-z0-9+/=]+", "Basic [REDACTED]", result)
+    # Redact API keys in URLs
+    result = re.sub(r"api[_-]?key[=:]\s*[A-Za-z0-9\-_]+", "api_key=[REDACTED]", result)
+    return result
+

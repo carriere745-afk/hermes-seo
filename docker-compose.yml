@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  hermes:
+    build: .
+    container_name: hermes-seo
+    ports:
+      - "8501:8501"
+    volumes:
+      - hermes_data:/app/data
+      - hermes_sessions:/app/sessions
+      - hermes_logs:/app/logs
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cron service for automated SERP tracking (P4)
+  hermes-cron:
+    build: .
+    container_name: hermes-cron
+    command: python -c "
+import asyncio, sys, time
+sys.path.insert(0, '.')
+from hermes.models.serp_visibility import SerpVisibilityState
+from hermes.agents.serp_visibility import SERP_ORDER, SERP_REGISTRY
+
+async def run():
+    while True:
+        try:
+            state = SerpVisibilityState(
+                site_url=__import__('os').environ.get('CRON_SITE_URL', ''),
+                keywords=__import__('os').environ.get('CRON_KEYWORDS', '').split(','),
+                competitors=__import__('os').environ.get('CRON_COMPETITORS', '').split(','),
+                mode='standard')
+            for aid in SERP_ORDER:
+                if aid in SERP_REGISTRY:
+                    state = await SERP_REGISTRY[aid](state)
+            print(f'[CRON] Cycle complete — Health: {state.health_score}/100')
+        except Exception as e:
+            print(f'[CRON] Error: {e}')
+        await asyncio.sleep(86400)  # 24h
+
+asyncio.run(run())
+"
+    volumes:
+      - hermes_data:/app/data
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CRON_SITE_URL=${CRON_SITE_URL:-}
+      - CRON_KEYWORDS=${CRON_KEYWORDS:-}
+      - CRON_COMPETITORS=${CRON_COMPETITORS:-}
+    restart: unless-stopped
+
+volumes:
+  hermes_data:
+  hermes_sessions:
+  hermes_logs:

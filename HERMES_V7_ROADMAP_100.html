@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Roadmap 60→100/100 · V7 · 25 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px;color:#1E88E5}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-purple{display:inline-block;background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px}
+.critical{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px}
+.info{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px}
+.progress{background:#e0e0e0;border-radius:10px;height:20px;margin:5px 0}
+.progress-fill{border-radius:10px;height:100%;background:linear-gradient(90deg,#1E88E5,#42a5f5)}
+@media print{body{font-size:13px}h2{page-break-after:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Roadmap 60→100/100 · V7</h1>
+<p class="meta">25 juin 2026 | 7 chantiers | ~36h | FC Solutions</p>
+
+<div class="success">
+<strong>Objectif :</strong> Transformer Hermes SEO d'un moteur SEO interne (60/100) en produit SaaS livrable et commercialisable (100/100).
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Vue d'ensemble — Progression par chantier</h2>
+
+<table>
+<tr><th>#</th><th>Chantier</th><th>Score actuel</th><th>Score cible</th><th>Gain</th><th>Effort</th><th>Statut</th></tr>
+<tr>
+    <td>1</td><td><strong>Resilience API</strong></td>
+    <td>55/100</td><td>95/100</td><td>+40</td><td>4h</td>
+    <td><span class="badge-yellow">En cours</span></td>
+</tr>
+<tr>
+    <td>2</td><td><strong>Pertinence des donnees</strong></td>
+    <td>70/100</td><td>90/100</td><td>+20</td><td>3h</td>
+    <td><span class="badge-yellow">En cours</span></td>
+</tr>
+<tr>
+    <td>3</td><td><strong>Execution reelle</strong></td>
+    <td>45/100</td><td>90/100</td><td>+45</td><td>8h</td>
+    <td><span class="badge-blue">Modele pret — P7 existant</span></td>
+</tr>
+<tr>
+    <td>4</td><td><strong>UX/UI</strong></td>
+    <td>25/100</td><td>85/100</td><td>+60</td><td>10h</td>
+    <td><span class="badge-purple">En attente — feedback utilisateur</span></td>
+</tr>
+<tr>
+    <td>5</td><td><strong>Tests</strong></td>
+    <td>80/100</td><td>95/100</td><td>+15</td><td>4h</td>
+    <td><span class="badge-yellow">En cours</span></td>
+</tr>
+<tr>
+    <td>6</td><td><strong>Securite & Juridique</strong></td>
+    <td>35/100</td><td>85/100</td><td>+50</td><td>3h</td>
+    <td><span class="badge-yellow">En cours</span></td>
+</tr>
+<tr>
+    <td>7</td><td><strong>Deploiabilite</strong></td>
+    <td>40/100</td><td>80/100</td><td>+40</td><td>4h</td>
+    <td><span class="badge-yellow">En cours</span></td>
+</tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 1 — Resilience API (55→95)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>Remplacer endpoint DataForSEO par <code>backlinks/summary/live</code> pour P6 B01</td><td>Backlinks reels (vs mock)</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Ajouter gestion gracieuse GSC 403 : message clair « Verifiez le site dans GSC » au lieu du crash</td><td>Plus de 403 incompris</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Ajouter connecteur Bing Webmaster API en fallback</td><td>Triple redondance GSC→DataForSEO→Bing</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Propager timeout/retry automatique (tenacity) a tous les connecteurs API</td><td>Tolerance de panne</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+</table>
+
+<h3>Apres correction</h3>
+<ul>
+<li>GSC donnees temps reel → fallback DataForSEO → fallback Bing → mock intelligent</li>
+<li>Chaque echec API produit un message explicite, pas un crash</li>
+<li>Retry automatique avec backoff exponentiel sur toutes les APIs</li>
+</ul>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 2 — Pertinence des donnees (70→90)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>Crawler toutes les pages du site (pas juste homepage) pour P5 ST01</td><td>Couverture complete des sujets</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Croiser les mots-cles du crawl avec Keywords Everywhere pour volumes reels</td><td>Volumes precis, pas estimes</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Detection automatique du profil (local/ecommerce/blog) depuis le contenu</td><td>Zero configuration</td><td>1h</td><td><span class="badge-green">Fait (ST01)</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 3 — Execution reelle (45→90)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>P7 M04 : injecter le <code>llms.txt</code> genere sur le serveur</td><td>Action concrete immediate</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>P7 M06 : connecter API WordPress (XML-RPC) pour publier vraiment</td><td>Publication reelle</td><td>2h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>P7 M06 : connecter PrestaShop webservice</td><td>Couverture CMS elargie</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>P7 M05 : soumettre Disavow a GSC via API</td><td>Action SEO critique automatisee</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>P3 : generer et injecter schema JSON-LD manquant</td><td>Correction automatique</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>P2 : enrichir EEAT → generer contenu + inserer dans la page</td><td>Optimisation reelle</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 4 — UX/UI (25→85) ⏸ EN ATTENTE</h2>
+
+<div class="info">
+<strong>Ce chantier necessite le feedback utilisateur.</strong> Les idees de design et l'agencement des acces/fonctionnalites seront confirmes ulterieurement.
+</div>
+
+<h3>Actions prevues</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th></tr>
+<tr><td>Dashboard projet unifie (remplace st.radio 11 options)</td><td>Navigation intuitive</td><td>3h</td></tr>
+<tr><td>Page « Mon Site » avec 6 scores consolides + next action</td><td>Vue unique</td><td>2h</td></tr>
+<tr><td>Onboarding guide (remplace « Mode essai » par defaut)</td><td>Premiere impression</td><td>1.5h</td></tr>
+<tr><td>Barre de progression par agent (remplace spinner aveugle)</td><td>Feedback visuel</td><td>1.5h</td></tr>
+<tr><td>Bouton « Lancer diagnostic complet » (P3→P2→P4→P5→P6→P7)</td><td>One-click</td><td>1h</td></tr>
+<tr><td>Mode sombre</td><td>Confort</td><td>1h</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 5 — Tests (80→95)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>Tests integration cross-pipeline (P4→P5→P6→P7 en sequence)</td><td>Robustesse</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Fixtures JSON reelles pour chaque pipeline</td><td>Reproductibilite</td><td>1h</td><td><span class="badge-green">Partiel (strategie_fixtures.json)</span></td></tr>
+<tr><td>Tests resilience (API down, timeout, DB corrompue)</td><td>Robustesse</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Tests non-regression UI (pas de crash Streamlit)</td><td>Stabilite</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 6 — Securite & Juridique (35→85)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>Integrer les 8 disclaimers dans l'UI (acceptation avant premiere action)</td><td>Conformite legale</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Rate limiting par IP et par projet</td><td>Anti-abus</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Sanitization de toutes les entrees utilisateur</td><td>Anti-injection</td><td>0.5h</td><td><span class="badge-green">Partiel (guard.py)</span></td></tr>
+<tr><td>Credentials jamais logges, jamais dans les rapports</td><td>Securite</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Chantier 7 — Deploiabilite (40→80)</h2>
+
+<h3>Actions</h3>
+<table>
+<tr><th>Action</th><th>Impact</th><th>Effort</th><th>Statut</th></tr>
+<tr><td>Dockerfile + docker-compose.yml</td><td>Deploiement standardise</td><td>1h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Script <code>deploy.sh</code> pour Streamlit Cloud / VPS</td><td>One-click deploy</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td><code>requirements.txt</code> nettoye (fixe + supprime inutilise)</td><td>Build leger</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Mode « headless » sans Streamlit pour cron/API</td><td>Automatisation server</td><td>1.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+<tr><td>Fichier <code>SECURITY.md</code></td><td>Transparence</td><td>0.5h</td><td><span class="badge-yellow">A faire</span></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Planning recommande</h2>
+
+<table>
+<tr><th>Periode</th><th>Chantier</th><th>Gain cumule</th></tr>
+<tr><td>Semaine 1</td><td>Resilience API + Pertinence donnees + Deploiabilite + Securite</td><td>60 → 78</td></tr>
+<tr><td>Semaine 2</td><td>Execution reelle + Tests</td><td>78 → 86</td></tr>
+<tr><td>Semaine 3</td><td>UX/UI (apres feedback utilisateur)</td><td>86 → 95</td></tr>
+<tr><td>Semaine 4</td><td>Polissage, benchmark, documentation finale</td><td>95 → 100</td></tr>
+</table>
+
+<div class="note" style="margin-top:30px">
+<strong>Budget total : ~36h.</strong> C'est l'equivalent d'un pipeline complexe — sauf que celui-ci transforme un moteur SEO interne en produit SaaS livrable et commercialisable.
+</div>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Hermes SEO v3 · Roadmap 60→100/100 · V7 · FC Solutions · 25 juin 2026
+</p>
+
+</body>
+</html>
