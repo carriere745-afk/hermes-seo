@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Suivi d'Architecture · V6.5 · 24 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-purple{display:inline-block;background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.critical{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+.changelog{background:#fafafa;border:1px solid #ddd;padding:15px 20px;border-radius:6px;margin:15px 0}
+.changelog h3{margin-top:0;color:#1E88E5}
+pre{background:#f8fafc;padding:15px;border-radius:8px;font-size:13px;line-height:1.6;overflow-x:auto}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Suivi d'Architecture · V6.5</h1>
+<p class="meta">Version 0.9 · 24 juin 2026 · 6 pipelines en production · 109 agents · 13 connecteurs · 10 outils OSS · Projet Model · 8 disclaimers · Execution Engine · Learning Engine</p>
+
+<div class="success">
+<strong>V6.5 — Du diagnostic a l'execution :</strong>
+<ul>
+<li><strong>Projet Model</strong> : un site = un projet. Scores consolides, etat pipelines, onboarding, flags (penalite, YMYL, Core Update)</li>
+<li><strong>8 disclaimers</strong> : performance, delais, donnees, IA, YMYL, concurrence, budget, non-substitution. Tracabilite par projet.</li>
+<li><strong>Execution Engine</strong> : ConsolidatedRecommendation → ExecutionAction (generate/optimize/publish/monitor). 4 categories, routage automatique.</li>
+<li><strong>Onboarding Wizard</strong> : 8 etapes guidees, recommandation du prochain pipeline selon le profil.</li>
+<li><strong>Learning Engine</strong> : architecture hybride Global/Client. Chaque nouveau client beneficie du modele pre-entraine + affine en local.</li>
+<li><strong>Local SEO</strong> : Google Business Profile, coherence NAP, avis (modele de donnees pret).</li>
+<li><strong>Disaster Recovery</strong> : flags penalite/desindexation, plan de recovery.</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Vue d'ensemble — 6 pipelines en production, 2 en architecture</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Role</th><th>Agents</th><th>Statut</th><th>Execution</th></tr>
+<tr><td>1</td><td><strong>Editorial</strong></td><td>Produire du contenu SEO/AEO/GEO</td><td>28</td><td><span class="badge-green">prod</span></td><td>✅ Native (redaction + CMS)</td></tr>
+<tr><td>2</td><td><strong>Audit de Contenu</strong></td><td>Evaluer pages existantes (7 dimensions)</td><td>11</td><td><span class="badge-green">prod</span></td><td>❌ Delegue a P7</td></tr>
+<tr><td>3</td><td><strong>Audit Technique</strong></td><td>Scanner site (12 dimensions)</td><td>23</td><td><span class="badge-green">prod</span></td><td>❌ Delegue a P7</td></tr>
+<tr><td>4</td><td><strong>SERP & Visibility</strong></td><td>Surveiller positions, Core Updates</td><td>11</td><td><span class="badge-green">prod</span></td><td>🟡 Alertes email P0</td></tr>
+<tr><td>5</td><td><strong>Strategie</strong></td><td>Roadmap, forecast, kill list, CEO summary</td><td>18</td><td><span class="badge-green">prod</span></td><td>❌ Delegue a P7</td></tr>
+<tr><td>6</td><td><strong>Maillage & Backlinks</strong></td><td>Audit backlinks, CRM, AI links</td><td>18</td><td><span class="badge-green">prod</span></td><td>❌ Delegue a P7</td></tr>
+<tr><td>7</td><td><strong>Maintenance + Execution</strong></td><td>Content decay, Core Update recovery, execution automatique</td><td>~8</td><td><span class="badge-blue">Modeles prets</span></td><td>✅ Cible : tout executer</td></tr>
+<tr><td>8</td><td><strong>Learning Engine</strong></td><td>Apprentissage continu, calibration, patterns</td><td>~6</td><td><span class="badge-purple">Architecture</span></td><td>—</td></tr>
+</table>
+
+<div class="note"><strong>Total : ~129 agents. 109 implementes (P1-P6). 6/7 pipelines operationnels. P7 : modeles, DB et flux documentes. P8 : architecture documentee. Collecte de donnees active.</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Le gap Diagnostic → Execution</h2>
+
+<h3>2.1 Etat actuel : 5 pipelines sur 6 s'arretent au diagnostic</h3>
+
+<table>
+<tr><th>Pipeline</th><th>Exemple de diagnostic</th><th>Action manquante</th></tr>
+<tr><td>P2</td><td>"Score EEAT : 35/100"</td><td>Injecter les sections EEAT manquantes dans la page</td></tr>
+<tr><td>P3</td><td>"Schema BreadcrumbList manquant"</td><td>Generer le JSON-LD et l'inserer dans le &lt;head&gt;</td></tr>
+<tr><td>P3</td><td>"4 pages orphelines"</td><td>Generer les liens de maillage internes</td></tr>
+<tr><td>P4</td><td>"Perte de position sur mot-cle X"</td><td>Declencher P1 pour enrichir la page concernee</td></tr>
+<tr><td>P5</td><td>"Creer pilier sur tondeuse robot"</td><td>Router automatiquement vers P1 avec le brief</td></tr>
+<tr><td>P6</td><td>"Domaine toxique detecte"</td><td>Generer le fichier Disavow.txt pret a uploader</td></tr>
+<tr><td>P6</td><td>"llms.txt absent"</td><td>Creer le fichier automatiquement depuis le sitemap</td></tr>
+</table>
+
+<h3>2.2 Solution : Execution Engine (P7)</h3>
+<pre>
+P1→P6 DIAGNOSTIC
+      │
+      ▼
+ConsolidatedRecommendation (unifiee, cross-pipeline)
+  .action_concrete  = "Ce que l'humain doit faire"
+  .action_executable = "Ce que la machine peut faire"
+  .requires_human   = true/false
+  .disclaimers       = ["perf", "ia"]
+      │
+      ▼
+ExecutionAction (P7 M03)
+  .category = generate | optimize | publish | monitor
+      │
+      ├── GENERATE  → llms.txt, Disavow.txt, schema JSON-LD, emails CRM
+      ├── OPTIMIZE  → enrichir EEAT, ajouter FAQ, ameliorer maillage
+      ├── PUBLISH   → CMS (WP/PrestaShop), GSC Disavow, IndexNow
+      └── MONITOR   → impact J+30/60/90, recalibration predictions
+</pre>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Modele Projet — Tables et flux de donnees</h2>
+
+<h3>3.1 hermes.db — 4 nouvelles tables</h3>
+
+<table>
+<tr><th>Table</th><th>Enregistrements</th><th>Alimentee par</th></tr>
+<tr>
+    <td><code>projects</code></td>
+    <td>1 par site client</td>
+    <td>Creation manuelle ou wizard onboarding</td>
+</tr>
+<tr>
+    <td><code>project_disclaimers</code></td>
+    <td>Jusqu'a 8 par projet</td>
+    <td>Acceptation utilisateur au fil des etapes</td>
+</tr>
+<tr>
+    <td><code>execution_actions</code></td>
+    <td>Dizaines par projet</td>
+    <td>P7 M03 (dispatcher), executees par M04/M05/M06</td>
+</tr>
+<tr>
+    <td><code>consolidated_recommendations</code></td>
+    <td>Centaines par projet</td>
+    <td>Agregation P1→P6 via P7 M03</td>
+</tr>
+</table>
+
+<h3>3.2 Base de donnees existantes — recap</h3>
+<table>
+<tr><th>Base</th><th>Tables</th><th>Pipeline</th></tr>
+<tr><td><code>serp_visibility.db</code></td><td>7 (positions, alerts, competitors, sov, ai_visibility, actions, correlations)</td><td>P4</td></tr>
+<tr><td><code>strategie.db</code></td><td>3 (hermes_events, predictions_history, strategie_sessions)</td><td>P5 + Observability</td></tr>
+<tr><td><code>backlinks.db</code></td><td>10 (backlinks, domains, toxic, opportunities, campaigns, campaign_results, entity_mentions, media_relationships, portfolio_snapshots, anchor_profiles)</td><td>P6</td></tr>
+<tr><td><code>hermes.db</code></td><td>4 (projects, disclaimers, execution_actions, consolidated_recommendations)</td><td>P7 + Transverse</td></tr>
+</table>
+<div class="note"><strong>Total : 24 tables SQLite sur 4 bases.</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Disclaimers — Systeme complet</h2>
+
+<table>
+<tr><th>#</th><th>Type</th><th>Titre</th><th>Severite</th><th>Declencheur</th></tr>
+<tr>
+    <td>1</td><td><code>non_substitution</code></td>
+    <td>Outil d'aide a la decision</td>
+    <td><span class="badge-yellow">warning</span></td>
+    <td>Affichage permanent (pied de page)</td>
+</tr>
+<tr>
+    <td>2</td><td><code>donnees</code></td>
+    <td>Sources des donnees</td>
+    <td>info</td>
+    <td>Avant tout audit (P2, P3, P4, P6)</td>
+</tr>
+<tr>
+    <td>3</td><td><code>ia_generated</code></td>
+    <td>Contenu genere par IA</td>
+    <td><span class="badge-yellow">warning</span></td>
+    <td>Avant toute recommandation utilisant un LLM</td>
+</tr>
+<tr>
+    <td>4</td><td><code>performance</code></td>
+    <td>Projections de performance</td>
+    <td>info</td>
+    <td>Avant toute projection chiffree (trafic, positions, ROI)</td>
+</tr>
+<tr>
+    <td>5</td><td><code>delais</code></td>
+    <td>Delais de resultat</td>
+    <td>info</td>
+    <td>Apres la roadmap editoriale</td>
+</tr>
+<tr>
+    <td>6</td><td><code>budget</code></td>
+    <td>Estimations budgetaires</td>
+    <td>info</td>
+    <td>Avant toute estimation de cout</td>
+</tr>
+<tr>
+    <td>7</td><td><code>concurrence</code></td>
+    <td>Analyses concurrentielles</td>
+    <td>info</td>
+    <td>Avant toute analyse concurrentielle (P4 S04, P6 B04)</td>
+</tr>
+<tr>
+    <td>8</td><td><code>ymyl</code></td>
+    <td>Contenu sensible (YMYL)</td>
+    <td><span class="badge-red">critical</span></td>
+    <td>Avant publication de contenu YMYL detecte par ST09</td>
+</tr>
+</table>
+
+<div class="critical">
+<strong>Disclaimer YMYL — obligation renforcee :</strong> Les contenus relatifs a la sante, la finance, le droit, la securite necessitent une relecture par un expert qualifie. La publication sans validation peut engager la responsabilite legale et professionnelle de l'editeur.
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Onboarding Wizard — Parcours guide</h2>
+
+<table>
+<tr><th>#</th><th>Etape</th><th>Action utilisateur</th><th>Pipeline</th><th>Disclaimers</th></tr>
+<tr><td>1</td><td>Bienvenue</td><td>Nom du projet + URL</td><td>—</td><td>non_substitution</td></tr>
+<tr><td>2</td><td>Configuration</td><td>Profil (blog/ecommerce/local...), secteur, concurrents</td><td>—</td><td>—</td></tr>
+<tr><td>3</td><td>APIs</td><td>Connecter GSC (gratuit, indispensable). Optionnel : DataForSEO, KE</td><td>—</td><td>donnees</td></tr>
+<tr><td>4</td><td>Diagnostic</td><td>Lancer P3 (technique) → P2 (contenu)</td><td><strong>P3 → P2</strong></td><td>donnees</td></tr>
+<tr><td>5</td><td>Strategie</td><td>Lancer P4 (SERP) → P5 (roadmap, forecast)</td><td><strong>P4 → P5</strong></td><td>performance, delais, budget</td></tr>
+<tr><td>6</td><td>Contenu & Autorite</td><td>Generer articles (P1) → auditer backlinks (P6)</td><td><strong>P1 → P6</strong></td><td>ia_generated, ymyl, delais</td></tr>
+<tr><td>7</td><td>Surveillance</td><td>Activer le cron P4 (quotidien/hebdo)</td><td><strong>P4 (cron)</strong></td><td>performance, delais</td></tr>
+<tr><td>8</td><td>Operationnel</td><td>Check mensuel programme. Dashboard consolide.</td><td>—</td><td>—</td></tr>
+</table>
+
+<div class="note">
+<strong>Detection automatique du profil :</strong> selon l'URL, le secteur et les mots-cles, Hermes suggere le profil le plus pertinent. Exemple : "cleantout37.fr" → profil local (mot-cle "Tours" dans le domaine + mots-cles "nettoyage").
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Google Updates — Cycle complet</h2>
+
+<table>
+<tr><th>Etape</th><th>Pipeline</th><th>Agent</th><th>Action</th><th>Statut</th></tr>
+<tr><td>1. Detection</td><td>P4</td><td>S02b</td><td>Heuristique >20% kw + RSS. Alerte P0. Suspension alertes 7j</td><td><span class="badge-green">OK</span></td></tr>
+<tr><td>2. Impact Analysis</td><td>P7</td><td>M02</td><td>Pages touchees, silos, gravite. Comparaison concurrents (eux aussi touches ?)</td><td><span class="badge-blue">Modele pret</span></td></tr>
+<tr><td>3. Classification</td><td>P7</td><td>M02</td><td>Type de MAJ : Helpful Content, Spam, Core, Review...</td><td><span class="badge-blue">Modele pret</span></td></tr>
+<tr><td>4. Recovery Plan</td><td>P7</td><td>M02+M03</td><td>Pages a mettre a jour, contenu a renforcer, backlinks. Priorisation P0-P3</td><td><span class="badge-blue">Modele pret</span></td></tr>
+<tr><td>5. Execution</td><td>P7</td><td>M04+M05+M06</td><td>Enrichir contenu, redirections, Disavow, soumission GSC</td><td><span class="badge-blue">Modele pret</span></td></tr>
+<tr><td>6. Monitoring</td><td>P7</td><td>M07</td><td>Suivi J+7/30/60/90. Comparaison recovery vs concurrents</td><td><span class="badge-blue">Modele pret</span></td></tr>
+<tr><td>7. Learning</td><td>P8</td><td>L04</td><td>Patterns de recovery par type d'update. Base de connaissance evolutive</td><td><span class="badge-purple">Architecture</span></td></tr>
+</table>
+
+<div class="note"><strong>Principe :</strong> S02b dit « incendie ». P7 dit « piece touchee, plan, extincteur ». P8 dit « les 4 derniers incendies de ce type : renforcer piliers + supprimer thin content = recovery en 45 jours ».</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. Learning Engine — Collecte de donnees active</h2>
+
+<h3>7.1 Sources deja actives</h3>
+<table>
+<tr><th>Donnee</th><th>Table</th><th>Base</th><th>Pipeline source</th></tr>
+<tr><td>Journalisation agents (tokens, cout, duree, succes)</td><td><code>hermes_events</code></td><td>strategie.db</td><td>Tous (via log_event)</td></tr>
+<tr><td>Predictions (trafic, ROI, leads, confidence)</td><td><code>predictions_history</code></td><td>strategie.db</td><td>P5 ST06/ST11, P6 B06</td></tr>
+<tr><td>Correlations actions x positions J+90</td><td><code>correlations</code></td><td>serp_visibility.db</td><td>P4 S09</td></tr>
+<tr><td>Campaign results (cout, ranking_change, traffic_change)</td><td><code>campaign_results</code></td><td>backlinks.db</td><td>P6 B11 (collecte anticipee)</td></tr>
+<tr><td>Execution actions (statut, impact, erreurs)</td><td><code>execution_actions</code></td><td>hermes.db</td><td>P7 M03-M07</td></tr>
+</table>
+
+<div class="success"><strong>3 bases sur 4 collectent deja des donnees pour P8.</strong> Quand P8 sera implemente, il aura des mois de donnees historiques pour produire des correlations fiables des le premier jour.</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>8. Connecteurs (13)</h2>
+
+<table>
+<tr><th>Connecteur</th><th>Pipeline</th><th>Type</th><th>Cout</th></tr>
+<tr><td>GSC Connector</td><td>P1-P6</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>TalorData / SERP</td><td>P1, P3, P4, P5</td><td>Payant</td><td>$0.25-0.90/1K</td></tr>
+<tr><td>DataForSEO</td><td>P1, P4, P5, P6</td><td>Payant</td><td>$0.001-0.02</td></tr>
+<tr><td>DataForSEO Backlinks</td><td>P6</td><td>Payant</td><td>~$0.001/domaine</td></tr>
+<tr><td>Keywords Everywhere</td><td>P1, P2, P4, P5</td><td>Payant</td><td>~$0.01/100 kw</td></tr>
+<tr><td>RankParse</td><td>P2-P5</td><td>Payant</td><td>~$0.009</td></tr>
+<tr><td>CMS Detector</td><td>P2, P3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Sitemap Parser</td><td>P2, P3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>PageSpeed Insights</td><td>P3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Security Headers</td><td>P3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>Hreflang Validator</td><td>P3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>GEO Optimizer</td><td>P3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>SQLite Hermes</td><td>P7 + Transverse</td><td>Gratuit</td><td>$0</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>9. 24 regles de robustesse</h2>
+
+<ol>
+<li>✅ Contrats Pydantic — tous les agents et projets ont des modeles valides</li>
+<li>✅ Superviseur — consentement, bornes, rate limiting (tous pipelines)</li>
+<li>✅ Defensif uniquement — pas de test d'intrusion</li>
+<li>✅ Confidence scoring — High/Medium/Low + 0-100 (P5, P6)</li>
+<li>✅ Source de preuve — agent source + URL + observed + rule</li>
+<li>✅ do_not_recommend_if — pas de reco absurde</li>
+<li>✅ Adaptatif — seuils par type de page et profil</li>
+<li>✅ CMS-aware — recos localisees (WP, PrestaShop...)</li>
+<li>✅ Fallback cascade — GSC → TalorData → DataForSEO → mock</li>
+<li>✅ Auto-disable — KE apres 402, PSI apres 429</li>
+<li>✅ Deduplication — T15 + S07</li>
+<li>✅ Exports multiples — HTML, JSON, CSV, PDF</li>
+<li>✅ Routage inter-pipelines — T18 + S10 + ST11 + B11</li>
+<li>✅ Rate limiting + robots.txt + AI crawlers (B16)</li>
+<li>✅ Skip intelligent — agents conditionnels (fast/premium/compliance/V1.5/V2/V3)</li>
+<li>✅ Tracabilite — chaque issue/alerte/recommandation documentee</li>
+<li>✅ Core Update suspension — S02b + S07</li>
+<li>✅ Encouragements — insights positifs</li>
+<li>✅ Decision Trace — chaque recommandation P5 explicable</li>
+<li>✅ Observability — hermes_events + predictions_history (P5) + campaign_results (P6)</li>
+<li>✅ AI Link Intelligence — llms.txt, 11 AI crawlers, AI Visibility Score (B16)</li>
+<li>✅ Follow/Nofollow — ratio + alerte desequilibre (B02 + B14)</li>
+<li>🆕 Disclaimers — 8 types, tracabilite par projet, affichage contextuel</li>
+<li>🆕 Project Model — scores consolides, etat pipelines, onboarding guide, flags</li>
+</ol>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>10. Methode de travail</h2>
+
+<ol>
+<li>L'utilisateur definit le process (quel pipeline, quels agents, quel ordre)</li>
+<li>L'utilisateur ecrit le cahier des charges</li>
+<li>Claude implemente agent par agent, dans l'ordre defini</li>
+<li>Claude fait les tests et verifications</li>
+<li>Claude connecte au pipeline existant sans casser ce qui marche</li>
+<li>L'utilisateur valide chaque agent ou groupe d'agents</li>
+<li>L'utilisateur teste en conditions reelles</li>
+</ol>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>11. Changelog V6.5 (vs V6)</h2>
+
+<div class="changelog">
+<h3>24 juin 2026 — Couche Projet, Disclaimers & Execution Engine</h3>
+<ul>
+<li><strong>+2 modeles</strong> : Project (site client unifie) + ExecutionAction (mega-agent P7)</li>
+<li><strong>+1 modele</strong> : ConsolidatedRecommendation (cross-pipeline, pret a executer)</li>
+<li><strong>+1 systeme</strong> : 8 disclaimers juridiques avec tracabilite par projet</li>
+<li><strong>+1 base</strong> : hermes.db (4 tables : projects, disclaimers, execution_actions, consolidated_recommendations)</li>
+<li><strong>+1 wizard</strong> : Onboarding 8 etapes avec recommandation du prochain pipeline</li>
+<li><strong>+1 architecture</strong> : Pipeline 7 (Maintenance + Execution Engine) — 8 agents documentes</li>
+<li><strong>+1 architecture</strong> : Pipeline 8 (Learning Engine) — 6 agents, hybride Global/Client</li>
+<li><strong>+2 domaines</strong> : Local SEO (GBP, NAP, avis) + Disaster Recovery (penalite, desindexation)</li>
+<li><strong>+1 flux</strong> : Recommandation → ConsolidatedRecommendation → ExecutionAction → Publisher → Monitor → Learning</li>
+<li><strong>+2 regles robustesse</strong> : Disclaimers contextuels (23) + Project Model (24)</li>
+<li><strong>Google Updates</strong> : cycle complet P4→P7→P8 documente (detection → recovery → apprentissage)</li>
+<li><strong>Collecte P8</strong> : 5 sources de donnees actives (hermes_events, predictions, correlations, campaign_results, execution_actions)</li>
+<li><strong>Total</strong> : 24 tables SQLite sur 4 bases, ~129 agents</li>
+</ul>
+</div>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document genere le 24 juin 2026 · Hermes SEO v3 · V6.5 · FC Solutions<br>
+Compatible copier-coller Google Docs — les tableaux conservent leur structure
+</p>
+</body>
+</html>

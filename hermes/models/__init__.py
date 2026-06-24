@@ -25,6 +25,19 @@ from hermes.models.strategie import (
     PortfolioCategory, PredictionEntry, PrioriteAction,
     Recommandation, SeverityLevel, StrategiePhase, StrategieState, Sujet,
 )
+from hermes.models.backlinks import (
+    AnchorType, Backlink, BacklinkOpportunity, BacklinkPhase,
+    BacklinkRecommandation, BacklinksState, CampaignContact,
+    CampaignResult, CampaignStatus, EntityMention, EntityType,
+    LinkType, MediaRelationship, PortfolioSnapshot, PrioriteAction as BlPrioriteAction,
+    ReferringDomain, Sentiment, ToxicityLevel,
+)
+from hermes.models.project import (
+    ConsolidatedRecommendation, Disclaimer, DisclaimerType,
+    ExecutionAction, ExecutionCategory, ExecutionStatus,
+    OnboardingStep, Project, ProjectStatus, SiteProfile,
+    DISCLAIMERS, ONBOARDING_STEPS, PROFILE_DETECTION,
+)
 
 __all__ = [
     # Common
@@ -107,4 +120,14 @@ __all__ = [
     "ForecastEntry", "GapConcurrentiel", "HermesEvent", "KillListEntry",
     "PortfolioCategory", "PredictionEntry", "PrioriteAction",
     "Recommandation", "SeverityLevel", "StrategiePhase", "StrategieState", "Sujet",
+    # Pipeline 6 — Backlinks
+    "AnchorType", "Backlink", "BacklinkOpportunity", "BacklinkPhase",
+    "BacklinkRecommandation", "BacklinksState", "CampaignContact",
+    "CampaignResult", "CampaignStatus", "EntityMention", "EntityType",
+    "LinkType", "MediaRelationship", "PortfolioSnapshot",
+    "ReferringDomain", "Sentiment", "ToxicityLevel",
+    # Pipeline 7/8 — Project & Execution
+    "ConsolidatedRecommendation", "Disclaimer", "DisclaimerType",
+    "ExecutionAction", "ExecutionCategory", "ExecutionStatus",
+    "OnboardingStep", "Project", "ProjectStatus", "SiteProfile",
 ]

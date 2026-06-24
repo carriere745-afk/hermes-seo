@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO · Les 7+1 Pipelines · V6.5 · 24 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-purple{display:inline-block;background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.info{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.critical{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO · Les 7+1 Pipelines · V6.5</h1>
+<p class="meta">Version V6.5 · 24 juin 2026 · 6 pipelines en production · 109 agents · 13 connecteurs · 10 outils OSS · Projet Model pret · Disclaimers integres · Execution Engine architecture</p>
+
+<div class="success">
+<strong>V6.5 — Couche Projet, Disclaimers & Execution Engine :</strong> Modele Project unifie (scores consolides, etat pipelines, onboarding guide), 8 disclaimers juridiques (performance, delais, donnees, IA, YMYL, concurrence, budget, non-substitution), ExecutionAction model (generate/optimize/publish/monitor), ConsolidatedRecommendation (cross-pipeline), Onboarding Wizard 8 etapes, Local SEO data model, Disaster Recovery flags. Documentation complete des pipelines 7 (Maintenance + Execution) et 8 (Learning Engine).
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Pipeline Editorial (Redaction) <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Produire tout type de contenu SEO/AEO/GEO. Seul pipeline avec execution native (redaction + CMS Export).</p>
+<table>
+<tr><th>Phase</th><th>Agents</th><th>Role</th></tr>
+<tr><td>Orchestration</td><td>00</td><td>Superviseur</td></tr>
+<tr><td>Contextualisation</td><td>01-03</td><td>Brief, Persona, Analyse SERP</td></tr>
+<tr><td>Strategie</td><td>04-07</td><td>Intention, Offre, Differenciation, Template (10)</td></tr>
+<tr><td>Verification</td><td>08</td><td>Anti-cannibalisation (ChromaDB)</td></tr>
+<tr><td>Production</td><td>09</td><td>Redaction HTML (Claude Sonnet)</td></tr>
+<tr><td>Optimisation</td><td>10-12</td><td>SEO, AEO, GEO</td></tr>
+<tr><td>Validation</td><td>13-15</td><td>EEAT, Conformite (9 secteurs), Fact-checking</td></tr>
+<tr><td>Enrichissement</td><td>16-22, 27</td><td>Maillage, Multiformat, Schema, Images, Localisation</td></tr>
+<tr><td>Publication</td><td>23-24</td><td>CMS Export, Plan MAJ</td></tr>
+<tr><td>Decision</td><td>25-26</td><td>Critique Qualite (9 criteres), Audit post-publication (GSC)</td></tr>
+</table>
+<div class="note"><strong>28 agents · ~$0.60/article · 10 types de contenu · Execution native</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline Audit de Contenu <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Evaluer les pages existantes sur 7 dimensions. Diagnostique — execution delegatee a P7.</p>
+<table>
+<tr><th>Agent</th><th>Role</th></tr>
+<tr><td>AC01 · Crawler</td><td>Fetch + 55 signaux + CMS (12 CMS)</td></tr>
+<tr><td>AC01b · SERP Context</td><td>Contexte SERP, faisabilite DA</td></tr>
+<tr><td>AC02-AC06 · Scoring</td><td>SEO, AEO, GEO, EEAT, UX — 0-100</td></tr>
+<tr><td>AC07 · Synthese</td><td>Forces/faiblesses, recommandations type-aware</td></tr>
+<tr><td>AC08 · Roadmap</td><td>Reecrire/enrichir/fusionner</td></tr>
+<tr><td>AC09 · Cannibalisation</td><td>Paires cannibales</td></tr>
+<tr><td>AC10 · Export</td><td>HTML/JSON/CSV/PDF, radar chart</td></tr>
+</table>
+<div class="note"><strong>11 agents · ~$0.005/page · Recommandations routees vers P7</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Pipeline Audit Technique <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Scanner le site, 12 dimensions techniques. Diagnostique — execution delegatee a P7.</p>
+<table>
+<tr><th>Agent</th><th>Role</th><th>Outils</th></tr>
+<tr><td>T00 · Superviseur</td><td>Consentement, bornes, 5 profils</td><td>—</td></tr>
+<tr><td>T01-T13 · Audit</td><td>Crawler, Indexation, Architecture, Sitemap, Structure, Thin Content, Performance, Mobile, Schemas, International, Securite, Maillage, Anomalies</td><td>PSI, shcheck, polly, protego, schorg, scikit-network</td></tr>
+<tr><td>T14-T20 · Synthese</td><td>Impact Business, Synthese (Haiku), Priorisation, Roadmap, Routage, Export, Logs</td><td>Haiku</td></tr>
+<tr><td>T21-T22 · Avance</td><td>Code Quality, AEO/GEO (llms.txt, 11 AI crawlers)</td><td>geo-optimizer-skill</td></tr>
+</table>
+<div class="success"><strong>23 agents · $0.00/10 pages (standard)</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Pipeline SERP & Visibility <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Surveiller positions, concurrence, Core Updates, AI Visibility. Alertes email P0. Correlations actions/positions J+90.</p>
+<table>
+<tr><th>Phase</th><th>Agent</th><th>Role</th></tr>
+<tr><td rowspan="2">Collecte</td><td>S01 · Rank Tracker</td><td>GSC + TalorData + KE volumes + SQLite</td></tr>
+<tr><td>S02 · Variations</td><td>7 categories, filtre anti-bruit 3j</td></tr>
+<tr><td rowspan="7">Analyse</td><td>S02b · Google Update</td><td>Heuristique + RSS, alerte P0, suspension 7j</td></tr>
+<tr><td>S03 · SERP Features</td><td>10 features, scoring opportunite</td></tr>
+<tr><td>S04 · Concurrents</td><td>Classification 7 types + encouragements</td></tr>
+<tr><td>S04b · Share of Voice</td><td>SOV impressions, clics, evolution</td></tr>
+<tr><td>S05 · Gap Content</td><td>Top 3 vs page + Haiku</td></tr>
+<tr><td>S06 · Quick Wins</td><td>Positions 4-15 + Business Score</td></tr>
+<tr><td>S08 · AEO/AI</td><td>Citations SGE, AI Visibility Score</td></tr>
+<tr><td>Alerte</td><td>S07 · Alertes</td><td>Deduplication, email P0, webhook</td></tr>
+<tr><td>Correlation</td><td>S09 · Correlation</td><td>Actions x positions J+90</td></tr>
+<tr><td>Export</td><td>S10 · Synthese</td><td>Health Score 0-100, rapport HTML</td></tr>
+</table>
+<div class="success"><strong>11 agents · $0 (fast) / ~$2.50/mois (standard, 500 kw) · Alerte email P0</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Pipeline Strategie <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Cerveau decisionnel. Roadmap, forecast, kill list, CEO summary. Confidence Score + Decision Trace.</p>
+<table>
+<tr><th>Phase</th><th>Agent</th><th>Role</th><th>LLM</th></tr>
+<tr><td>Startup</td><td>ST00</td><td>Verification P2/P3/P4, GA4, init DB</td><td>Aucun</td></tr>
+<tr><td rowspan="11">Analyse</td><td>ST01</td><td>Cartographie des Sujets (ChromaDB)</td><td>Aucun</td></tr>
+<tr><td>ST01b</td><td>Topical Authority Score 0-100</td><td>Aucun</td></tr>
+<tr><td>ST02</td><td>Cannibalisation (P4+ChromaDB)</td><td>Aucun</td></tr>
+<tr><td>ST03</td><td>Opportunites (GSC + volumes)</td><td>Aucun</td></tr>
+<tr><td>ST04</td><td>Gap Concurrentiel</td><td>Haiku</td></tr>
+<tr><td>ST04b</td><td>Competitive Feasibility 0-100</td><td>Aucun</td></tr>
+<tr><td>ST04c</td><td>GEO Opportunity Mapping</td><td>Aucun</td></tr>
+<tr><td>ST05</td><td>Business Score (trafic x conv x valeur)</td><td>Aucun</td></tr>
+<tr><td>ST05b</td><td>SEO Economics (effort/ROI/delai)</td><td>Aucun</td></tr>
+<tr><td>ST07</td><td>Silos & Clusters</td><td>Aucun</td></tr>
+<tr><td>ST08</td><td>Fusion/Separation</td><td>Aucun</td></tr>
+<tr><td rowspan="6">Synthese</td><td>ST06</td><td>Roadmap + Confidence + Decision Trace</td><td>Haiku</td></tr>
+<tr><td>ST06b</td><td>Forecast 12 mois</td><td>Haiku</td></tr>
+<tr><td>ST06c</td><td>Portfolio Strategy</td><td>Aucun</td></tr>
+<tr><td>ST09</td><td>Revue Humaine (YMYL/controverses)</td><td>Aucun</td></tr>
+<tr><td>ST10</td><td>Priorisation Globale</td><td>Aucun</td></tr>
+<tr><td>ST10b</td><td>Kill List</td><td>Aucun</td></tr>
+<tr><td>Export</td><td>ST11</td><td>CEO Summary + HTML/JSON + routage</td><td>Aucun</td></tr>
+</table>
+<div class="success"><strong>18 agents · $0 (fast) / ~$0.08 (standard) / ~$0.15 (premium) · 34 tests</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Pipeline Maillage & Backlinks <span class="badge-green">~95% · prod</span></h2>
+<p><strong>Role :</strong> Piloter l'autorite externe. Audit, CRM, prospect discovery, AI link intelligence, portfolio optimizer.</p>
+<table>
+<tr><th>Phase</th><th>Agent</th><th>Role</th><th>Version</th></tr>
+<tr><td>Startup</td><td>B00</td><td>Verification DataForSEO/GSC/Bing, init DB</td><td>MVP</td></tr>
+<tr><td>Collecte</td><td>B01</td><td>Import backlinks DataForSEO + GSC + fallback</td><td>MVP</td></tr>
+<tr><td rowspan="13">Analyse</td><td>B02</td><td>Qualite domaines (DR, topical, scarcity, geo) + follow/nofollow</td><td>MVP</td></tr>
+<tr><td>B03</td><td>Toxicite (PBN, spam, ancres) — 4 niveaux</td><td>MVP</td></tr>
+<tr><td>B04</td><td>Gap Analysis concurrents</td><td>MVP</td></tr>
+<tr><td>B05</td><td>Link Reclamation (mentions sans lien)</td><td>MVP</td></tr>
+<tr><td>B05b</td><td>Broken Link Building</td><td>V1.5</td></tr>
+<tr><td>B12</td><td>Prospect Discovery par secteur</td><td>MVP</td></tr>
+<tr><td>B14</td><td>Anchor Strategy + suggestions concretes</td><td>MVP</td></tr>
+<tr><td>B16</td><td>AI Link Intelligence (llms.txt, 11 AI crawlers)</td><td>MVP</td></tr>
+<tr><td>B15</td><td>Portfolio Optimizer (8 types de sources)</td><td>V3</td></tr>
+<tr><td>B17</td><td>Media Relationship Score</td><td>V3</td></tr>
+<tr><td>B08</td><td>Moteur de Preuve SEO (correlation backlink→ranking)</td><td>V2</td></tr>
+<tr><td>B09</td><td>Link Scarcity & Velocity</td><td>V2</td></tr>
+<tr><td>B10</td><td>Authority Graph</td><td>V2</td></tr>
+<tr><td>Synthese</td><td>B06</td><td>Recommandations + Plan d'action (Haiku)</td><td>MVP</td></tr>
+<tr><td>Execution</td><td>B07</td><td>CRM netlinking (8 statuts, 50+ campagnes)</td><td>MVP</td></tr>
+<tr><td>Export</td><td>B11</td><td>Rapport HTML/JSON, scores (Authority, Health, Diversity), routage P1/P5/P7</td><td>MVP</td></tr>
+</table>
+
+<h3>7 Scores produits</h3>
+<table>
+<tr><th>Score</th><th>Description</th></tr>
+<tr><td>Authority Score</td><td>Moyenne ponderee DR + Topical + Diversite</td></tr>
+<tr><td>Link Profile Health</td><td>(1 - toxicite) x (1 - risque ancres)</td></tr>
+<tr><td>Portfolio Diversity</td><td>8 types de sources — ecart vs mix cible</td></tr>
+<tr><td>Anchor Health</td><td>Profil d'ancres actuel vs cible + follow/nofollow</td></tr>
+<tr><td>AI Visibility Score</td><td>llms.txt + 11 AI crawlers + Entity Authority</td></tr>
+<tr><td>Competitor Gap Score</td><td>Domaines concurrents non acquis</td></tr>
+<tr><td>Entity Authority Score</td><td>Mentions x autorite source x sentiment</td></tr>
+</table>
+
+<div class="success"><strong>18 agents · $0.15/audit (MVP) / ~$0.20 (complet) · 27 tests · 10 tables SQLite</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. Pipeline Maintenance & Execution Engine <span class="badge-blue">V6.5 — Architecture & Modeles prets</span></h2>
+
+<div class="info">
+<strong>P7 est le pivot qui transforme Hermes SEO d'un outil de diagnostic en plateforme d'execution.</strong><br>
+Il recoit les recommandations de P1→P6, les transforme en actions executables, les execute, et logue tout pour P8.
+</div>
+
+<h3>7.1 Double role</h3>
+
+<table>
+<tr><th>Role</th><th>Description</th><th>Exemples</th></tr>
+<tr>
+    <td><strong>Maintenance</strong></td>
+    <td>Surveiller la sante du site et reagir aux degradations</td>
+    <td>Content decay, Core Update recovery, pages obsoletes, liens perdus, erreurs 404</td>
+</tr>
+<tr>
+    <td><strong>Execution Engine</strong></td>
+    <td>Transformer les recommandations en actions concretes</td>
+    <td>Generer llms.txt, generer Disavow.txt, creer templates email, enrichir pages, redirections 301, schema JSON-LD</td>
+</tr>
+</table>
+
+<h3>7.2 Agents (8 prevus)</h3>
+
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>Input</th><th>Output</th></tr>
+<tr>
+    <td>M00</td>
+    <td>Superviseur Maintenance</td>
+    <td>Startup check, charger projet, evaluer etat pipelines</td>
+    <td>Project DB</td>
+    <td>ProjectStatus, plan d'action</td>
+</tr>
+<tr>
+    <td>M01</td>
+    <td>Content Decay Detector</td>
+    <td>Identifier les pages en perte de trafic (>20% sur 90j), classifier la cause</td>
+    <td>P4 positions, GSC</td>
+    <td>Liste pages a mettre a jour</td>
+</tr>
+<tr>
+    <td>M02</td>
+    <td>Core Update Impact Analyzer</td>
+    <td>Analyser l'impact d'une Core Update : quelles pages, quels silos, quelle gravite. Comparer aux concurrents</td>
+    <td>P4 S02b alerte, S02 variations, S04 concurrents</td>
+    <td>Rapport d'impact + plan de recovery</td>
+</tr>
+<tr>
+    <td>M03</td>
+    <td>Execution Dispatcher</td>
+    <td>Recevoir les recommandations consolidees, les transformer en ExecutionAction, les prioriser</td>
+    <td>ConsolidatedRecommendation (tous pipelines)</td>
+    <td>ExecutionAction (generate/optimize/publish/monitor)</td>
+</tr>
+<tr>
+    <td>M04</td>
+    <td>Content Generator</td>
+    <td>Executer les actions de type "generate" : llms.txt, Disavow.txt, schema JSON-LD, emails CRM, redirections 301</td>
+    <td>ExecutionAction (category=generate)</td>
+    <td>Fichiers generes, contenu pret</td>
+</tr>
+<tr>
+    <td>M05</td>
+    <td>Page Optimizer</td>
+    <td>Executer les actions de type "optimize" : enrichir sections EEAT, ajouter FAQ schema, ameliorer maillage interne</td>
+    <td>ExecutionAction (category=optimize)</td>
+    <td>Pages modifiees, diffs</td>
+</tr>
+<tr>
+    <td>M06</td>
+    <td>Publisher</td>
+    <td>Executer les actions de type "publish" : envoyer vers CMS (WordPress, PrestaShop...), upload Disavow GSC, notifier IndexNow</td>
+    <td>ExecutionAction (category=publish)</td>
+    <td>Confirmation publication</td>
+</tr>
+<tr>
+    <td>M07</td>
+    <td>Impact Monitor</td>
+    <td>Suivre l'impact des actions executees (J+7, J+30, J+60, J+90) et loguer pour P8</td>
+    <td>ExecutionAction + P4 positions</td>
+    <td>Impact report, predictions actualisees</td>
+</tr>
+</table>
+
+<h3>7.3 Categories d'execution</h3>
+
+<table>
+<tr><th>Catégorie</th><th>Actions</th><th>Exemples concrets</th></tr>
+<tr>
+    <td><strong>GENERATE</strong></td>
+    <td>Creer du contenu, des fichiers, des templates</td>
+    <td>llms.txt, Disavow.txt, schema JSON-LD, emails CRM personnalises, meta descriptions, titles optimises</td>
+</tr>
+<tr>
+    <td><strong>OPTIMIZE</strong></td>
+    <td>Enrichir, modifier, ameliorer</td>
+    <td>Ajouter sections EEAT, inserer FAQ, enrichir thin content, ajuster ancres, corriger hreflang</td>
+</tr>
+<tr>
+    <td><strong>PUBLISH</strong></td>
+    <td>Envoyer vers l'exterieur</td>
+    <td>CMS (WordPress/PrestaShop), Google Disavow Tool, IndexNow, Google Search Console (URL inspection)</td>
+</tr>
+<tr>
+    <td><strong>MONITOR</strong></td>
+    <td>Suivre, mesurer, alerter</td>
+    <td>Impact J+30/60/90, recalibration predictions, alerte si action sans effet, rapport ROI</td>
+</tr>
+</table>
+
+<h3>7.4 Integration Onboarding</h3>
+
+<table>
+<tr><th>Etape</th><th>Pipeline recommande</th><th>Disclaimers</th></tr>
+<tr><td>1. Bienvenue</td><td>—</td><td>non_substitution</td></tr>
+<tr><td>2. Configuration site</td><td>—</td><td>—</td></tr>
+<tr><td>3. Connexion APIs</td><td>—</td><td>donnees</td></tr>
+<tr><td>4. Premier diagnostic</td><td>P3 → P2</td><td>donnees</td></tr>
+<tr><td>5. Strategie</td><td>P4 → P5</td><td>performance, delais, budget</td></tr>
+<tr><td>6. Contenu & Backlinks</td><td>P1 → P6</td><td>ia_generated, ymyl, delais</td></tr>
+<tr><td>7. Surveillance</td><td>P4 (cron)</td><td>performance, delais</td></tr>
+<tr><td>8. Operationnel</td><td>Revue mensuelle</td><td>—</td></tr>
+</table>
+
+<div class="success"><strong>~8 agents · Pipeline cle qui transforme le diagnostic en action</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>8. Pipeline Learning Engine <span class="badge-purple">V6.5 — Architecture documentee</span></h2>
+
+<div class="info">
+<strong>P8 est le cerveau qui apprend.</strong> Il compare les predictions aux resultats reels, calibre les scores, detecte les patterns gagnants, et enrichit le modele global pour tous les clients.
+</div>
+
+<h3>8.1 Architecture hybride Global/Client</h3>
+
+<table>
+<tr><th>Axe</th><th>Global (anonymise, agree)</th><th>Client (isole, prive)</th></tr>
+<tr>
+    <td><strong>Correlations backlink→ranking</strong></td>
+    <td>Patterns agreges par secteur/profil</td>
+    <td>Calibration propre au site</td>
+</tr>
+<tr>
+    <td><strong>Delais moyens de resultat</strong></td>
+    <td>Par type d'action (pilier: 4-6 mois, FAQ: 2-3 mois)</td>
+    <td>Historique specifique</td>
+</tr>
+<tr>
+    <td><strong>Meilleures pratiques emergentes</strong></td>
+    <td>ML clustering des patterns de succes</td>
+    <td>Profil de succes editorial</td>
+</tr>
+<tr>
+    <td><strong>Calibration Confidence Score</strong></td>
+    <td>Courbe globale prevu vs reel</td>
+    <td>Ajustement local</td>
+</tr>
+<tr>
+    <td><strong>Google Updates</strong></td>
+    <td>Patterns par type d'update</td>
+    <td>Impact historique par silo</td>
+</tr>
+<tr>
+    <td><strong>Profil d'ancres optimal</strong></td>
+    <td>Par secteur (ecommerce: 40% brand)</td>
+    <td>Ajustement selon les resultats</td>
+</tr>
+</table>
+
+<h3>8.2 Sources de donnees pour l'apprentissage</h3>
+
+<table>
+<tr><th>Source</th><th>Donnees</th><th>Table</th></tr>
+<tr><td>P4 S09</td><td>Correlations actions x positions J+90</td><td>correlations (serp_visibility.db)</td></tr>
+<tr><td>P5 ST06/ST11</td><td>Predictions trafic/ROI/leads + Confidence Score</td><td>predictions_history (strategie.db)</td></tr>
+<tr><td>P6 B08/B11</td><td>Campaign results : cout, ranking_change, traffic_change</td><td>campaign_results (backlinks.db)</td></tr>
+<tr><td>P7 M07</td><td>Impact des ExecutionAction J+7/30/60/90</td><td>execution_actions (hermes.db)</td></tr>
+<tr><td>P4 S02b</td><td>Core Updates detectees + impact</td><td>alerts_log (serp_visibility.db)</td></tr>
+<tr><td>Tous pipelines</td><td>Journalisation agents (tokens, cout, duree, succes)</td><td>hermes_events (strategie.db)</td></tr>
+</table>
+
+<h3>8.3 Agents (6 prevus)</h3>
+
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>Niveau</th></tr>
+<tr><td>L00</td><td>Superviseur Learning</td><td>Charger les donnees, verifier le volume minimum pour apprentissage</td><td>Global + Client</td></tr>
+<tr><td>L01</td><td>Confidence Calibrator</td><td>Comparer confidence_score vs resultat reel, ajuster la courbe de calibration</td><td>Global + Client</td></tr>
+<tr><td>L02</td><td>Pattern Detector</td><td>Identifier les patterns recurrents de succes/echec par clustering</td><td>Global</td></tr>
+<tr><td>L03</td><td>Delay Estimator</td><td>Affiner les delais de resultat par type d'action et secteur</td><td>Global</td></tr>
+<tr><td>L04</td><td>Update Classifier</td><td>Classifier les Core Updates, apprendre les patterns de recovery</td><td>Global</td></tr>
+<tr><td>L05</td><td>Model Distributor</td><td>Synchroniser le modele global vers les instances clients (anonymise)</td><td>Global</td></tr>
+</table>
+
+<div class="note">
+<strong>Principe cle :</strong> chaque nouveau client beneficie du modele global pre-entraine. Son instance personnelle s'affine avec ses propres donnees. Les patterns agreges remontent au modele global (anonymises). Comme les voitures autonomes : le cerveau central apprend de toutes, chaque vehicule s'adapte a son environnement.
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>9. Modele Projet — Unification de l'experience</h2>
+
+<h3>9.1 Tables SQLite — hermes.db (4 nouvelles tables)</h3>
+
+<table>
+<tr><th>Table</th><th>Description</th><th>Colonnes cles</th></tr>
+<tr>
+    <td><code>projects</code></td>
+    <td>Un site = un projet. Scores consolides, etat pipelines, onboarding, flags</td>
+    <td>id, nom, site_url, domain, profile, secteur, status, onboarding_step, health_score, content_score, technique_score, visibility_score, strategy_score, authority_score, next_action, ymyl_detected, penalite_suspectee, core_update_impacted</td>
+</tr>
+<tr>
+    <td><code>project_disclaimers</code></td>
+    <td>Tracabilite des disclaimers acceptes par projet</td>
+    <td>id, project_id, disclaimer_type, accepted, accepted_at</td>
+</tr>
+<tr>
+    <td><code>execution_actions</code></td>
+    <td>Actions generees par P7, executees, loguees pour P8</td>
+    <td>id, project_id, source_pipeline, category, action_type, status, content_to_generate, file_to_create, executed_at, execution_result</td>
+</tr>
+<tr>
+    <td><code>consolidated_recommendations</code></td>
+    <td>Recommandations unifiees cross-pipeline avant transformation en ExecutionAction</td>
+    <td>id, project_id, source_pipelines, action_concrete, action_executable, requires_human, disclaimers_json</td>
+</tr>
+</table>
+
+<h3>9.2 Scores consolides par projet</h3>
+
+<table>
+<tr><th>Score</th><th>Pipeline source</th><th>Description</th></tr>
+<tr><td>health_score</td><td>Tous (pondere)</td><td>Score de sante global 0-100</td></tr>
+<tr><td>content_score</td><td>P1 + P2</td><td>Qualite du contenu existant et nouveau</td></tr>
+<tr><td>technique_score</td><td>P3</td><td>Sante technique du site</td></tr>
+<tr><td>visibility_score</td><td>P4</td><td>Visibilite SERP et AI</td></tr>
+<tr><td>strategy_score</td><td>P5</td><td>Couverture strategique (roadmap, opportunites)</td></tr>
+<tr><td>authority_score</td><td>P6</td><td>Autorite externe (backlinks, entites)</td></tr>
+</table>
+
+<h3>9.3 Disclaimers (8 types)</h3>
+
+<table>
+<tr><th>Type</th><th>Titre</th><th>Severite</th><th>Affichage</th></tr>
+<tr><td><code>performance</code></td><td>Projections de performance</td><td>info</td><td>Avant toute projection chiffree</td></tr>
+<tr><td><code>delais</code></td><td>Delais de resultat</td><td>info</td><td>Apres la roadmap</td></tr>
+<tr><td><code>donnees</code></td><td>Sources des donnees</td><td>info</td><td>Avant chaque audit</td></tr>
+<tr><td><code>ia_generated</code></td><td>Contenu genere par IA</td><td>warning</td><td>Avant recommandation LLM</td></tr>
+<tr><td><code>ymyl</code></td><td>Contenu sensible (YMYL)</td><td>critical</td><td>Avant publication contenu sensible</td></tr>
+<tr><td><code>concurrence</code></td><td>Analyses concurrentielles</td><td>info</td><td>Avant analyse concurrentielle</td></tr>
+<tr><td><code>budget</code></td><td>Estimations budgetaires</td><td>info</td><td>Avant estimation de cout</td></tr>
+<tr><td><code>non_substitution</code></td><td>Outil d'aide a la decision</td><td>warning</td><td>Pied de page global</td></tr>
+</table>
+
+<h3>9.4 Recommandations → Execution (flux)</h3>
+
+<pre style="background:#f8fafc;padding:15px;border-radius:8px;font-size:13px;line-height:1.6">
+P1→P6 recommandation
+       │
+       ▼
+ConsolidatedRecommendation
+  .source_pipelines = ["p5", "p6"]
+  .action_concrete  = "Contacter journal-bio.fr pour un guest post"
+  .action_executable = "generer_email_guest_post"
+  .requires_human   = false
+  .disclaimers       = ["performance"]
+       │
+       ▼
+ExecutionAction (P7 M03)
+  .category      = "generate"
+  .action_type   = "generer_email_guest_post"
+  .content_to_generate = "Bonjour, je suis... [template]"
+  .status        = "pending"
+       │
+       ▼
+P7 M04 (Content Generator) → execute
+  → Genere l'email personnalise
+  → Log dans execution_actions (status=executed)
+       │
+       ▼
+P7 M06 (Publisher) → si OK
+  → Envoie via CRM (V1.5) ou export draft
+  → Log dans campaign_results (P6 B08)
+       │
+       ▼
+P7 M07 (Impact Monitor) → J+30, J+60, J+90
+  → Verifie si le backlink a ete acquis
+  → Mesure l'impact sur les positions
+  → Log dans execution_actions.actual_impact
+       │
+       ▼
+P8 L01 (Confidence Calibrator)
+  → Compare confidence_before (75) vs resultat reel
+  → Ajuste la courbe de calibration
+</pre>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>10. Elements complementaires pour couverture complete</h2>
+
+<table>
+<tr><th>Element</th><th>Statut</th><th>Pipeline</th><th>Effort estime</th></tr>
+<tr><td>Local SEO (Google Business Profile, coherence NAP, avis, Pack Local)</td><td><span class="badge-blue">Modele pret</span></td><td>P7</td><td>~4h</td></tr>
+<tr><td>Disclaimers juridiques (8 types)</td><td><span class="badge-green">Implemente</span></td><td>Tous</td><td>2h</td></tr>
+<tr><td>Onboarding Wizard (8 etapes guidees)</td><td><span class="badge-blue">Modele pret</span></td><td>P7</td><td>~2h</td></tr>
+<tr><td>Execution Engine (4 categories d'actions)</td><td><span class="badge-blue">Modele pret</span></td><td>P7</td><td>~6h</td></tr>
+<tr><td>Disaster Recovery (penalite, desindexation)</td><td><span class="badge-blue">Flags prets</span></td><td>P7</td><td>~3h</td></tr>
+<tr><td>E-commerce SEO (product schema, variants, faceted nav)</td><td><span class="badge-yellow">Partiel (P3 T09)</span></td><td>P3 + P7</td><td>~4h</td></tr>
+<tr><td>Image SEO (compression, WebP, lazy loading)</td><td><span class="badge-yellow">Partiel (P1 agent_22)</span></td><td>P1 + P7</td><td>~2h</td></tr>
+<tr><td>Google Discover (titres, images, schema)</td><td><span class="badge-red">Non couvert</span></td><td>P7</td><td>~2h</td></tr>
+<tr><td>News SEO (schema, sitemap, AMP)</td><td><span class="badge-red">Non couvert</span></td><td>P7</td><td>~3h</td></tr>
+<tr><td>International SEO (strategie par pays)</td><td><span class="badge-yellow">Partiel (P3 T10)</span></td><td>P3 + P7</td><td>~4h</td></tr>
+<tr><td>Rapport client/prospect (PDF 1 page)</td><td><span class="badge-yellow">Partiel (CEO Summary)</span></td><td>P5 + P7</td><td>~2h</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>Resume Global</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Statut</th><th>Agents</th><th>Cout/mois</th></tr>
+<tr><td>1</td><td><strong>Editorial</strong></td><td><span class="badge-green">~95% · prod</span></td><td>28</td><td>~$0.60/article</td></tr>
+<tr><td>2</td><td><strong>Audit de Contenu</strong></td><td><span class="badge-green">~95% · prod</span></td><td>11</td><td>~$0.005/page</td></tr>
+<tr><td>3</td><td><strong>Audit Technique</strong></td><td><span class="badge-green">~95% · prod</span></td><td>23</td><td>$0.00/10 pages</td></tr>
+<tr><td>4</td><td><strong>SERP & Visibility</strong></td><td><span class="badge-green">~95% · prod</span></td><td>11</td><td>~$2.50</td></tr>
+<tr><td>5</td><td><strong>Strategie</strong></td><td><span class="badge-green">~95% · prod</span></td><td>18</td><td>~$0.08/session</td></tr>
+<tr><td>6</td><td><strong>Maillage & Backlinks</strong></td><td><span class="badge-green">~95% · prod</span></td><td>18</td><td>~$0.15/audit</td></tr>
+<tr><td>7</td><td><strong>Maintenance + Execution Engine</strong></td><td><span class="badge-blue">Modeles prets</span></td><td>~8</td><td>—</td></tr>
+<tr><td>8</td><td><strong>Learning Engine</strong></td><td><span class="badge-purple">Architecture</span></td><td>~6</td><td>—</td></tr>
+<tr><td colspan="3"><strong>Total</strong></td><td><strong>~129 agents</strong></td><td><strong>~$3.33/mois</strong></td></tr>
+</table>
+
+<div class="warning" style="margin-top:30px">
+<strong>6/7 pipelines en production. P7 & P8 en architecture :</strong>
+<ul>
+<li><strong>P1-P6</strong> : Operationnels — 109 agents implementes, 61+27 tests</li>
+<li><strong>P7</strong> : Modeles Project, ExecutionAction, Disclaimers, Onboarding prets. Agents a implementer.</li>
+<li><strong>P8</strong> : Architecture hybride Global/Client documentee. Tables de collecte actives (hermes_events, predictions_history, campaign_results, execution_actions).</li>
+</ul>
+</div>
+
+<p style="margin-top:50px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Hermes SEO v3 · V6.5 · FC Solutions · 24 juin 2026 · Compatible copier-coller Google Docs
+</p>
+</body>
+</html>

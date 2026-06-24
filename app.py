@@ -40,6 +40,9 @@ from pages.audit_page import render_audit_page
 from pages.audit_tech_page import render_audit_tech_page
 from pages.serp_visibility_page import render_serp_visibility_page
 from pages.strategie_page import render_strategie_page
+from pages.backlinks_page import render_backlinks_page
+from pages.maintenance_page import render_maintenance_page
+from pages.learning_page import render_learning_page
 from pages.admin_dashboard import render_admin_dashboard
 from pages.session_detail_page import render_session_detail
 
@@ -386,7 +389,7 @@ with st.sidebar:
     st.markdown("## Navigation")
     nav = st.radio(
         "Page",
-        options=["Generator", "Archive", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Admin", "Session Detail"],
+        options=["Generator", "Archive", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
         label_visibility="collapsed",
         key="nav_page",
     )
@@ -495,6 +498,12 @@ with st.sidebar:
             st.caption("Surveillance positions, concurrence, AI visibility, alertes.")
         elif nav == "Strategie":
             st.caption("Roadmap editoriale, forecast, kill list, CEO summary.")
+        elif nav == "Backlinks":
+            st.caption("Audit backlinks, CRM netlinking, prospect discovery, anchor strategy.")
+        elif nav == "Maintenance":
+            st.caption("Content decay, Core Update recovery, execution engine.")
+        elif nav == "Learning":
+            st.caption("Apprentissage continu, calibration, patterns, retroaction.")
         elif nav == "Admin":
             st.caption("Consommation API, etat des connecteurs, couts.")
         elif nav == "Session Detail":
@@ -523,6 +532,12 @@ elif nav == "SERP & Visibilite":
     render_serp_visibility_page()
 elif nav == "Strategie":
     render_strategie_page()
+elif nav == "Backlinks":
+    render_backlinks_page()
+elif nav == "Maintenance":
+    render_maintenance_page()
+elif nav == "Learning":
+    render_learning_page()
 elif nav == "Admin":
     render_admin_dashboard()
 elif nav == "Session Detail":

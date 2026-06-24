@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Suivi d'Architecture · V5 · 24 juin 2026</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.badge-green{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-red{display:inline-block;background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-yellow{display:inline-block;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.badge-blue{display:inline-block;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.note{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.warning{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+.success{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px;font-size:14px}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+.changelog{background:#fafafa;border:1px solid #ddd;padding:15px 20px;border-radius:6px;margin:15px 0}
+.changelog h3{margin-top:0;color:#1E88E5}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Suivi d'Architecture · V5</h1>
+<p class="meta">Version 0.7 · 24 juin 2026 · 5 pipelines en production · 91 agents · Stack Python 3.12 + LangGraph + Streamlit · 12 connecteurs · 10 outils OSS · Observability Layer actif</p>
+
+<div class="success">
+<strong>V5 — Pipeline 5 (Strategie Editoriale) complet :</strong>
+<ul>
+<li><strong>18 agents</strong> implementes (ST00-ST11), 34 tests unitaires</li>
+<li><strong>Topical Map</strong> : cartographie couverts/manquants par silo avec ChromaDB clustering</li>
+<li><strong>Topical Authority Score</strong> : 0-100 par silo (P2 qualite + P3 architecture + P4 positions)</li>
+<li><strong>Cannibalisation</strong> : detection P4 + ChromaDB, gravite critical/high/medium/low</li>
+<li><strong>Opportunites</strong> : requetes sans page dediee, scoring volume x intention x gap</li>
+<li><strong>Gap Concurrentiel</strong> (Haiku) : ecarts semantiques, features SERP capturees, ecarts de position</li>
+<li><strong>Competitive Feasibility</strong> : score 0-100 — peut-on battre le concurrent ?</li>
+<li><strong>GEO Opportunity Mapping</strong> : sujets citables par les IA (SGE, ChatGPT, Perplexity)</li>
+<li><strong>Business Score</strong> : volume x CTR estime x taux conversion x valeur lead</li>
+<li><strong>SEO Economics</strong> : effort, cout, ROI 12 mois, delai, cout par lead</li>
+<li><strong>Roadmap Editoriale</strong> (Haiku) : aggregation ST01-ST05b, priorisation P0-P3</li>
+<li><strong>Confidence Score</strong> : 0-100 sur chaque recommandation (5 facteurs ponderes)</li>
+<li><strong>Decision Trace</strong> : inputs, rules_applied, calcul, decision — explicabilite totale</li>
+<li><strong>Forecast 12 mois</strong> (Haiku) : projection trafic + leads + ROI avec ramp-up</li>
+<li><strong>Portfolio Strategy</strong> : Acquisition/Retention/Defense/Conversion/Authority (5 profils)</li>
+<li><strong>Revue Humaine</strong> : flags YMYL, controverses, legal, secteurs reglementes</li>
+<li><strong>Kill List</strong> : cannibalisations, YMYL, faible ROI, hors scope — severite + trace</li>
+<li><strong>CEO Summary</strong> : 1 page — sante strategique, top 3 opportunites, top 2 menaces, ROI, budget</li>
+<li><strong>Observability Layer</strong> : hermes_events (journalisation agents), predictions_history (Learning Engine)</li>
+<li><strong>UI Streamlit</strong> : dashboard CEO, roadmap par priorite, forecast Plotly, kill list, exports HTML/JSON</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>1. Vue d'ensemble — 5 pipelines en production</h2>
+
+<table>
+<tr><th>#</th><th>Pipeline</th><th>Role</th><th>Agents</th><th>Statut</th><th>Connecteurs</th></tr>
+<tr>
+    <td>1</td><td><strong>Editorial (Redaction)</strong></td>
+    <td>Produire un article SEO/AEO/GEO depuis un mot-cle</td>
+    <td>28</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>TalorData, DataForSEO, KE, GSC, RankParse, Claude, GPT, DeepSeek</td>
+</tr>
+<tr>
+    <td>2</td><td><strong>Audit de Contenu</strong></td>
+    <td>Auditer pages existantes sur 7 dimensions + recommandations</td>
+    <td>11</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>CMS Detector, Sitemap Parser, GSC, RankParse, KE</td>
+</tr>
+<tr>
+    <td>3</td><td><strong>Audit Technique</strong></td>
+    <td>Scanner le site, 12 dimensions, roadmap CMS</td>
+    <td>23</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>PSI, shcheck, polly, CMS Detector, Sitemap Parser, GSC, protego, schorg, scikit-network, geo-optimizer</td>
+</tr>
+<tr>
+    <td>4</td><td><strong>SERP & Visibility Intelligence</strong></td>
+    <td>Surveiller positions, analyser concurrence, detecter opportunites, alertes</td>
+    <td>11</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>GSC, TalorData, DataForSEO, KE, RankParse, SQLite SERP</td>
+</tr>
+<tr>
+    <td>5</td><td><strong>Strategie Editoriale</strong></td>
+    <td>Roadmap, forecast, kill list, CEO summary, routage</td>
+    <td>18</td>
+    <td><span class="badge-green">~95% · prod</span></td>
+    <td>ChromaDB, SQLite Strategie, Claude Haiku, P2/P3/P4 DB</td>
+</tr>
+<tr><td>6</td><td>Maillage & Backlinks</td><td>Audit liens, backlinks, liens toxiques</td><td>~7</td><td><span class="badge-red">0%</span></td><td>—</td></tr>
+<tr><td>7</td><td>Maintenance</td><td>Obsolescence, mises a jour automatiques</td><td>~6</td><td><span class="badge-red">0%</span></td><td>—</td></tr>
+</table>
+
+<div class="note"><strong>Total : ~104 agents sur 7 pipelines. 5 sur 7 operationnels en production. 91 agents implementes.</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>2. Pipeline 5 — Strategie Editoriale — Les 18 agents</h2>
+
+<h3>Phase 0 — Startup</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>LLM</th><th>Cout</th></tr>
+<tr><td>ST00</td><td>Superviseur Strategie</td><td>Startup check P2/P3/P4/GA4, init DB, config, session ID</td><td>Aucun</td><td>$0</td></tr>
+</table>
+
+<h3>Phase 1 — Analyses (11 agents)</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>LLM</th><th>Skippable</th><th>Cout</th></tr>
+<tr><td>ST01</td><td>Cartographie des Sujets</td><td>Sujets couverts vs manquants par silo, ChromaDB clustering, regroupement keywords</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST01b</td><td>Topical Authority</td><td>Score 0-100 par silo (P2 qualite x0.30 + P3 architecture x0.25 + P4 positions x0.25 + couverture x0.20)</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST02</td><td>Cannibalisation</td><td>Croisement P4 positions + ChromaDB similarite, gravite (critical/high/medium/low)</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST03</td><td>Opportunites</td><td>Requetes sans page dediee, scoring (volume + gap positionnel + intention + concurrence)</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST04</td><td>Gap Concurrentiel</td><td>Ecarts semantiques et GEO entre site et concurrents</td><td>Haiku 4.5</td><td>Non</td><td>~$0.02</td></tr>
+<tr><td>ST04b</td><td>Competitive Feasibility</td><td>Score 0-100 : Topical Authority + position + nb concurrents + volume + gap ST04</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST04c</td><td>GEO Opportunity</td><td>Sujets citables par les IA (intention + keywords GEO + volume + silo tech)</td><td>Aucun</td><td>fast</td><td>$0</td></tr>
+<tr><td>ST05</td><td>Business Score</td><td>Trafic estime x CTR x taux conversion x valeur lead (profils par intention)</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST05b</td><td>SEO Economics</td><td>Effort heures, cout creation (50 euros/h), ROI 12 mois, delai, cout par lead</td><td>Aucun</td><td>fast</td><td>$0</td></tr>
+<tr><td>ST07</td><td>Silos & Clusters</td><td>Silos sans pilier, piliers sans satellites, silos vides, anomalies structurelles</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST08</td><td>Fusion/Separation</td><td>Fusions (cannibalisations), suppressions (thin content P2+P3), fusion silos</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+</table>
+
+<h3>Phase 2 — Synthese & Decision (6 agents)</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>LLM</th><th>Skippable</th><th>Cout</th></tr>
+<tr><td>ST06</td><td>Roadmap Editoriale</td><td>Agregation ST01-ST05b, priorisation P0-P3/KILL, Confidence Score x5 facteurs, Decision Trace</td><td>Haiku 4.5</td><td>Non</td><td>~$0.05</td></tr>
+<tr><td>ST06b</td><td>Forecast</td><td>Projection 12 mois trafic/leads/ROI avec ramp-up progressif par priorite</td><td>Haiku 4.5</td><td>fast</td><td>~$0.01</td></tr>
+<tr><td>ST06c</td><td>Portfolio Strategy</td><td>Repartition % Acquisition/Retention/Defense/Conversion/Authority (5 profils)</td><td>Aucun</td><td>fast</td><td>$0</td></tr>
+<tr><td>ST09</td><td>Revue Humaine</td><td>Flags YMYL (sante/finance/droit...), controverses, legal — priority high/medium</td><td>Aucun</td><td>fast*</td><td>$0</td></tr>
+<tr><td>ST10</td><td>Priorisation Globale</td><td>Matrice 6 poids configurables, score pondere final -> P0-P3</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+<tr><td>ST10b</td><td>Kill List</td><td>Cannibalisations critiques, YMYL sans expertise, ROI negatif, hors scope</td><td>Aucun</td><td>Non</td><td>$0</td></tr>
+</table>
+
+<h3>Phase 3 — Export (1 agent)</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>Formats</th><th>Cout</th></tr>
+<tr><td>ST11</td><td>Export & Routage</td><td>CEO Summary (sante strategique, top 3 opps, top 2 menaces, ROI, budget), HTML + JSON, routage P1/P2/P3/P6/P7, save predictions_history</td><td>HTML, JSON, API</td><td>$0</td></tr>
+</table>
+
+<div class="success"><strong>18 agents · 3 utilisent Haiku 4.5 (ST04, ST06, ST06b) · $0.00 (fast) / ~$0.08 (standard) / ~$0.15 (premium) · 34 tests</strong></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>3. Confidence Score & Decision Trace</h2>
+
+<h3>Calcul du Confidence Score (par recommandation)</h3>
+<table>
+<tr><th>Facteur</th><th>Poids</th><th>Source</th></tr>
+<tr><td>Qualite des donnees sources</td><td>30%</td><td>P2/P3/P4 disponibles (oui=100, partiel=60, non=0)</td></tr>
+<tr><td>Faisabilite (ST04b)</td><td>25%</td><td>Score ST04b / 100</td></tr>
+<tr><td>Business Score (ST05)</td><td>20%</td><td>Score ST05 normalise</td></tr>
+<tr><td>Volatilite du sujet</td><td>15%</td><td>P4 S02 — variations recentes (estimation)</td></tr>
+<tr><td>Exhaustivite de l'analyse</td><td>10%</td><td>Nombre de dimensions ST couvertes</td></tr>
+</table>
+
+<h3>Decision Trace (exemple)</h3>
+<table>
+<tr><th>Champ</th><th>Valeur</th></tr>
+<tr><td>inputs</td><td><code>{"volume": 1800, "feasibility": 68, "business_score": 82, "roi": 960}</code></td></tr>
+<tr><td>rules_applied</td><td><code>["volume > 1000 -> P0/P1", "feasibility > 50 -> attaquable", "business_score > 70 -> priorite elevee"]</code></td></tr>
+<tr><td>calcul</td><td><code>Priorite = (82 x 0.35) + (68 x 0.20) = 31.4</code></td></tr>
+<tr><td>decision</td><td><code>P1</code></td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>4. Observability Layer</h2>
+
+<h3>Table hermes_events</h3>
+<table>
+<tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+<tr><td>event_id</td><td>UUID</td><td>Identifiant unique</td></tr>
+<tr><td>timestamp</td><td>datetime</td><td>Horodatage</td></tr>
+<tr><td>session_id</td><td>UUID</td><td>Session Hermes</td></tr>
+<tr><td>pipeline_id</td><td>string</td><td>"editorial", "audit_contenu", "audit_technique", "serp", "strategie"</td></tr>
+<tr><td>agent_id</td><td>string</td><td>"ST04", "S01", etc.</td></tr>
+<tr><td>model</td><td>string</td><td>"claude-sonnet", "haiku", "gpt-5.4", "none"</td></tr>
+<tr><td>tokens_used</td><td>int</td><td>Nombre de tokens LLM</td></tr>
+<tr><td>cost</td><td>float</td><td>Cout en USD</td></tr>
+<tr><td>duration_ms</td><td>int</td><td>Temps d'execution</td></tr>
+<tr><td>success</td><td>boolean</td><td>Succes ou echec</td></tr>
+<tr><td>error</td><td>string</td><td>Message d'erreur si echec</td></tr>
+<tr><td>predictions</td><td>JSON</td><td>Predictions produites (trafic, ROI, delai)</td></tr>
+<tr><td>confidence</td><td>float</td><td>Score de confiance associe</td></tr>
+<tr><td>trace</td><td>JSON</td><td>Decision trace si applicable</td></tr>
+</table>
+
+<h3>Table predictions_history</h3>
+<table>
+<tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+<tr><td>prediction_id</td><td>UUID</td><td>Identifiant unique</td></tr>
+<tr><td>session_id</td><td>UUID</td><td>Session Hermes</td></tr>
+<tr><td>pipeline_id</td><td>string</td><td>"strategie"</td></tr>
+<tr><td>agent_id</td><td>string</td><td>"ST06", "ST11"</td></tr>
+<tr><td>action_type</td><td>string</td><td>"creer_pilier", "enrichir_faq", etc.</td></tr>
+<tr><td>keyword</td><td>string</td><td>Mot-cle associe</td></tr>
+<tr><td>predicted_traffic</td><td>int</td><td>Trafic prevu a 6 mois</td></tr>
+<tr><td>predicted_leads</td><td>int</td><td>Leads prevus a 6 mois</td></tr>
+<tr><td>predicted_roi</td><td>float</td><td>ROI prevu a 12 mois</td></tr>
+<tr><td>confidence</td><td>float</td><td>Confidence score</td></tr>
+<tr><td>date_prediction</td><td>datetime</td><td>Date de la prediction</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>5. Connecteurs (12)</h2>
+
+<table>
+<tr><th>Connecteur</th><th>Fichier</th><th>Pipeline</th><th>Type</th><th>Cout</th></tr>
+<tr><td>GSC Connector</td><td><code>gsc_connector.py</code></td><td>1-4</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>TalorData / SERP</td><td><code>serp_api.py</code></td><td>1, 3, 4</td><td>Payant</td><td>$0.25-0.90/1K</td></tr>
+<tr><td>DataForSEO</td><td><code>dataforseo_connector.py</code></td><td>1, 4</td><td>Payant</td><td>$0.001-0.02</td></tr>
+<tr><td>Keywords Everywhere</td><td><code>keywordseverywhere_connector.py</code></td><td>1, 2, 4</td><td>Payant</td><td>~$0.01/100kw</td></tr>
+<tr><td>RankParse</td><td><code>rankparse_connector.py</code></td><td>2, 3, 4</td><td>Payant</td><td>~$0.009</td></tr>
+<tr><td>CMS Detector</td><td><code>cms_detector.py</code></td><td>2, 3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Sitemap Parser</td><td><code>sitemap_parser.py</code></td><td>2, 3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>PageSpeed Insights</td><td><code>pagespeed_connector.py</code></td><td>3</td><td>Gratuit</td><td>$0</td></tr>
+<tr><td>Security Headers (shcheck)</td><td><code>security_headers.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>Hreflang Validator (polly)</td><td><code>hreflang_validator.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>GEO Optimizer</td><td><code>geo_optimizer_connector.py</code></td><td>3</td><td>OSS</td><td>$0</td></tr>
+<tr><td>SQLite Strategie</td><td><code>strategie_db.py</code></td><td>5</td><td>Gratuit</td><td>$0</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>6. Outils OSS integres (10)</h2>
+
+<table>
+<tr><th>Outil</th><th>Version</th><th>Usage</th><th>Pipeline</th></tr>
+<tr><td>textstat</td><td>0.7.13</td><td>Flesch multilingue (40+ langues)</td><td>1 + 2</td></tr>
+<tr><td>yake</td><td>0.7.3</td><td>Extraction mots-cles non supervisee</td><td>1</td></tr>
+<tr><td>json-repair</td><td>0.61</td><td>Reparation JSON LLM</td><td>1</td></tr>
+<tr><td>protego</td><td>0.6.1</td><td>robots.txt parser Google-compatible</td><td>2 + 3</td></tr>
+<tr><td>schorg</td><td>0.7.5</td><td>Schema.org Pydantic models</td><td>1 + 3</td></tr>
+<tr><td>shcheck</td><td>1.7</td><td>Analyse headers securite (6 headers)</td><td>3</td></tr>
+<tr><td>polly</td><td>0.6.4</td><td>Validation hreflang bilaterale (Moz)</td><td>3</td></tr>
+<tr><td>scikit-network</td><td>0.33.5</td><td>Louvain clustering, silos</td><td>3</td></tr>
+<tr><td>geo-optimizer-skill</td><td>latest</td><td>Score AEO/GEO 0-100, 47 methodes</td><td>3</td></tr>
+<tr><td>openserp</td><td>0.8.3</td><td>SERP self-hosted (Bing, DDG) — catalogue</td><td>4</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>7. Cout operationnel cumule</h2>
+
+<table>
+<tr><th>Pipeline</th><th>Mode</th><th>Cout unitaire</th><th>Cout/100</th></tr>
+<tr><td>1 — Redaction</td><td>standard</td><td>~$0.60/article</td><td>~$60</td></tr>
+<tr><td>2 — Audit Contenu</td><td>standard</td><td>~$0.005/page</td><td>~$0.50</td></tr>
+<tr><td>3 — Audit Technique</td><td>standard</td><td>$0.00/10 pages</td><td>$0.00</td></tr>
+<tr><td>4 — SERP Visibility</td><td>standard</td><td>~$0.03/semaine (500 kw)</td><td>~$2.50/mois</td></tr>
+<tr><td>5 — Strategie</td><td>standard</td><td>~$0.08/session</td><td>~$8.00</td></tr>
+</table>
+
+<h3>Budget mensuel cumule (site moyen 500 keywords)</h3>
+<table>
+<tr><th>Scenario</th><th>Cout/mois</th><th>Detail</th></tr>
+<tr><td>Minimal (fast)</td><td><strong>$0.00</strong></td><td>GSC uniquement, pas de LLM</td></tr>
+<tr><td>Standard</td><td><strong>~$3.18</strong></td><td>Articles + audits + SERP 500kw + 1 strategie</td></tr>
+<tr><td>Intensif (premium)</td><td><strong>~$83</strong></td><td>100 articles premium + longue traine</td></tr>
+</table>
+
+<div class="note">Comparaison : Semrush ~$120/mois, Ahrefs ~$99/mois. Hermes SEO : ~$3/mois en standard.</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>8. 20 regles de robustesse (toutes implementees)</h2>
+
+<ol>
+<li>✅ Contrats Pydantic — tous les agents ont des modeles valides</li>
+<li>✅ Superviseur — consentement obligatoire, bornes, rate limiting</li>
+<li>✅ Defensif uniquement — pas de test d'intrusion</li>
+<li>✅ Confidence scoring — High/Medium/Low sur chaque issue/alerte/correlation + 0-100 P5</li>
+<li>✅ Source de preuve — agent source + URL + observed + rule</li>
+<li>✅ do_not_recommend_if — pas de reco absurde</li>
+<li>✅ Adaptatif — seuils par type de page</li>
+<li>✅ CMS-aware — recos localisees (WP->Yoast, PrestaShop->Module SEO)</li>
+<li>✅ Fallback cascade — GSC->TalorData->DataForSEO->openserp</li>
+<li>✅ Auto-disable — KE apres 402, PSI apres 429</li>
+<li>✅ Deduplication — T15 + S07</li>
+<li>✅ Exports multiples — HTML, JSON, CSV, PDF</li>
+<li>✅ Routage inter-pipelines — T18 + S10 + ST11</li>
+<li>✅ Rate limiting + robots.txt</li>
+<li>✅ Skip intelligent — agents conditionnels (fast/premium/compliance)</li>
+<li>✅ Tracabilite — chaque issue/alerte/recommandation documentee</li>
+<li>✅ Core Update suspension — S02b + S07 protegent contre les faux positifs massifs</li>
+<li>✅ Encouragements — insights positifs (paysage concurrentiel favorable)</li>
+<li>✅ Decision Trace — chaque recommandation P5 est explicable (inputs, rules, calcul, decision)</li>
+<li>✅ Observability — hermes_events + predictions_history pour FinOps et Learning Engine</li>
+</ol>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>9. Interface utilisateur (7 pages)</h2>
+
+<table>
+<tr><th>Page</th><th>Fichier</th><th>Pipeline</th></tr>
+<tr><td>Generator</td><td><code>app.py</code></td><td>1 — Redaction SEO/AEO/GEO</td></tr>
+<tr><td>Audit de Contenu</td><td><code>pages/audit_page.py</code></td><td>2 — 7 dimensions, radar chart</td></tr>
+<tr><td>Audit Technique</td><td><code>pages/audit_tech_page.py</code></td><td>3 — 12 dimensions, consentement, roadmap</td></tr>
+<tr><td>SERP & Visibilite</td><td><code>pages/serp_visibility_page.py</code></td><td>4 — Positions, quick wins, concurrence</td></tr>
+<tr><td>Strategie</td><td><code>pages/strategie_page.py</code></td><td>5 — CEO Dashboard, roadmap, forecast, kill list, exports</td></tr>
+<tr><td>Admin</td><td><code>pages/admin_dashboard.py</code></td><td>Transversal — API, couts, connecteurs</td></tr>
+<tr><td>Archive</td><td><code>pages/archive_page.py</code></td><td>Historique sessions</td></tr>
+</table>
+
+<p>CLI : <code>hermes run</code>, <code>hermes audit-tech run</code>, <code>hermes archive</code>, <code>hermes check</code></p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>10. Changelog V5 (vs V4)</h2>
+
+<div class="changelog">
+<h3>24 juin 2026 — Pipeline 5 complet</h3>
+<ul>
+<li><strong>+1 pipeline</strong> : Strategie Editoriale — 18 agents (ST00-ST11)</li>
+<li><strong>+1 connecteur</strong> : SQLite Strategie (hermes_events, predictions_history, strategie_sessions)</li>
+<li><strong>+1 page UI</strong> : Strategie — CEO Dashboard, roadmap, forecast Plotly, kill list, exports</li>
+<li><strong>+2 features majeures</strong> : Confidence Score 0-100 + Decision Trace (inputs/rules/calcul/decision)</li>
+<li><strong>+1 couche</strong> : Observability Layer — hermes_events (journalisation agents) + predictions_history (Learning Engine)</li>
+<li><strong>+1 livrable</strong> : Executive Summary CEO (1 page — sante strategique, opportunites, menaces, ROI, budget)</li>
+<li><strong>+3 livrables</strong> : Roadmap, Kill List, Forecast 12 mois</li>
+<li><strong>Modes qualite</strong> : fast ($0), standard (~$0.08), premium (~$0.15), compliance (~$0.10)</li>
+<li><strong>3 agents LLM</strong> : ST04, ST06, ST06b utilisent Claude Haiku 4.5</li>
+<li><strong>Routage inter-pipelines</strong> : ST11 route vers P1, P2, P3, P6, P7</li>
+<li><strong>~4100 lignes</strong> de code ajoutees (Pipeline 5)</li>
+<li><strong>34 tests</strong> unitaires + integration (100% OK)</li>
+<li><strong>Integration</strong> : app.py (onglet Strategie), models/__init__.py, 5/7 pipelines en production</li>
+</ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<h2>11. Methode de travail</h2>
+
+<ol>
+<li>L'utilisateur definit le process (quel pipeline, quels agents, quel ordre)</li>
+<li>L'utilisateur ecrit le cahier des charges</li>
+<li>Claude implemente agent par agent, dans l'ordre defini</li>
+<li>Claude fait les tests et verifications</li>
+<li>Claude connecte au pipeline existant sans casser ce qui marche</li>
+<li>L'utilisateur valide chaque agent ou groupe d'agents</li>
+<li>L'utilisateur teste en conditions reelles</li>
+</ol>
+
+<p style="margin-top:60px;color:#aaa;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px">
+Document genere le 24 juin 2026 · Hermes SEO v3 · V5 · FC Solutions<br>
+Compatible copier-coller Google Docs — les tableaux conservent leur structure
+</p>
+</body>
+</html>
