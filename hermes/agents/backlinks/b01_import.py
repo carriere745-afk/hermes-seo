@@ -19,15 +19,37 @@ from hermes.core.strategie_db import log_event
 logger = logging.getLogger("hermes.backlinks.b01")
 
 # Domaines de test pour le mode degrade
-MOCK_DOMAINS = [
-    {"domain": "blog-expert.fr", "dr": 72, "topical": 85, "type": "blog"},
-    {"domain": "media-sectoriel.fr", "dr": 65, "topical": 78, "type": "media_sectoriel"},
-    {"domain": "annuaire-pro.fr", "dr": 30, "topical": 20, "type": "annuaire"},
-    {"domain": "journal-national.fr", "dr": 88, "topical": 65, "type": "media_national"},
-    {"domain": "forum-communaute.fr", "dr": 25, "topical": 45, "type": "forum"},
-    {"domain": "partenaire-business.fr", "dr": 40, "topical": 55, "type": "partenariat"},
-    {"domain": "association-metier.fr", "dr": 35, "topical": 70, "type": "association"},
-]
+# Domaines de test par profil pour le mode degrade
+MOCK_DOMAINS_BY_PROFILE = {
+    "local": [
+        {"domain": "pagesjaunes.fr", "dr": 78, "topical": 40, "type": "annuaire"},
+        {"domain": "tours.fr", "dr": 65, "topical": 60, "type": "institutionnel"},
+        {"domain": "indre-et-loire.fr", "dr": 55, "topical": 55, "type": "institutionnel"},
+        {"domain": "cci-touraine.fr", "dr": 45, "topical": 70, "type": "association"},
+        {"domain": "artisanat-tours.fr", "dr": 35, "topical": 75, "type": "association"},
+        {"domain": "solutions-proprete.fr", "dr": 40, "topical": 80, "type": "media_sectoriel"},
+        {"domain": "entreprise-nettoyage.fr", "dr": 30, "topical": 85, "type": "blog"},
+    ],
+    "ecommerce": [
+        {"domain": "blog-ecommerce.fr", "dr": 60, "topical": 75, "type": "blog"},
+        {"domain": "comparateur-prix.fr", "dr": 72, "topical": 65, "type": "comparateur"},
+        {"domain": "ecommerce-mag.fr", "dr": 55, "topical": 80, "type": "media_sectoriel"},
+        {"domain": "guide-achat.fr", "dr": 50, "topical": 70, "type": "blog"},
+        {"domain": "annuaire-pro.fr", "dr": 30, "topical": 20, "type": "annuaire"},
+    ],
+    "saas": [
+        {"domain": "journalduweb.fr", "dr": 70, "topical": 75, "type": "media_sectoriel"},
+        {"domain": "capterra.fr", "dr": 85, "topical": 60, "type": "comparateur"},
+        {"domain": "blog-tech.fr", "dr": 55, "topical": 80, "type": "blog"},
+    ],
+    "default": [
+        {"domain": "blog-expert.fr", "dr": 72, "topical": 75, "type": "blog"},
+        {"domain": "media-sectoriel.fr", "dr": 65, "topical": 78, "type": "media_sectoriel"},
+        {"domain": "annuaire-pro.fr", "dr": 30, "topical": 20, "type": "annuaire"},
+    ],
+}
+
+MOCK_DOMAINS = MOCK_DOMAINS_BY_PROFILE["default"]  # Fallback
 
 
 async def run(state: BacklinksState) -> BacklinksState:
@@ -114,10 +136,12 @@ async def _import_dataforseo_backlinks(domain: str, state: BacklinksState) -> tu
 
 
 def _generate_mock_backlinks(domain: str, state: BacklinksState) -> tuple[list, list]:
-    """Genere des backlinks realistes en mode degrade."""
+    """Genere des backlinks realistes en mode degrade, adaptes au profil du site."""
+    # Selectionner les domaines mock adaptes au profil
+    profile_domains = MOCK_DOMAINS_BY_PROFILE.get(state.profile, MOCK_DOMAINS_BY_PROFILE["default"])
     backlinks = []
     domains = []
-    for i, md in enumerate(MOCK_DOMAINS):
+    for i, md in enumerate(profile_domains):
         domains.append(ReferringDomain(
             domain=md["domain"],
             domain_rating=md["dr"],

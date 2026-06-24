@@ -83,23 +83,31 @@ async def run(state: BacklinksState) -> BacklinksState:
 
 
 def _get_competitor_domains(state: BacklinksState) -> dict[str, list[dict]]:
-    """Genere des domaines concurrents (mock ou DataForSEO)."""
+    """Genere des domaines concurrents (mock ou DataForSEO), adaptes au profil."""
     result = {}
-    # Mock realiste par concurrent
-    mock_pool = [
-        {"domain": "blog-expert-pro.fr", "dr": 68, "topical": 80},
-        {"domain": "media-tech.fr", "dr": 75, "topical": 65},
-        {"domain": "journal-bio.fr", "dr": 82, "topical": 55},
-        {"domain": "annuaire-vert.fr", "dr": 28, "topical": 30},
-        {"domain": "podcast-business.fr", "dr": 45, "topical": 70},
-        {"domain": "association-pro.fr", "dr": 35, "topical": 75},
-        {"domain": "tribune-libre.fr", "dr": 55, "topical": 60},
-        {"domain": "forums-metier.fr", "dr": 22, "topical": 50},
-        {"domain": "partenaire-pro.fr", "dr": 40, "topical": 55},
-        {"domain": "etude-reference.fr", "dr": 70, "topical": 85},
-    ]
+    mock_by_profile = {
+        "local": [
+            {"domain": "pagesjaunes.fr", "dr": 78, "topical": 40},
+            {"domain": "tours-metropole.fr", "dr": 55, "topical": 60},
+            {"domain": "artisanat-local.fr", "dr": 35, "topical": 75},
+            {"domain": "solutions-proprete.fr", "dr": 40, "topical": 80},
+            {"domain": "leblogdespros.fr", "dr": 32, "topical": 65},
+            {"domain": "journal-touraine.fr", "dr": 50, "topical": 70},
+            {"domain": "annuaire-entreprises.fr", "dr": 28, "topical": 30},
+            {"domain": "reseau-artisans.fr", "dr": 38, "topical": 72},
+        ],
+        "ecommerce": [
+            {"domain": "blog-ecommerce.fr", "dr": 60, "topical": 80},
+            {"domain": "comparateur-prix.fr", "dr": 72, "topical": 70},
+        ],
+        "default": [
+            {"domain": "blog-expert-pro.fr", "dr": 68, "topical": 80},
+            {"domain": "media-tech.fr", "dr": 75, "topical": 65},
+        ],
+    }
+    mock_pool = mock_by_profile.get(state.profile, mock_by_profile["default"])
     for i, comp in enumerate(state.competitors[:5]):
-        # Chaque concurrent a 3-5 domaines
         n = 3 + (i % 3)
-        result[comp] = mock_pool[i * 2:(i * 2) + n]
+        start = (i * 2) % len(mock_pool)
+        result[comp] = mock_pool[start:start + n]
     return result

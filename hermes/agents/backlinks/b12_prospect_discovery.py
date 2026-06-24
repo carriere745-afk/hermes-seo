@@ -25,34 +25,29 @@ SECTOR_PROSPECTS = {
         {"domain": "reakt.fr", "type": "blog", "dr": 50, "topical": 85},
         {"domain": "search-engine-journal.com", "type": "media_sectoriel", "dr": 85, "topical": 95},
         {"domain": "badsender.com", "type": "blog", "dr": 55, "topical": 75},
-        {"domain": "les-dirigeants.fr", "type": "annuaire", "dr": 20, "topical": 30},
     ],
     "tech": [
         {"domain": "programmez.com", "type": "media_sectoriel", "dr": 60, "topical": 80},
         {"domain": "developpez.com", "type": "forum", "dr": 75, "topical": 85},
-        {"domain": "journaldunet.com", "type": "media_national", "dr": 82, "topical": 70},
     ],
     "ecommerce": [
         {"domain": "ecommerce-nation.fr", "type": "media_sectoriel", "dr": 58, "topical": 85},
-        {"domain": "siecledigital.fr", "type": "media_national", "dr": 72, "topical": 65},
         {"domain": "leptidigital.fr", "type": "blog", "dr": 48, "topical": 75},
     ],
-    "formation": [
-        {"domain": "cursus.edu", "type": "media_sectoriel", "dr": 55, "topical": 80},
-        {"domain": "thot-cursus.com", "type": "blog", "dr": 50, "topical": 78},
-        {"domain": "edtechactu.com", "type": "media_sectoriel", "dr": 42, "topical": 82},
-    ],
-    "sante": [
-        {"domain": "doctissimo.fr", "type": "forum", "dr": 80, "topical": 90},
-        {"domain": "sante-sur-le-net.com", "type": "media_sectoriel", "dr": 55, "topical": 85},
-        {"domain": "pourquoidocteur.fr", "type": "media_sectoriel", "dr": 68, "topical": 88},
+    "local": [
+        {"domain": "pagesjaunes.fr", "type": "annuaire", "dr": 78, "topical": 30},
+        {"domain": "solutions-proprete.fr", "type": "media_sectoriel", "dr": 40, "topical": 85},
+        {"domain": "artisanat.fr", "type": "annuaire", "dr": 55, "topical": 60},
+        {"domain": "leblogdespros.fr", "type": "blog", "dr": 32, "topical": 70},
+        {"domain": "chambre-metiers.fr", "type": "institutionnel", "dr": 60, "topical": 75},
+        {"domain": "reseau-entreprendre.fr", "type": "association", "dr": 45, "topical": 65},
+        {"domain": "tours-metropole.fr", "type": "institutionnel", "dr": 55, "topical": 60},
+        {"domain": "journal-entreprises.fr", "type": "media_sectoriel", "dr": 35, "topical": 70},
     ],
     "default": [
         {"domain": "blog-expert.fr", "type": "blog", "dr": 72, "topical": 75},
         {"domain": "media-pro.fr", "type": "media_sectoriel", "dr": 65, "topical": 70},
-        {"domain": "podcast-business.fr", "type": "podcast", "dr": 45, "topical": 65},
         {"domain": "annuaire-pro.fr", "type": "annuaire", "dr": 30, "topical": 25},
-        {"domain": "association-metier.fr", "type": "association", "dr": 35, "topical": 60},
     ],
 }
 

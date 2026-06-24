@@ -115,17 +115,161 @@ def _load_p4_data(state: StrategieState) -> dict:
 
 
 def _default_keywords(state: StrategieState) -> list[str]:
-    """Genere des mots-cles par defaut si aucun fourni."""
-    defaults = []
-    secteur_kw = {
-        "ecommerce": ["prix", "avis", "meilleur", "comparatif", "promo", "livraison", "guide achat"],
-        "saas": ["logiciel", "outil", "alternative", "tarif", "demo", "comparatif", "avis"],
-        "blog": ["guide", "tutoriel", "comment", "pourquoi", "definition", "exemple", "astuce"],
-        "local": ["pres de chez moi", "prix", "avis", "horaire", "contact", "reservation"],
-        "corporate": ["solutions", "services", "expertise", "etude de cas", "contact", "a propos"],
-    }
-    base = secteur_kw.get(state.profile, secteur_kw["blog"])
-    return [f"{kw} {state.domain}" if state.domain else kw for kw in base]
+    """Genere des mots-cles par defaut bases sur le profil ET un crawl de la page d'accueil."""
+    keywords = []
+
+    # 1. Tenter un crawl rapide de la page d'accueil pour extraire les vrais themes
+    try:
+        homepage_kws = _scrape_homepage_topics(state.site_url)
+        if homepage_kws:
+            keywords.extend(homepage_kws)
+            logger.info(f"ST01: {len(homepage_kws)} mots-cles extraits de la page d'accueil")
+    except Exception as e:
+        logger.warning(f"ST01: Homepage crawl failed ({e}), fallback to industry defaults")
+
+    # 2. Ajouter des mots-cles secteur si le crawl n'a rien donne
+    if len(keywords) < 3:
+        secteur_kw = {
+            "ecommerce": ["prix", "avis client", "meilleur", "comparatif", "promo", "livraison", "guide achat"],
+            "local": ["devis", "tarif", "avis", "professionnel", "pas cher", "qualite", "intervention", "urgent"],
+            "corporate": ["solutions", "services", "expertise", "etude de cas", "a propos"],
+        }
+        base = secteur_kw.get(state.profile, [])
+        domain_clean = state.domain.replace(".fr", "").replace(".com", "").replace(".pro", "").replace("www.", "")
+        for kw in base:
+            keywords.append(f"{kw} {domain_clean}" if state.domain else kw)
+
+    # 3. Si toujours rien, dernier recours avec la racine du domaine
+    if not keywords and state.domain:
+        domain_root = state.domain.split(".")[0][:30]  # "cleantout37"
+        keywords = [f"{domain_root}", f"{domain_root} avis", f"{domain_root} tarif",
+                    f"{domain_root} {state.profile}"]
+
+    return keywords[:20]
+
+
+def _scrape_homepage_topics(site_url: str) -> list[str]:
+    """Crawl la page d'accueil pour extraire les themes reels du site."""
+    import re
+    import httpx
+
+    url = site_url.rstrip("/")
+    topics = []
+
+    try:
+        resp = httpx.get(url, timeout=8.0, follow_redirects=True)
+        if resp.status_code != 200:
+            return []
+
+        html_full = resp.text[:80000]
+
+        # Extraire les metadonnees
+        title_match = re.search(r"<title>([^<]+)</title>", html_full, re.IGNORECASE)
+        title = title_match.group(1) if title_match else ""
+        desc_match = re.search(r'<meta[^>]+name="description"[^>]+content="([^"]+)"', html_full, re.IGNORECASE)
+        desc = desc_match.group(1) if desc_match else ""
+        h1_matches = re.findall(r"<h[12][^>]*>([^<]+)</h[12]>", html_full, re.IGNORECASE)
+        h2s = " ".join(h1_matches) if h1_matches else ""
+
+        # Nettoyer radicalement le HTML: supprimer scripts, styles, CSS, puis tous les tags
+        html_clean = re.sub(r"<script[^>]*>.*?</script>", " ", html_full, flags=re.DOTALL | re.IGNORECASE)
+        html_clean = re.sub(r"<style[^>]*>.*?</style>", " ", html_clean, flags=re.DOTALL | re.IGNORECASE)
+        html_clean = re.sub(r"\{[^}]*\}", " ", html_clean)  # CSS inline
+        html_clean = re.sub(r"<[^>]+>", " ", html_clean)
+        html_clean = re.sub(r"[^a-zA-ZÀ-ÿ\s]", " ", html_clean)
+        html_clean = re.sub(r"\s+", " ", html_clean).lower()
+
+        # Stopwords + mots parasites HTML/CSS
+        stopwords = {"le", "la", "les", "des", "une", "est", "sont", "avec", "pour", "sur",
+                      "dans", "par", "qui", "que", "pas", "plus", "tout", "aux", "nos",
+                      "vous", "votre", "vos", "nous", "notre", "leur", "leurs", "cette",
+                      "entre", "bien", "tres", "fait", "faire", "etre", "avoir", "aussi",
+                      "peut", "site", "cookies", "fermer", "savoir", "suivre", "ainsi",
+                      "travail", "necessaire", "navigation", "choix", "formulaire",
+                      "interlocuteur", "menu", "mobile", "header", "main", "body",
+                      "style", "fullscreen", "collapse", "submenu", "animation",
+                      "background", "https", "www", "com", "html", "content",
+                      "slide", "opened", "closed", "dipi", "before", "important"}
+
+        words = re.findall(r"[a-zà-ÿ]{4,}", html_clean)
+        word_freq = {}
+        for w in words:
+            if w not in stopwords and len(w) >= 4:
+                word_freq[w] = word_freq.get(w, 0) + 1
+
+        # Extraire les bigrammes sur le texte nettoye
+        clean_words = [w for w in words if w not in stopwords]
+        bigrams_raw = []
+        for i in range(len(clean_words) - 1):
+            bg = f"{clean_words[i]} {clean_words[i + 1]}"
+            if len(bg) >= 8:
+                bigrams_raw.append(bg)
+        bigram_freq = {}
+        for bg in bigrams_raw:
+            bigram_freq[bg] = bigram_freq.get(bg, 0) + 1
+        top_bigrams = sorted(bigram_freq, key=bigram_freq.get, reverse=True)[:10]
+
+        # Top mots
+        top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:20]
+
+        # Entites geographiques
+        geo_keywords = _extract_geo_keywords(f"{title} {desc} {h2s}")
+
+        # Construire les mots-cles finaux : priorite aux metadonnees + bigrammes
+        titre_words = re.findall(r"[a-zà-ÿ]{4,}", f"{title} {desc} {h2s}".lower())
+        topics = []
+
+        # D'abord les mots du title/desc/H1 (ce sont les plus importants)
+        for w in titre_words:
+            if w not in stopwords:
+                topics.append(w)
+
+        # Ensuite les bigrammes significatifs
+        for bg in top_bigrams[:8]:
+            topics.append(bg)
+
+        # Puis les mots frequents
+        for w in top_words[:10]:
+            topics.append(w)
+
+        # Combinaisons avec la geo
+        for geo in geo_keywords[:3]:
+            for w in top_words[:5]:
+                if w not in stopwords:
+                    topics.append(f"{w} {geo}")
+
+        # Ajouter des combinaisons pertinentes
+        domain_root = ""
+        try:
+            from urllib.parse import urlparse
+            domain_root = urlparse(url).netloc.replace("www.", "").split(".")[0]
+        except Exception:
+            pass
+
+        if domain_root:
+            for w in top_words[:5]:
+                topics.append(f"{w} {domain_root}")
+
+        return list(set(topics))[:30]
+
+    except Exception:
+        return []
+
+
+def _extract_geo_keywords(text: str) -> list[str]:
+    """Extrait les entites geographiques du texte (villes francaises frequentes)."""
+    import re
+    geo_patterns = [
+        r"(?:à|a|sur|dans|pres de|proche de)\s+([A-ZÀ-Ü][a-zà-ü]+)",
+    ]
+    found = []
+    for pat in geo_patterns:
+        matches = re.findall(pat, text)
+        found.extend(matches)
+    # Filtrer les faux positifs (mots communs capitalises)
+    exclude = {"Vous", "Nous", "Notre", "Contact", "Devis", "Accueil", "Services",
+               "Tous", "Vos", "Pour", "Avec", "Bien", "Plus", "Tout"}
+    return [m for m in found if m not in exclude][:5]
 
 
 def _group_keywords(keywords: list[str], p4_data: dict) -> list[dict]:

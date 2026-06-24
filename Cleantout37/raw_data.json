@@ -1,0 +1,427 @@
+{
+  "p4": {
+    "health_score": 0,
+    "positions": 0,
+    "keywords": 6,
+    "quick_wins": 0,
+    "alerts": 1,
+    "variations": 0,
+    "ai_visibility": 0,
+    "alerts_list": [
+      {
+        "type": "opportunite_concurrentielle",
+        "keyword": "",
+        "priorite": "info"
+      }
+    ]
+  },
+  "p5": {
+    "sante_strategique": 27,
+    "sujets_count": 3,
+    "recommandations_count": 4,
+    "opportunites_count": 3,
+    "kill_list_count": 0,
+    "forecast_months": 12,
+    "top_opportunites": [
+      {
+        "sujet": "nettoyage",
+        "volume": 2490,
+        "score": 80,
+        "action": "Creer un article",
+        "potentiel": "+124 visites/mois estimees"
+      },
+      {
+        "sujet": "entreprise",
+        "volume": 870,
+        "score": 70,
+        "action": "Creer un article",
+        "potentiel": "+43 visites/mois estimees"
+      },
+      {
+        "sujet": "societe",
+        "volume": 600,
+        "score": 70,
+        "action": "Creer un article",
+        "potentiel": "+30 visites/mois estimees"
+      }
+    ],
+    "top_menaces": [],
+    "roi_bas": 1198.0,
+    "roi_haut": 2395.0,
+    "budget_recommande": 100.0,
+    "perte_inaction": "Stagnation du trafic organique, perte progressive face aux concurrents actifs",
+    "topical_authority": {
+      "general": 30
+    },
+    "cannibalisations": 2,
+    "sujets_list": [
+      {
+        "nom": "entreprise",
+        "volume": 870,
+        "intention": "informative",
+        "couvert": false,
+        "silo": "general"
+      },
+      {
+        "nom": "nettoyage",
+        "volume": 2490,
+        "intention": "informative",
+        "couvert": false,
+        "silo": "general"
+      },
+      {
+        "nom": "societe",
+        "volume": 600,
+        "intention": "informative",
+        "couvert": false,
+        "silo": "general"
+      }
+    ],
+    "recommandations_list": [
+      {
+        "sujet": "Pilier: general",
+        "priorite": "P2",
+        "action": "creer_pilier",
+        "volume": 3960,
+        "confiance": 54,
+        "roi": 800.0,
+        "cout": 400.0,
+        "justification": "Le silo 'general' n'a pas de page pilier. Volume total: 3960.",
+        "delai": "3-6 mois"
+      },
+      {
+        "sujet": "nettoyage",
+        "priorite": "P2",
+        "action": "article",
+        "volume": 2490,
+        "confiance": 44,
+        "roi": 1196.0,
+        "cout": 250.0,
+        "justification": "Volume de recherche supérieur à 1000 (2490), justifiant une priorité P1 selon la règle.",
+        "delai": "9-12 mois"
+      },
+      {
+        "sujet": "entreprise",
+        "priorite": "P2",
+        "action": "article",
+        "volume": 870,
+        "confiance": 45,
+        "roi": -90.0,
+        "cout": 200.0,
+        "justification": "Sujet non couvert, volume 870/mois, score opportunite 70/100",
+        "delai": "6-9 mois"
+      },
+      {
+        "sujet": "societe",
+        "priorite": "P2",
+        "action": "article",
+        "volume": 600,
+        "confiance": 45,
+        "roi": -305.0,
+        "cout": 200.0,
+        "justification": "Sujet non couvert, volume 600/mois, score opportunite 70/100",
+        "delai": "6-9 mois"
+      }
+    ]
+  },
+  "p6": {
+    "authority": 43,
+    "health": 71,
+    "diversity": 85,
+    "anchor_health": 24.2,
+    "anchor_risk": 0,
+    "backlinks_count": 7,
+    "domains_count": 7,
+    "toxic_count": 2,
+    "gaps_count": 9,
+    "recommandations_count": 27,
+    "campaigns_count": 23,
+    "ai_visibility": 32,
+    "llms_txt": false,
+    "entity_authority": 72,
+    "geo_recommendations": [
+      "Creer un fichier /llms.txt listant vos pages cles pour les IA (https://llmstxt.org). C'est le premier levier GEO : +15 points de visibilite IA en moyenne.",
+      "Creez un fichier /llms.txt listant vos pages principales. Format: une URL par ligne, avec optionnellement un commentaire # description.",
+      "Ajoutez des donnees chiffrees, des definitions claires et des FAQ sur vos pages pour augmenter vos chances de citation par les IA (ChatGPT, Perplexity, Gemini)."
+    ],
+    "dofollow_ratio": 100.0,
+    "top_domains": [
+      {
+        "domain": "pagesjaunes.fr",
+        "dr": 78.0,
+        "type": "annuaire"
+      },
+      {
+        "domain": "tours.fr",
+        "dr": 65.0,
+        "type": "institutionnel"
+      },
+      {
+        "domain": "indre-et-loire.fr",
+        "dr": 55.0,
+        "type": "institutionnel"
+      },
+      {
+        "domain": "cci-touraine.fr",
+        "dr": 45.0,
+        "type": "association"
+      },
+      {
+        "domain": "solutions-proprete.fr",
+        "dr": 40.0,
+        "type": "media_sectoriel"
+      },
+      {
+        "domain": "artisanat-tours.fr",
+        "dr": 35.0,
+        "type": "association"
+      },
+      {
+        "domain": "entreprise-nettoyage.fr",
+        "dr": 30.0,
+        "type": "blog"
+      }
+    ],
+    "toxic_domains": [
+      {
+        "domain": "tours.fr",
+        "toxicity_score": 20,
+        "toxicity_level": "low_risk",
+        "reasons": [
+          "Ancres exact match excessives (100%)"
+        ],
+        "backlinks_count": 1,
+        "recommandation": "Faible risque. Pas d'action immediate necessaire."
+      },
+      {
+        "domain": "solutions-proprete.fr",
+        "toxicity_score": 20,
+        "toxicity_level": "low_risk",
+        "reasons": [
+          "Ancres exact match excessives (100%)"
+        ],
+        "backlinks_count": 1,
+        "recommandation": "Faible risque. Pas d'action immediate necessaire."
+      }
+    ],
+    "anchor_suggestions": [
+      {
+        "type": "long_tail",
+        "text": "ou trouver entreprise de nettoyage Tours a Tours"
+      },
+      {
+        "type": "long_tail",
+        "text": "comment choisir entreprise de nettoyage Tours pour professionnel"
+      },
+      {
+        "type": "long_tail",
+        "text": "guide complet entreprise de nettoyage Tours Tours"
+      },
+      {
+        "type": "url_naked",
+        "text": "https://www.cleantout37.fr"
+      },
+      {
+        "type": "url_naked",
+        "text": "www.cleantout37.fr"
+      },
+      {
+        "type": "url_naked",
+        "text": "cleantout37.fr/page"
+      },
+      {
+        "type": "exact_match",
+        "text": "entreprise de nettoyage Tours"
+      },
+      {
+        "type": "exact_match",
+        "text": "entreprise de nettoyage Tours a Tours"
+      },
+      {
+        "type": "exact_match",
+        "text": "entreprise de nettoyage Tours Tours"
+      },
+      {
+        "type": "brand",
+        "text": "Cleantout37"
+      },
+      {
+        "type": "brand",
+        "text": "Cleantout37.fr"
+      },
+      {
+        "type": "brand",
+        "text": "le site Cleantout37"
+      }
+    ],
+    "recommandations_list": [
+      {
+        "domaine": "blog-expert.fr",
+        "type": "mention",
+        "priorite": "P1",
+        "cout": 0.0,
+        "confiance": 80,
+        "justification": "Mention potentielle de 'cleantout37' sans lien sur blog-expert.fr — a verifier et reclamer"
+      },
+      {
+        "domaine": "journal-local.fr",
+        "type": "mention",
+        "priorite": "P1",
+        "cout": 0.0,
+        "confiance": 80,
+        "justification": "Mention potentielle de 'cleantout37' sans lien sur journal-local.fr — a verifier et reclamer"
+      },
+      {
+        "domaine": "tribune-ouverte.fr",
+        "type": "mention",
+        "priorite": "P1",
+        "cout": 0.0,
+        "confiance": 80,
+        "justification": "Mention potentielle de 'cleantout37' sans lien sur tribune-ouverte.fr — a verifier et reclamer"
+      },
+      {
+        "domaine": "podcast-eco.fr",
+        "type": "mention",
+        "priorite": "P1",
+        "cout": 0.0,
+        "confiance": 80,
+        "justification": "Mention potentielle de 'cleantout37' sans lien sur podcast-eco.fr — a verifier et reclamer"
+      },
+      {
+        "domaine": "forum-entreprise.fr",
+        "type": "mention",
+        "priorite": "P1",
+        "cout": 0.0,
+        "confiance": 80,
+        "justification": "Mention potentielle de 'cleantout37' sans lien sur forum-entreprise.fr — a verifier et reclamer"
+      },
+      {
+        "domaine": "blog-expert.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 150.0,
+        "confiance": 62,
+        "justification": "Prospect blog pertinent — DR 72, Topical 75"
+      },
+      {
+        "domaine": "media-pro.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 150.0,
+        "confiance": 57,
+        "justification": "DR 65 > 60, domaine très pertinent avec une bonne autorité."
+      },
+      {
+        "domaine": "tours-metropole.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 49,
+        "justification": "Domaine linkant un concurrent direct (cleanolia.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "leblogdespros.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 45,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "tours-metropole.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 44,
+        "justification": "Domaine linkant un concurrent direct (cleanolia.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "journal-touraine.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 44,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "journal-touraine.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 44,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "artisanat-local.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 37,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "artisanat-local.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 37,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "leblogdespros.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 32,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "leblogdespros.fr",
+        "type": "guest_post",
+        "priorite": "P1",
+        "cout": 80.0,
+        "confiance": 32,
+        "justification": "Domaine linkant un concurrent direct (netto-decor.fr) mais pas vous : opportunité concurrentielle."
+      },
+      {
+        "domaine": "",
+        "type": "anchor_adjustment",
+        "priorite": "P2",
+        "cout": 0.0,
+        "confiance": 70,
+        "justification": "Sous-Represente: long_tail (0.0% vs 15% cible)"
+      },
+      {
+        "domaine": "",
+        "type": "anchor_adjustment",
+        "priorite": "P2",
+        "cout": 0.0,
+        "confiance": 70,
+        "justification": "Sous-Represente: url_naked (0.0% vs 10% cible)"
+      },
+      {
+        "domaine": "",
+        "type": "anchor_adjustment",
+        "priorite": "P2",
+        "cout": 0.0,
+        "confiance": 70,
+        "justification": "Sur-Represente: generic (42.9% vs 10% cible)"
+      },
+      {
+        "domaine": "",
+        "type": "anchor_adjustment",
+        "priorite": "P2",
+        "cout": 0.0,
+        "confiance": 70,
+        "justification": "Sous-Represente: exact_match (0.0% vs 10% cible)"
+      }
+    ]
+  },
+  "p7": {
+    "actions": 0,
+    "auto": 0,
+    "human": 0,
+    "decay": 0,
+    "next_action": ""
+  }
+}

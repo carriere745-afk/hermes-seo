@@ -84,10 +84,11 @@ class DataForSEOConnector:
                 payload,
             )
             result = {}
-            for task in resp.get("tasks", []):
-                for item in task.get("result", []):
+            for task in (resp.get("tasks") or []):
+                for item in (task.get("result") or []):
                     domain = item.get("target", "")
-                    metrics = item.get("items", [{}])[0] if item.get("items") else {}
+                    items = item.get("items") or [{}]
+                    metrics = items[0] if items else {}
                     result[domain] = {
                         "rank": metrics.get("rank", 0),
                         "traffic_etv": metrics.get("etv", 0),

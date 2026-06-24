@@ -188,14 +188,19 @@ def save_session_state(session_id: str, state_json: str, status: str = "running"
                        site_url: str = "", domain: str = "", mode: str = "standard") -> None:
     conn = _get_conn()
     now = datetime.now().isoformat()
+    # Verifier si la session existe deja
+    existing = conn.execute(
+        "SELECT created_at FROM strategie_sessions WHERE session_id=?",
+        (session_id,)).fetchone()
+    created = existing["created_at"] if existing else now
     conn.execute(
         """INSERT OR REPLACE INTO strategie_sessions
            (session_id, site_url, domain, mode, status, phase, current_agent,
             recommendations_count, kill_list_count, health_score,
             created_at, updated_at, state_json)
-           VALUES (?,?,?,?,?,?,?,?,?,?,COALESCE((SELECT created_at FROM strategie_sessions WHERE session_id=?),?),?)""",
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (session_id, site_url, domain, mode, status, phase, current_agent,
-         recs, kills, health, session_id, now, state_json))
+         recs, kills, health, created, now, state_json))
     conn.commit()
     conn.close()
 
