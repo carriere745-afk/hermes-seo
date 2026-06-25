@@ -39,24 +39,23 @@ def render_backlinks_page():
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Maillage & Backlinks</p>', unsafe_allow_html=True)
     st.caption("Audit backlinks, CRM netlinking, prospect discovery, anchor strategy. Pipeline 6 — 18 agents.")
 
-    with st.expander("Configuration", expanded=True):
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            site_url = st.text_input("URL du site", "https://", key="bl_site")
-            mode = st.selectbox("Mode", ["fast", "standard", "premium"], index=1, key="bl_mode")
-            profile = st.selectbox("Profil", ["blog", "ecommerce", "saas", "local", "corporate", "agressif", "defensif"], key="bl_profile")
-        with c2:
-            competitors_raw = st.text_area("Concurrents (un par ligne)", placeholder="concurrent1.com\nconcurrent2.com", key="bl_comp")
-            competitors = [c.strip() for c in competitors_raw.split("\n") if c.strip()] if competitors_raw else []
-        with c3:
-            keywords_raw = st.text_area("Mots-cles cibles", placeholder="mot cle 1\nmot cle 2", key="bl_kw")
-            keywords = [k.strip() for k in keywords_raw.split("\n") if k.strip()] if keywords_raw else []
-            budget = st.number_input("Budget mensuel netlinking (euros)", value=500, min_value=0, key="bl_budget")
+    # Lire le projet partage
+    site_url = st.session_state.get("project_url", "")
+    keywords = st.session_state.get("project_keywords", [])
+    competitors = st.session_state.get("project_competitors", [])
+    mode = st.session_state.get("project_mode", "standard")
+    profile = st.session_state.get("project_profile", "blog")
 
-    launch = st.button("Auditer le profil Backlinks", type="primary", use_container_width=True,
-                       disabled=not site_url.startswith("http"))
+    if not site_url or not site_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour commencer l'analyse.")
+        return
 
-    if launch and site_url.startswith("http"):
+    st.markdown(f"**Site:** {site_url} | **Mode:** {mode} | **Profil:** {profile}")
+    budget = st.number_input("Budget mensuel netlinking (euros)", value=300, min_value=0, key="bl_budget")
+
+    launch = st.button("Auditer le profil Backlinks", type="primary", use_container_width=True)
+
+    if launch:
         state = BacklinksState(
             site_url=site_url, mode=mode, profile=profile,
             competitors=competitors, keywords_cibles=keywords,

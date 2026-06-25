@@ -37,30 +37,26 @@ def render_strategie_page():
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Strategie Editoriale</p>', unsafe_allow_html=True)
     st.caption("Roadmap, forecast, kill list, CEO summary. Pipeline 5 — 18 agents.")
 
-    with st.expander("Configuration", expanded=True):
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            site_url = st.text_input("URL du site", "https://", key="st_site")
-            mode = st.selectbox("Mode qualite", ["fast", "standard", "premium", "compliance"],
-                                index=1, key="st_mode",
-                                help="fast: essentiel ($0) | standard: complet (~$0.08) | premium: +GA4 (~$0.15)")
-        with c2:
-            keywords_raw = st.text_area("Mots-cles (un par ligne)", placeholder="mot cle 1\nmot cle 2", key="st_kw")
-            keywords = [k.strip() for k in keywords_raw.split("\n") if k.strip()] if keywords_raw else []
-            profile = st.selectbox("Profil du site", ["blog", "ecommerce", "saas", "local", "corporate"],
-                                   key="st_profile")
-        with c3:
-            competitors_raw = st.text_area("Concurrents (un par ligne)", placeholder="concurrent1.com\nconcurrent2.com", key="st_comp")
-            competitors = [c.strip() for c in competitors_raw.split("\n") if c.strip()] if competitors_raw else []
-            valeur_lead = st.number_input("Valeur lead (euros)", value=100, min_value=0, key="st_valeur")
-            taux_conv = st.number_input("Taux conversion (%)", value=2.0, min_value=0.0, max_value=100.0, key="st_conv") / 100.0
+    # Lire le projet partage
+    site_url = st.session_state.get("project_url", "")
+    keywords = st.session_state.get("project_keywords", [])
+    competitors = st.session_state.get("project_competitors", [])
+    mode = st.session_state.get("project_mode", "standard")
+    profile = st.session_state.get("project_profile", "blog")
 
-    launch = st.button("Elaborer la Strategie", type="primary", use_container_width=True,
-                       disabled=not (site_url.startswith("http") or keywords))
+    if not site_url or not site_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour commencer l'analyse.")
+        return
 
-    if launch and (site_url.startswith("http") or keywords):
+    st.markdown(f"**Site:** {site_url} | **Mode:** {mode} | **Profil:** {profile}")
+    valeur_lead = st.number_input("Valeur lead (euros)", value=100, min_value=0, key="st_valeur")
+    taux_conv = st.number_input("Taux conversion (%)", value=2.0, min_value=0.0, max_value=100.0, key="st_conv") / 100.0
+
+    launch = st.button("Elaborer la Strategie", type="primary", use_container_width=True)
+
+    if launch and site_url:
         state = StrategieState(
-            site_url=site_url if site_url.startswith("http") else "",
+            site_url=site_url,
             mode=mode,
             profile=profile,
             keywords_monitored=keywords,

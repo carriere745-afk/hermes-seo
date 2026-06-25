@@ -6,11 +6,15 @@ Navigation : Generator | Archive | Audit | Session Detail
 """
 
 import asyncio
+import re
 import sys
 from datetime import datetime
-from pathlib import Path
+from collections import Counter
+from urllib.parse import urlparse
 
+import httpx
 import streamlit as st
+from pathlib import Path
 
 # S'assurer que le projet est dans le path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -89,6 +93,114 @@ if "selected_session_id" not in st.session_state:
     st.session_state.selected_session_id = None
 if "pipeline_error" not in st.session_state:
     st.session_state.pipeline_error = None
+
+# ─── Projet Global Partagé (tous les pipelines) ────────────────────────
+if "project_url" not in st.session_state:
+    st.session_state.project_url = ""
+if "project_keywords" not in st.session_state:
+    st.session_state.project_keywords = []
+if "project_competitors" not in st.session_state:
+    st.session_state.project_competitors = []
+if "project_profile" not in st.session_state:
+    st.session_state.project_profile = "blog"
+if "project_domain" not in st.session_state:
+    st.session_state.project_domain = ""
+if "project_autodetected" not in st.session_state:
+    st.session_state.project_autodetected = False
+
+
+# ─── Auto-detection du site ──────────────────────────────────────────
+
+def _auto_detect_site(url: str, domain: str) -> tuple[list[str], list[str], str]:
+    """Crawl la page d'accueil pour extraire mots-cles, concurrents et profil."""
+    keywords = []
+    competitors = []
+    profile = "blog"
+
+    try:
+        resp = httpx.get(url.strip("/"), timeout=8.0, follow_redirects=True)
+        if resp.status_code != 200:
+            return keywords, competitors, profile
+
+        html = resp.text[:80000]
+
+        # Extraire title, meta, H1
+        title_m = re.search(r"<title>([^<]+)</title>", html, re.IGNORECASE)
+        title = title_m.group(1) if title_m else ""
+        desc_m = re.search(r'<meta[^>]+name="description"[^>]+content="([^"]+)"', html, re.IGNORECASE)
+        desc = desc_m.group(1) if desc_m else ""
+        headers = re.findall(r"<h[12][^>]*>([^<]+)</h[12]>", html, re.IGNORECASE)
+
+        # Nettoyer HTML → texte visible
+        html_clean = re.sub(r"<script[^>]*>.*?</script>", " ", html, flags=re.DOTALL | re.IGNORECASE)
+        html_clean = re.sub(r"<style[^>]*>.*?</style>", " ", html_clean, flags=re.DOTALL | re.IGNORECASE)
+        html_clean = re.sub(r"\{[^}]*\}", " ", html_clean)
+        html_clean = re.sub(r"<[^>]+>", " ", html_clean)
+        html_clean = re.sub(r"[^a-zA-ZÀ-ÿ\s]", " ", html_clean)
+        html_clean = re.sub(r"\s+", " ", html_clean).lower()
+
+        combined = f"{title} {desc} {' '.join(headers[:5])} {html_clean[:3000]}"
+
+        # Stopwords
+        stopwords = {"le","la","les","des","une","est","sont","avec","pour","sur","dans","par",
+                      "qui","que","pas","plus","tout","aux","nos","vous","votre","vos","nous","notre",
+                      "leur","leurs","cette","entre","bien","tres","fait","faire","etre","avoir","aussi",
+                      "peut","site","cookies","fermer","savoir","suivre","ainsi","travail","necessaire",
+                      "navigation","choix","formulaire","interlocuteur","menu","mobile","header","main",
+                      "body","style","https","www","com","html","content","slide","opened","closed",
+                      "before","important","dipi","animation","background","fullscreen","collapse","submenu"}
+
+        words = re.findall(r"[a-zà-ÿ]{4,}", combined)
+        word_freq = Counter(w for w in words if w not in stopwords)
+        top_words = [w for w, _ in word_freq.most_common(15)]
+
+        # Bigrammes
+        clean_words = [w for w in words if w not in stopwords]
+        bigrams = []
+        for i in range(len(clean_words) - 1):
+            bg = f"{clean_words[i]} {clean_words[i + 1]}"
+            if len(bg) >= 8:
+                bigrams.append(bg)
+        top_bigrams = list(set(bigrams))[:10]
+
+        for w in top_words[:8]:
+            keywords.append(w)
+        for bg in top_bigrams[:4]:
+            keywords.append(bg)
+
+        # Geo detection
+        cities = list(set(re.findall(r"(?:a|sur|dans|pres de)\s+([A-ZÀ-Ü][a-zà-ü]+)",
+                                      f"{title} {desc} {' '.join(headers[:3])}")))[:3]
+        for city in cities:
+            for w in top_words[:3]:
+                keywords.append(f"{w} {city.lower()}")
+
+        domain_root = domain.split(".")[0][:25]
+        for w in top_words[:3]:
+            keywords.append(f"{w} {domain_root}")
+
+        keywords = list(set(k.strip() for k in keywords if len(k.strip()) >= 4))[:20]
+
+        # Profil + concurrents
+        geo_lower = combined.lower()
+        if any(w in geo_lower for w in ["nettoyage","plombier","electricien","coiffeur","boulanger",
+                                         "restaurant","artisan","chantier","entretien","bureaux",
+                                         "commerces","vitres","locaux","professionnel","particulier"]):
+            profile = "local"
+            competitors = ["pagesjaunes.fr", "solutions-proprete.fr"]
+        elif any(w in geo_lower for w in ["boutique","shop","produit","achat","panier","ecommerce"]):
+            profile = "ecommerce"
+            competitors = ["amazon.fr"]
+        elif any(w in geo_lower for w in ["logiciel","saas","api","demo","app","software"]):
+            profile = "saas"
+            competitors = ["capterra.com"]
+
+        keywords = [k for k in keywords if len(k) >= 4 and not all(w in stopwords for w in k.split())][:20]
+
+    except Exception:
+        pass
+
+    return keywords, competitors, profile
 
 
 async def _run_pipeline(
@@ -401,6 +513,106 @@ with st.sidebar:
         st.session_state.selected_session_id = params["session_id"]
         # Flag one-shot: persiste jusqu'a consommation par le bloc principal
         if "from_url_consumed" not in st.session_state:
+            st.session_state.from_url = True
+            st.session_state.from_url_consumed = True
+
+    # ─── Projet Partagé (visible sur toutes les pages pipeline) ────────
+    pipeline_pages = ["Audit de Contenu", "Audit Technique", "SERP & Visibilite",
+                      "Strategie", "Backlinks", "Maintenance", "Learning"]
+    if nav in pipeline_pages or nav == "Generator":
+        st.markdown("---")
+        st.markdown("## Projet")
+        url = st.text_input(
+            "URL du site",
+            value=st.session_state.project_url or "https://",
+            key="shared_project_url",
+            placeholder="https://www.cleantout37.fr",
+        )
+
+        # Auto-detection quand l'URL change
+        if url and url != st.session_state.project_url and url.startswith("http"):
+            st.session_state.project_url = url
+            # Extraire le domaine
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            domain = parsed.netloc.replace("www.", "")
+            st.session_state.project_domain = domain
+
+            # Auto-detecter keywords + competitors depuis la homepage
+            if not st.session_state.project_autodetected:
+                with st.spinner("Analyse du site..."):
+                    kws, comps, profile = _auto_detect_site(url, domain)
+                    if kws:
+                        st.session_state.project_keywords = kws
+                    if comps:
+                        st.session_state.project_competitors = comps
+                    if profile:
+                        st.session_state.project_profile = profile
+                    st.session_state.project_autodetected = True
+                st.rerun()
+
+        # Afficher les mots-cles auto-detectes
+        if st.session_state.project_keywords:
+            kw_text = "\n".join(st.session_state.project_keywords[:10])
+            keywords_raw = st.text_area(
+                "Mots-cles (auto-detectes, modifiables)",
+                value=kw_text,
+                key="shared_kw",
+                height=120,
+            )
+        else:
+            keywords_raw = st.text_area(
+                "Mots-cles (un par ligne)",
+                placeholder="Ajoutez vos mots-cles...",
+                key="shared_kw_empty",
+                height=100,
+            )
+
+        # Concurrents
+        if st.session_state.project_competitors:
+            comp_text = "\n".join(st.session_state.project_competitors[:5])
+            competitors_raw = st.text_area(
+                "Concurrents (suggeres)",
+                value=comp_text,
+                key="shared_comp",
+                height=100,
+            )
+        else:
+            competitors_raw = st.text_area(
+                "Concurrents (un par ligne)",
+                placeholder="concurrent1.com\nconcurrent2.fr",
+                key="shared_comp_empty",
+                height=80,
+            )
+
+        # Profil
+        profile = st.selectbox(
+            "Profil du site",
+            ["blog", "ecommerce", "saas", "local", "corporate"],
+            index=["blog", "ecommerce", "saas", "local", "corporate"].index(
+                st.session_state.project_profile
+            ) if st.session_state.project_profile in ["blog", "ecommerce", "saas", "local", "corporate"] else 0,
+            key="shared_profile",
+        )
+        st.session_state.project_profile = profile
+
+        # Mode
+        mode = st.selectbox(
+            "Mode qualite",
+            ["fast", "standard", "premium"],
+            index=1,
+            key="shared_mode",
+        )
+
+        # Stocker dans le state global
+        parsed_kw = [k.strip() for k in keywords_raw.split("\n") if k.strip()] if keywords_raw else []
+        parsed_comp = [c.strip() for c in competitors_raw.split("\n") if c.strip()] if competitors_raw else []
+        st.session_state.project_keywords = parsed_kw
+        st.session_state.project_competitors = parsed_comp
+        st.session_state.project_mode = mode
+
+        if st.session_state.project_domain:
+            st.caption(f"Domaine: {st.session_state.project_domain} | Profil: {profile}")
             st.session_state.from_url = True
             st.session_state.from_url_consumed = True
 

@@ -37,24 +37,29 @@ def render_serp_visibility_page():
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">SERP & Visibility Intelligence</p>', unsafe_allow_html=True)
     st.caption("Surveillance des positions, analyse concurrentielle, AI visibility, alertes.")
 
-    with st.expander("⚙️ Configuration", expanded=True):
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            site_url = st.text_input("URL du site", "https://", key="sv_site")
-            mode = st.selectbox("Mode", ["fast","standard","premium"], index=1, key="sv_mode")
-        with c2:
-            keywords_raw = st.text_area("Mots-clés (un par ligne)", placeholder="mot cle 1\nmot cle 2", key="sv_kw")
-            keywords = [k.strip() for k in keywords_raw.split("\n") if k.strip()] if keywords_raw else []
-        with c3:
-            competitors_raw = st.text_area("Concurrents (un par ligne)", placeholder="concurrent1.com\nconcurrent2.com", key="sv_comp")
-            competitors = [c.strip() for c in competitors_raw.split("\n") if c.strip()] if competitors_raw else []
+    # Lire le projet partage (sidebar)
+    site_url = st.session_state.get("project_url", "")
+    keywords = st.session_state.get("project_keywords", [])
+    competitors = st.session_state.get("project_competitors", [])
+    mode = st.session_state.get("project_mode", "standard")
+    profile = st.session_state.get("project_profile", "blog")
 
-    launch = st.button("🔍 Lancer l'analyse SERP", type="primary", use_container_width=True, disabled=not site_url)
+    if not site_url or not site_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour commencer l'analyse.")
+        return
 
-    if launch and site_url:
+    st.markdown(f"**Site:** {site_url} | **Mode:** {mode} | **Profil:** {profile}")
+    if keywords:
+        st.markdown(f"**Mots-cles:** {', '.join(keywords[:6])}{'...' if len(keywords) > 6 else ''}")
+    if competitors:
+        st.markdown(f"**Concurrents:** {', '.join(competitors[:4])}")
+
+    launch = st.button("Lancer l'analyse SERP", type="primary", use_container_width=True)
+
+    if launch:
         state = SerpVisibilityState(
             site_url=site_url, keywords=keywords, competitors=competitors,
-            mode=mode, profile="blog",
+            mode=mode, profile=profile,
         )
         with st.spinner("Analyse SERP en cours..."):
             result = asyncio.run(_run_pipeline(state))
