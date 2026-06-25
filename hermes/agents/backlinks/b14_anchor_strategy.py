@@ -25,31 +25,39 @@ ANCHOR_TARGETS = {
 }
 
 # Templates d'ancres par type — remplit {domain}, {brand}, {keyword}, {city}
-ANCHOR_TEMPLATES = {
-    "brand": [
-        "{brand}", "{brand}.fr", "le site {brand}", "{brand} - site officiel",
-    ],
-    "partial_match": [
-        "{keyword} par {brand}", "{brand} : {keyword}", "{keyword} avec {brand}",
-        "decouvrez {keyword} chez {brand}",
-    ],
-    "long_tail": [
-        "ou trouver {keyword} a {city}", "comment choisir {keyword} pour {sector}",
-        "guide complet {keyword} {city}", "pourquoi {keyword} est important pour votre {sector}",
-        "les avantages de {keyword} professionnel a {city}",
-    ],
-    "exact_match": [
-        "{keyword}", "{keyword} a {city}", "{keyword} {city}",
-        "{keyword} professionnel",
-    ],
-    "url_naked": [
-        "https://www.{domain}", "www.{domain}", "{domain}/page",
-    ],
-    "generic": [
-        "cliquez ici", "en savoir plus", "site web", "voir le site",
-        "decouvrir", "plus d'infos",
-    ],
+# Templates par profil de site (les ancres locales ne s'appliquent qu'au profil local)
+ANCHOR_TEMPLATES_BY_PROFILE = {
+    "local": {
+        "brand": ["{brand}", "{brand}.fr", "le site {brand}"],
+        "partial_match": ["{keyword} par {brand}", "{brand} : {keyword}",
+                          "decouvrez {keyword} chez {brand}"],
+        "long_tail": [
+            "ou trouver {keyword} a {city}",
+            "comment choisir {keyword} pour {sector}",
+            "guide complet {keyword} {city}",
+        ],
+        "exact_match": ["{keyword}", "{keyword} a {city}", "{keyword} {city}"],
+        "url_naked": ["https://www.{domain}", "www.{domain}"],
+        "generic": ["cliquez ici", "en savoir plus", "site web", "voir le site"],
+    },
+    "default": {
+        "brand": ["{brand}", "{brand}.com", "le site {brand}", "via {brand}"],
+        "partial_match": ["{keyword} par {brand}", "{brand} et {keyword}",
+                          "decouvrez {keyword} avec {brand}"],
+        "long_tail": [
+            "comprendre {keyword}",
+            "guide complet sur {keyword}",
+            "{keyword} : ce qu'il faut savoir",
+            "comment fonctionne {keyword}",
+        ],
+        "exact_match": ["{keyword}", "{keyword} explique", "{keyword} {sector}"],
+        "url_naked": ["https://www.{domain}", "www.{domain}", "{domain}"],
+        "generic": ["cliquez ici", "en savoir plus", "site officiel", "voir la ressource"],
+    },
 }
+
+# Ne plus exposer un template global avec city hardcodee
+ANCHOR_TEMPLATES = ANCHOR_TEMPLATES_BY_PROFILE["default"]
 
 
 async def run(state: BacklinksState) -> BacklinksState:
@@ -83,8 +91,30 @@ async def run(state: BacklinksState) -> BacklinksState:
     else:
         brand_display = brand_name.upper() if len(brand_name) <= 6 else brand_name.capitalize()
 
-    primary_kw = state.keywords_cibles[0] if state.keywords_cibles else "service"
-    city = "Tours"  # Fallback — a enrichir avec geo-detection
+    primary_kw = state.keywords_cibles[0] if state.keywords_cibles else "votre service"
+
+    # Selection du jeu de templates selon le profil reel du site
+    templates = ANCHOR_TEMPLATES_BY_PROFILE.get(
+        state.profile, ANCHOR_TEMPLATES_BY_PROFILE["default"]
+    )
+
+    # City : SEULEMENT pour les sites locaux, et detectee dynamiquement
+    city = ""
+    sector = state.profile if state.profile != "default" else "professionnel"
+    if state.profile == "local":
+        # Extraire la ville depuis le domaine si possible (ex: cleantout37 -> Tours via dpt 37)
+        city = _detect_city_from_state(state) or ""
+
+    def _fmt(tpl: str) -> str:
+        """Formate un template en n'injectant city/sector que si pertinent."""
+        ctx = {"brand": brand_display, "domain": domain, "keyword": primary_kw, "sector": sector}
+        if city:
+            ctx["city"] = city
+        try:
+            return tpl.format(**ctx)
+        except KeyError:
+            # Si le template demande {city} mais on n'en a pas, on skip
+            return ""
 
     for atype, dev in deviations.items():
         if dev["status"] != "ok":
@@ -92,15 +122,10 @@ async def run(state: BacklinksState) -> BacklinksState:
 
         # Generer 5 suggestions concretes pour chaque type
         suggestions = []
-        for tpl in ANCHOR_TEMPLATES.get(atype, [atype]):
-            text = tpl.format(
-                brand=brand_display,
-                domain=domain,
-                keyword=primary_kw,
-                city=city,
-                sector="professionnel" if state.profile == "local" else state.profile,
-            )
-            suggestions.append(text)
+        for tpl in templates.get(atype, [atype]):
+            text = _fmt(tpl)
+            if text:  # Skip templates qui demandent une city absente
+                suggestions.append(text)
         anchor_suggestions[atype] = suggestions[:5]
 
     # Generer les suggestions prioritaires (types sous-representes)
@@ -108,13 +133,10 @@ async def run(state: BacklinksState) -> BacklinksState:
     for atype in sorted(deviations, key=lambda a: deviations[a]["deviation"]):
         dev = deviations[atype]
         if dev["deviation"] < -5:  # Sous-represente
-            for tpl in ANCHOR_TEMPLATES.get(atype, [atype])[:3]:
-                text = tpl.format(
-                    brand=brand_display, domain=domain,
-                    keyword=primary_kw, city=city,
-                    sector="professionnel" if state.profile == "local" else state.profile,
-                )
-                priority_suggestions.append({"type": atype, "text": text})
+            for tpl in templates.get(atype, [atype])[:3]:
+                text = _fmt(tpl)
+                if text:
+                    priority_suggestions.append({"type": atype, "text": text})
 
     # Alertes follow/nofollow
     dofollow_ratio = state.anchor_profile.get("dofollow_ratio", 100)
@@ -149,3 +171,41 @@ async def run(state: BacklinksState) -> BacklinksState:
     logger.info(f"B14: Profil ancres — sante {anchor_health:.0f}/100, {len(alerts)} alertes, "
                 f"{len(priority_suggestions)} suggestions concretes, dofollow={dofollow_ratio:.0f}%")
     return state
+
+
+# Mapping departement français -> ville principale
+_DEPT_TO_CITY = {
+    "01": "Bourg-en-Bresse", "06": "Nice", "13": "Marseille", "31": "Toulouse",
+    "33": "Bordeaux", "34": "Montpellier", "35": "Rennes", "37": "Tours",
+    "38": "Grenoble", "44": "Nantes", "59": "Lille", "67": "Strasbourg",
+    "69": "Lyon", "75": "Paris", "76": "Rouen", "78": "Versailles",
+    "83": "Toulon", "84": "Avignon",
+}
+
+
+def _detect_city_from_state(state) -> str | None:
+    """Detecte une ville depuis le domaine, les keywords ou le profil.
+
+    Strategies:
+    1. Chercher un numero de departement dans le domaine (ex: cleantout37 -> Tours)
+    2. Chercher un nom de ville dans les keywords cibles
+    3. Sinon, retourner None (ne PAS hardcoder)
+    """
+    import re as _re
+    domain = (state.domain or "").lower()
+    # Strategie 1: dpt dans le domaine
+    m = _re.search(r"(\d{2,3})\b", domain)
+    if m and m.group(1) in _DEPT_TO_CITY:
+        return _DEPT_TO_CITY[m.group(1)]
+
+    # Strategie 2: ville mentionnee dans les keywords
+    known_cities = list(_DEPT_TO_CITY.values()) + [
+        "Tours", "Paris", "Lyon", "Marseille", "Bordeaux", "Lille", "Nice",
+        "Toulouse", "Nantes", "Strasbourg", "Montpellier", "Rennes",
+    ]
+    for kw in (state.keywords_cibles or []):
+        for city in known_cities:
+            if city.lower() in kw.lower():
+                return city
+
+    return None

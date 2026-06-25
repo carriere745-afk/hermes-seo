@@ -71,6 +71,23 @@ def _build_system_prompt(state: SessionState) -> str:
     if serp.get("ai_overviews"):
         ai_overview = serp["ai_overviews"][0].get("content", "")[:300]
 
+    # CONTEXTE SEMANTIQUE : top 10 SERP brut pour comprendre ce que le mot-cle signifie
+    # Sans ca, le LLM hallucine (ex: "nano banana" -> fruit au lieu de IA Google)
+    serp_context_lines = []
+    top10 = serp.get("top10", []) or serp.get("organic_results", [])
+    for r in top10[:10]:
+        if isinstance(r, dict):
+            title = r.get("title", "")
+            snippet = r.get("snippet", r.get("description", ""))
+            domain = r.get("domain", "")
+            if title:
+                serp_context_lines.append(f"- [{domain}] {title} — {snippet[:120]}")
+    serp_context_block = (
+        "\n".join(serp_context_lines)
+        if serp_context_lines
+        else "(Aucune donnee SERP. ATTENTION : sans contexte, ne pas inventer la signification du mot-cle.)"
+    )
+
     # ── Template ──
     structure = template.get("structure", [])
     sections_guide = "\n".join(
@@ -134,6 +151,30 @@ Tu ecris pour {nom_persona}, un lecteur de niveau {niveau} qui cherche a {obj_le
 ## Questions que le lecteur se pose (PAA)
 
 {chr(10).join(f'{i+1}. {q}' for i, q in enumerate(paa_list)) if paa_list else '(non disponible)'}
+
+## ⚠️ CONTEXTE SEMANTIQUE OBLIGATOIRE — Top SERP actuel
+
+VOICI ce que Google montre AUJOURD'HUI pour le mot-cle "{state.keyword or 'le mot-cle'}".
+Ces resultats definissent OFFICIELLEMENT ce que le mot-cle signifie aux yeux de Google et des utilisateurs.
+
+{serp_context_block}
+
+### REGLE IMPERATIVE de redaction
+
+1. **Avant de commencer**, analyse les titres et descriptions ci-dessus pour comprendre EXACTEMENT
+   ce que le mot-cle designe (nom d'un produit ? d'une marque ? d'un concept ? d'un outil ?).
+
+2. **Tu DOIS rediger sur le sujet reel**, celui qui domine les resultats Google ci-dessus.
+   - Si "{state.keyword or 'le mot-cle'}" est une marque/produit/outil specifique → tu rediges sur CE produit
+   - Tu n'as PAS le droit d'inventer une autre signification, meme si elle "collerait mieux" avec le profil du site
+   - Tu n'as PAS le droit de creer un nouveau produit fictif qui s'appelle pareil
+
+3. **Si le sujet reel ne correspond pas aux services de {nom}**, tu rediges quand meme
+   sur le sujet reel, en l'angle informatif/explicatif, sans forcer la promotion de {nom}.
+   Le but est de repondre a l'intention de recherche de l'utilisateur, pas de vendre a tout prix.
+
+4. **Si aucun resultat SERP n'est disponible ci-dessus**, refuse de rediger et retourne une erreur
+   JSON `{{"error": "contexte SERP manquant pour {state.keyword}"}}`. Ne jamais inventer.
 
 ## Structure a suivre IMPERATIVEMENT
 

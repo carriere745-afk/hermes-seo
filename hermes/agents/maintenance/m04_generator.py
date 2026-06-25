@@ -34,6 +34,14 @@ async def run(project: Project) -> Project:
                 action.content_to_generate = _generate_llms_txt(project)
                 action.file_to_create = "llms.txt"
                 _write_file_to_disk(project, action)
+            elif action.action_type == "generer_sitemap":
+                action.content_to_generate = _generate_sitemap_xml(project)
+                action.file_to_create = "sitemap.xml"
+                _write_file_to_disk(project, action)
+            elif action.action_type == "generer_robots_txt":
+                action.content_to_generate = _generate_robots_txt(project)
+                action.file_to_create = "robots.txt"
+                _write_file_to_disk(project, action)
             elif action.action_type == "generer_disavow":
                 action.content_to_generate = _generate_disavow(project)
                 action.file_to_create = "disavow.txt"
@@ -71,14 +79,81 @@ async def run(project: Project) -> Project:
 
 
 def _generate_llms_txt(project: Project) -> str:
-    lines = [f"# {project.domain or project.nom}"]
-    lines.append(f"# Genere par Hermes SEO — {datetime.now().strftime('%Y-%m-%d')}")
+    """Genere un llms.txt conforme aux specs https://llmstxt.org/
+
+    Format: titre projet, description, liens vers pages principales.
+    """
+    lines = [f"# {project.nom or project.domain}"]
+    if project.secteur or project.profile:
+        lines.append(f"> Site {project.profile or 'web'} — secteur {project.secteur or 'generaliste'}")
+    lines.append("")
+    lines.append("## Pages principales")
     lines.append("")
     if project.site_url:
-        lines.append(project.site_url)
-        lines.append(f"{project.site_url}/a-propos")
-        lines.append(f"{project.site_url}/contact")
-        lines.append(f"{project.site_url}/services")
+        base = project.site_url.rstrip("/")
+        lines.append(f"- [Accueil]({base}/)")
+        lines.append(f"- [A propos]({base}/a-propos)")
+        lines.append(f"- [Contact]({base}/contact)")
+        lines.append(f"- [Services]({base}/services)")
+        lines.append(f"- [Blog]({base}/blog)")
+    lines.append("")
+    lines.append(f"_Genere par Hermes SEO — {datetime.now().strftime('%Y-%m-%d')}_")
+    return "\n".join(lines)
+
+
+def _generate_sitemap_xml(project: Project) -> str:
+    """Genere un sitemap.xml standard."""
+    base = (project.site_url or f"https://{project.domain}").rstrip("/")
+    today = datetime.now().strftime("%Y-%m-%d")
+    pages = [
+        ("/", "1.0", "weekly"),
+        ("/a-propos", "0.7", "monthly"),
+        ("/services", "0.9", "weekly"),
+        ("/blog", "0.8", "daily"),
+        ("/contact", "0.5", "monthly"),
+    ]
+    urls = "\n".join(
+        f"  <url>\n"
+        f"    <loc>{base}{path}</loc>\n"
+        f"    <lastmod>{today}</lastmod>\n"
+        f"    <changefreq>{freq}</changefreq>\n"
+        f"    <priority>{prio}</priority>\n"
+        f"  </url>"
+        for path, prio, freq in pages
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}\n"
+        '</urlset>'
+    )
+
+
+def _generate_robots_txt(project: Project) -> str:
+    """Genere un robots.txt optimal (AI crawlers autorises par defaut pour le GEO)."""
+    base = (project.site_url or f"https://{project.domain}").rstrip("/")
+    lines = []
+    lines.append("# robots.txt — Hermes SEO")
+    lines.append(f"# Domaine: {project.domain}")
+    lines.append(f"# Genere le {datetime.now().strftime('%Y-%m-%d')}")
+    lines.append("")
+    lines.append("User-agent: *")
+    lines.append("Allow: /")
+    lines.append("Disallow: /wp-admin/")
+    lines.append("Disallow: /wp-login.php")
+    lines.append("Disallow: /xmlrpc.php")
+    lines.append("Disallow: /admin/")
+    lines.append("Disallow: /private/")
+    lines.append("")
+    lines.append("# AI crawlers — autorises pour maximiser la visibilite GEO")
+    lines.append("# (decommentez les lignes Disallow pour bloquer)")
+    for crawler in ["GPTBot", "anthropic-ai", "Google-Extended", "PerplexityBot",
+                    "CCBot", "Claude-Web", "ChatGPT-User"]:
+        lines.append(f"User-agent: {crawler}")
+        lines.append("Allow: /")
+        lines.append("# Disallow: /")
+        lines.append("")
+    lines.append(f"Sitemap: {base}/sitemap.xml")
     return "\n".join(lines)
 
 

@@ -60,13 +60,146 @@ class SerpAPIClient:
 
         # Fallback Serpstack
         if config.SERPSTACK_API_KEY:
-            return await self._search_serpstack(keyword, location, language)
+            try:
+                return await self._search_serpstack(keyword, location, language)
+            except SerpAPIError:
+                pass
 
-        raise SerpAPIError(
-            "Aucune API SERP configuree. Definissez TALORDATA_API_KEY, "
-            "SCRAPEDO_API_KEY ou SERPSTACK_API_KEY dans .env, "
-            "ou utilisez --dry-run."
-        )
+        # Filet de securite : recherche web gratuite (DuckDuckGo HTML)
+        # Indispensable pour contextualiser un mot-cle avant la redaction
+        try:
+            return await self._search_duckduckgo(keyword, location, language)
+        except Exception as e:
+            raise SerpAPIError(
+                f"Aucune API SERP disponible (TalorData/Scrape.do/Serpstack KO et "
+                f"DuckDuckGo fallback echec: {e}). Le mot-cle ne pourra pas etre "
+                f"contextualise. Refusez la generation sans recherche web."
+            )
+
+    async def _search_duckduckgo(
+        self, keyword: str, location: str, language: str
+    ) -> dict:
+        """Fallback gratuit via DuckDuckGo HTML (pas de cle API requise).
+
+        Cle pour Hermes : meme sans API SERP payante, on obtient un contexte
+        semantique du mot-cle (top 10 titres + descriptions + domaines).
+        C'est la difference entre "nano banana = fruit" et "nano banana = IA Google".
+
+        Strategie: 2 endpoints + 3 user-agents pour resilience.
+        """
+        import re as _re
+        import asyncio as _asyncio
+
+        params = {
+            "q": keyword,
+            "kl": f"{location}-{language}" if location != language else f"{language}-{language}",
+        }
+
+        user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        ]
+        endpoints = [
+            "https://html.duckduckgo.com/html/",
+            "https://duckduckgo.com/html/",
+            "https://duckduckgo.com/html",
+        ]
+
+        html = ""
+        last_err = None
+        for ua in user_agents:
+            headers = {
+                "User-Agent": ua,
+                "Accept-Language": f"{language}-{language.upper()},{language};q=0.9,en;q=0.8",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            }
+            for url in endpoints:
+                try:
+                    async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                        resp = await client.get(url, params=params, headers=headers)
+                        if resp.status_code == 200 and len(resp.text) > 1000:
+                            html = resp.text
+                            break
+                except Exception as e:
+                    last_err = e
+                    continue
+            if html:
+                break
+            await _asyncio.sleep(0.5)
+
+        if not html:
+            raise SerpAPIError(f"DuckDuckGo HTML inaccessible: {last_err}")
+
+        # Parser les resultats (DuckDuckGo HTML format)
+        # Strategie: capturer les blocs <div class="result results_links_deep web-result">
+        # qui contiennent title (a.result__a), url (a.result__url), snippet (a.result__snippet)
+        from urllib.parse import unquote, parse_qs, urlparse
+        from html import unescape
+
+        results = []
+        # Decouper en blocs de resultats
+        blocks = _re.split(r'<div[^>]+class="[^"]*result[^"]*results_links_deep[^"]*"', html)
+        for i, block in enumerate(blocks[1:25], 1):  # Skip first empty
+            # Title + URL
+            m_title = _re.search(
+                r'<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)</a>',
+                block, _re.DOTALL,
+            )
+            if not m_title:
+                continue
+            raw_url = m_title.group(1)
+            title_raw = m_title.group(2)
+            # Snippet
+            m_snippet = _re.search(
+                r'<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>',
+                block, _re.DOTALL,
+            )
+            snippet_raw = m_snippet.group(1) if m_snippet else ""
+
+            # Decoder l'URL DuckDuckGo
+            clean_url = raw_url
+            if "uddg=" in raw_url or "duckduckgo.com/l/" in raw_url:
+                try:
+                    if raw_url.startswith("//"):
+                        raw_url = "https:" + raw_url
+                    parsed_url = urlparse(raw_url if raw_url.startswith("http") else "https://duckduckgo.com" + raw_url)
+                    qs = parse_qs(parsed_url.query)
+                    if "uddg" in qs:
+                        clean_url = unquote(qs["uddg"][0])
+                except Exception:
+                    pass
+
+            # Nettoyer title et snippet (decoder HTML entities + retirer balises)
+            title_clean = unescape(_re.sub(r"<[^>]+>", "", title_raw)).strip()
+            snippet_clean = unescape(_re.sub(r"<[^>]+>", "", snippet_raw)).strip()
+
+            # Domaine reel
+            domain = _extract_domain_static(clean_url)
+            if domain == "duckduckgo.com" or not domain:
+                continue  # Skip si URL non resolue
+
+            if title_clean:
+                results.append({
+                    "position": i,
+                    "title": title_clean,
+                    "url": clean_url,
+                    "snippet": snippet_clean,
+                    "domain": domain,
+                })
+
+        if not results:
+            raise SerpAPIError("DuckDuckGo fallback: aucun resultat parsable")
+
+        # Format normalise Hermes
+        return {
+            "organic_results": results,
+            "related_questions": [],
+            "featured_snippet": None,
+            "ai_overview": None,
+            "source": "duckduckgo_html_fallback",
+            "keyword": keyword,
+        }
 
     async def _search_talordata(
         self, keyword: str, location: str, language: str

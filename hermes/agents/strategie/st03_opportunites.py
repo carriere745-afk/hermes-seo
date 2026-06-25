@@ -41,9 +41,15 @@ async def run(state: StrategieState) -> StrategieState:
             })
 
     # 2. Ajouter les gaps P4 (content gaps S05) si disponibles
-    p4_gaps = _load_p4_gaps()
+    # IMPORTANT: filtrer par domaine pour eviter la pollution cross-projets
+    p4_gaps = _load_p4_gaps(state.domain)
     for gap in p4_gaps:
         kw = gap.get("keyword", "")
+        if not kw:
+            continue
+        # Filtre: le mot-cle doit etre pertinent pour le profil du site
+        if not _is_keyword_relevant_to_site(kw, state):
+            continue
         if not any(o["sujet"] and kw in o.get("keywords", []) for o in opportunites):
             opportunites.append({
                 "sujet": kw,
@@ -125,7 +131,8 @@ def _recommend_page_type(sujet) -> str:
     return "article"
 
 
-def _load_p4_gaps() -> list[dict]:
+def _load_p4_gaps(domain: str = "") -> list[dict]:
+    """Charge les gaps P4 en filtrant par domaine pour eviter la pollution."""
     try:
         db_path = Path("data/serp_visibility.db")
         if not db_path.exists():
@@ -133,12 +140,45 @@ def _load_p4_gaps() -> list[dict]:
         import sqlite3
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            "SELECT keyword, search_volume, position FROM positions_history "
-            "WHERE date >= date('now', '-30 days') AND position > 10 "
-            "GROUP BY keyword ORDER BY search_volume DESC LIMIT 50"
-        ).fetchall()
+        if domain:
+            # Filtrer par url contenant le domaine
+            rows = conn.execute(
+                "SELECT keyword, search_volume, position, url FROM positions_history "
+                "WHERE date >= date('now', '-30 days') AND position > 10 "
+                "AND (url LIKE ? OR url = '') "
+                "GROUP BY keyword ORDER BY search_volume DESC LIMIT 50",
+                (f"%{domain}%",)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT keyword, search_volume, position FROM positions_history "
+                "WHERE date >= date('now', '-30 days') AND position > 10 "
+                "GROUP BY keyword ORDER BY search_volume DESC LIMIT 50"
+            ).fetchall()
         conn.close()
         return [{"keyword": r["keyword"], "search_volume": r["search_volume"] or 100} for r in rows]
     except Exception:
         return []
+
+
+def _is_keyword_relevant_to_site(keyword: str, state: StrategieState) -> bool:
+    """Verifie qu'un mot-cle est pertinent pour le site analyse.
+
+    Evite que des mots-cles d'anciennes sessions polluent les recommandations.
+    """
+    kw_lower = keyword.lower()
+    # Si l'utilisateur a renseigne des keywords, on s'aligne dessus
+    user_kws = [k.lower() for k in (state.keywords_monitored or [])]
+    if user_kws:
+        # Le mot-cle doit partager au moins un mot avec les keywords utilisateur
+        kw_tokens = set(re.findall(r"\w{3,}", kw_lower))
+        for uk in user_kws:
+            uk_tokens = set(re.findall(r"\w{3,}", uk.lower()))
+            if kw_tokens & uk_tokens:
+                return True
+        return False
+    # Sinon, accepter (pas de filtre)
+    return True
+
+
+import re

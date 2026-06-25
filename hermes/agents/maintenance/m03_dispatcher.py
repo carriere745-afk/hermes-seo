@@ -51,6 +51,7 @@ CONFLICT_RULES = [
 AUTOMATION_SCORES = {
     "generer_llms_txt": 100,
     "generer_sitemap": 100,
+    "generer_robots_txt": 100,
     "generer_schema_faq": 90,
     "generer_meta_description": 85,
     "generer_title": 85,
@@ -69,6 +70,10 @@ AUTOMATION_SCORES = {
 
 async def run(project: Project) -> Project:
     t0 = time.perf_counter()
+
+    # 0. Garantir les fondamentaux : sitemap.xml, robots.txt, llms.txt
+    # Ces 3 fichiers sont obligatoires pour tout site et P7 doit les generer automatiquement.
+    _ensure_baseline_actions(project)
 
     # 1. Collecter toutes les recommandations en attente
     all_recs = _collect_all_recommendations(project)
@@ -178,6 +183,33 @@ async def run(project: Project) -> Project:
     logger.info(f"M03: {len(consolidated)} recommandations consolidees → {len(execution_actions)} actions "
                 f"(auto={sum(1 for e in execution_actions if not e.human_approval_required)})")
     return project
+
+
+def _ensure_baseline_actions(project: Project) -> None:
+    """Garantit que sitemap.xml, robots.txt et llms.txt sont generes pour tout site.
+
+    Ces 3 fichiers font partie de la baseline SEO/AEO/GEO de base.
+    Si une action equivalente n'existe pas deja, on la cree.
+    """
+    existing_types = {a.action_type for a in project.execution_actions}
+    baseline = [
+        ("generer_sitemap", "Generer sitemap.xml (auto)", "P1"),
+        ("generer_robots_txt", "Generer robots.txt avec AI crawlers (auto)", "P1"),
+        ("generer_llms_txt", "Generer llms.txt pour visibilite IA (auto)", "P1"),
+    ]
+    for action_type, description, priority in baseline:
+        if action_type not in existing_types:
+            project.execution_actions.append(ExecutionAction(
+                source_pipeline="m03",
+                source_agent="m03_baseline",
+                category="generate",
+                action_type=action_type,
+                description=description,
+                priority=priority,
+                confidence_before=95,
+                predicted_impact="Fondation SEO/AEO/GEO indispensable",
+                human_approval_required=False,
+            ))
 
 
 def _collect_all_recommendations(project: Project) -> list[dict]:

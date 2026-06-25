@@ -274,25 +274,31 @@ class LLMFactory:
             reraise=True,
         )
 
-        last_error = None
-        async for attempt in retryer:
-            with attempt:
-                try:
-                    text, ti, to = await self._call_provider(
-                        config, system_prompt, user_message, temperature, max_tokens
-                    )
-                    return text, ti, to, model_name
-                except Exception as e:
-                    if _is_retryable(e):
-                        logger.warning(
-                            f"[{agent_id}] {config.model_id} erreur retryable "
-                            f"(tentative {attempt.retry_state.attempt_number}/3): {e}"
+        # 1. Tenter le modele principal avec retry sur erreurs transitoires
+        last_error: Exception | None = None
+        try:
+            async for attempt in retryer:
+                with attempt:
+                    try:
+                        text, ti, to = await self._call_provider(
+                            config, system_prompt, user_message, temperature, max_tokens
                         )
-                    raise
+                        return text, ti, to, model_name
+                    except Exception as e:
+                        last_error = e
+                        if _is_retryable(e):
+                            logger.warning(
+                                f"[{agent_id}] {config.model_id} erreur retryable "
+                                f"(tentative {attempt.retry_state.attempt_number}/3): {str(e)[:120]}"
+                            )
+                        raise  # tenacity decide retry vs stop selon _is_retryable
+        except Exception as e:
+            last_error = e
+            logger.warning(f"[{agent_id}] {model_name} echec definitif: {str(e)[:120]}. Bascule vers fallback.")
 
-        # Tous les retries ont echoue — essayer les fallbacks
+        # 2. Bascule vers les fallbacks (auth, key invalide, etc.)
         task_type = AGENT_TASK_TYPE.get(agent_id, TaskType.LIGHT)
-        fallbacks = list(TASK_ROUTING[task_type])[1:]
+        fallbacks = list(TASK_ROUTING[task_type])[1:]  # exclure le principal
         available = self._get_available_models()
         for fallback in fallbacks:
             if fallback in available and fallback != model_name:
@@ -302,11 +308,14 @@ class LLMFactory:
                         fb_config, system_prompt, user_message, temperature, max_tokens
                     )
                     logger.info(
-                        f"[{agent_id}] Fallback vers {fallback} (echec de {model_name})"
+                        f"[{agent_id}] Fallback OK vers {fallback} (echec de {model_name})"
                     )
                     return text, ti, to, fallback
-                except Exception:
+                except Exception as fe:
+                    logger.warning(f"[{agent_id}] Fallback {fallback} echec: {str(fe)[:100]}")
                     continue
+
+        # 3. Tous les modeles ont echoue
         raise last_error or RuntimeError(f"Tous les modeles ont echoue pour {agent_id}")
 
     async def _call_provider(
@@ -537,6 +546,23 @@ def _is_retryable(exception: Exception) -> bool:
     Pas de retry : erreurs client (4xx sauf 429), auth, validation.
     """
     msg = str(exception).lower()
+
+    # Erreurs NON-retryables (bascule immediate vers fallback)
+    non_retryable_markers = [
+        "authentication_error",
+        "invalid x-api-key",
+        "invalid_api_key",
+        "incorrect api key",
+        "unauthorized",
+        "401",
+        "403",
+        "permission_denied",
+        "insufficient_quota",
+        "billing",
+    ]
+    for marker in non_retryable_markers:
+        if marker in msg:
+            return False
 
     # Marqueurs textuels d'erreurs retryables
     retryable_markers = [
