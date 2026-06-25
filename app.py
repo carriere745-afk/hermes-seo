@@ -43,6 +43,7 @@ from pages.strategie_page import render_strategie_page
 from pages.backlinks_page import render_backlinks_page
 from pages.maintenance_page import render_maintenance_page
 from pages.learning_page import render_learning_page
+from pages.free_tools_page import render_free_tools_page
 from pages.admin_dashboard import render_admin_dashboard
 from pages.session_detail_page import render_session_detail
 
@@ -389,7 +390,7 @@ with st.sidebar:
     st.markdown("## Navigation")
     nav = st.radio(
         "Page",
-        options=["Generator", "Archive", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
+        options=["Generator", "Archive", "Outils SEO Gratuits", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
         label_visibility="collapsed",
         key="nav_page",
     )
@@ -500,6 +501,8 @@ with st.sidebar:
             st.caption("Roadmap editoriale, forecast, kill list, CEO summary.")
         elif nav == "Backlinks":
             st.caption("Audit backlinks, CRM netlinking, prospect discovery, anchor strategy.")
+        elif nav == "Outils SEO Gratuits":
+            st.caption("12+ outils SEO gratuits. Sans inscription. SERP preview, compteur de mots, schema markup, robots.txt...")
         elif nav == "Maintenance":
             st.caption("Content decay, Core Update recovery, execution engine.")
         elif nav == "Learning":
@@ -534,6 +537,8 @@ elif nav == "Strategie":
     render_strategie_page()
 elif nav == "Backlinks":
     render_backlinks_page()
+elif nav == "Outils SEO Gratuits":
+    render_free_tools_page()
 elif nav == "Maintenance":
     render_maintenance_page()
 elif nav == "Learning":

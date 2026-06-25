@@ -33,12 +33,15 @@ async def run(project: Project) -> Project:
             if action.action_type == "generer_llms_txt":
                 action.content_to_generate = _generate_llms_txt(project)
                 action.file_to_create = "llms.txt"
+                _write_file_to_disk(project, action)
             elif action.action_type == "generer_disavow":
                 action.content_to_generate = _generate_disavow(project)
                 action.file_to_create = "disavow.txt"
+                _write_file_to_disk(project, action)
             elif action.action_type == "generer_schema_faq":
                 action.content_to_generate = _generate_schema_faq(project, action)
                 action.file_to_create = f"schema_{action.target_page or 'page'}.json"
+                _write_file_to_disk(project, action)
             elif action.action_type in ("generer_meta_description", "generer_title"):
                 action.content_to_generate = _generate_meta(project, action)
             elif action.action_type == "generer_email_crm":
@@ -160,3 +163,19 @@ def _generate_content_brief(project: Project, action: ExecutionAction) -> str:
 - Longueur: 1200-2000 mots
 - Sources: institutionnelles de preference
 """
+
+
+def _write_file_to_disk(project, action) -> None:
+    """Ecrire le fichier genere sur le disque (output/)."""
+    import os as _os
+    outdir = _os.path.join("output", str(project.id or "default"))
+    _os.makedirs(outdir, exist_ok=True)
+    filename = action.file_to_create or f"{action.action_type}.txt"
+    filepath = _os.path.join(outdir, filename)
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(action.content_to_generate or "")
+        action.execution_result = f"Fichier ecrit: {filepath}"
+        logger.info(f"M04: Fichier ecrit sur disque: {filepath}")
+    except Exception as e:
+        logger.error(f"M04: Echec ecriture fichier {filepath}: {e}")
