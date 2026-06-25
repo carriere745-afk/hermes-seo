@@ -14,13 +14,30 @@ def render_learning_page():
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Learning Engine</p>', unsafe_allow_html=True)
     st.caption("Apprentissage continu, calibration, patterns. Pipeline 8 — 8 agents.")
 
-    pid = st.text_input("ID du projet", key="learn_pid", placeholder="ID du projet")
+    # Lire le projet partage
+    project_url = st.session_state.get("project_url", "")
+    project_domain = st.session_state.get("project_domain", "")
+    project_profile = st.session_state.get("project_profile", "blog")
+
+    if not project_url or not project_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour activer l'apprentissage.")
+        return
+
+    st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile}")
+
+    from hermes.core.project_db import get_project, create_project
+    existing = get_project(domain=project_domain) if project_domain else None
+    pid = existing["id"] if existing else create_project({
+        "nom": project_domain or "Projet", "site_url": project_url,
+        "domain": project_domain, "profile": project_profile, "secteur": "autre",
+    })
+
     opt_in = st.checkbox("Opt-in apprentissage global (anonymise)", value=False, key="learn_optin",
                          help="Partagez vos donnees anonymisees pour ameliorer le modele global")
 
-    launch = st.button("Lancer l'apprentissage", type="primary", disabled=not pid)
+    launch = st.button("Lancer l'apprentissage", type="primary")
 
-    if launch and pid:
+    if launch:
         project = Project(id=pid)
         project.local_seo["learning_opt_in"] = opt_in
         with st.spinner("Apprentissage en cours... (8 agents)"):

@@ -15,12 +15,35 @@ def render_maintenance_page():
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Maintenance & Execution</p>', unsafe_allow_html=True)
     st.caption("Content decay, Core Update recovery, execution automatique. Pipeline 7 — 12 agents.")
 
-    pid = st.text_input("ID du projet", key="maint_pid", placeholder="ID du projet dans hermes.db")
+    # Lire le projet partage
+    project_url = st.session_state.get("project_url", "")
+    project_domain = st.session_state.get("project_domain", "")
+    project_profile = st.session_state.get("project_profile", "blog")
+    project_mode = st.session_state.get("project_mode", "standard")
+    project_keywords = st.session_state.get("project_keywords", [])
+    project_competitors = st.session_state.get("project_competitors", [])
+
+    if not project_url or not project_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour activer la maintenance.")
+        return
+
+    st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile}")
+
+    # Auto-create project if needed
+    from hermes.core.project_db import get_project, create_project
+    existing = get_project(domain=project_domain) if project_domain else None
+    pid = existing["id"] if existing else create_project({
+        "nom": project_domain or "Projet", "site_url": project_url,
+        "domain": project_domain, "profile": project_profile,
+        "secteur": "autre", "competitors": project_competitors,
+        "keywords_cibles": project_keywords,
+    })
+
     mode = st.selectbox("Mode execution", ["semi-auto", "manual", "auto"], key="maint_mode")
 
-    launch = st.button("Lancer la maintenance", type="primary", disabled=not pid)
+    launch = st.button("Lancer la maintenance", type="primary")
 
-    if launch and pid:
+    if launch:
         from hermes.core.project_db import get_project
         existing = get_project(project_id=pid)
         if not existing:

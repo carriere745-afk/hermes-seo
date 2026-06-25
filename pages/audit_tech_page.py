@@ -86,18 +86,29 @@ def _badge(severity: str) -> str:
 def render_audit_tech_page():
     """Point d'entree de la page Audit Technique."""
 
+    # Lire le projet partage
+    project_url = st.session_state.get("project_url", "")
+    project_profile = st.session_state.get("project_profile", "blog")
+    project_mode = st.session_state.get("project_mode", "standard")
+
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Audit Technique</p>', unsafe_allow_html=True)
-    st.caption("Scan complet du site sur 12 dimensions : SEO technique, performance, sécurité, AEO/GEO...")
+    st.caption("Scan complet du site sur 12 dimensions : SEO technique, performance, securite, AEO/GEO...")
+
+    if not project_url or not project_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour demarrer l'audit technique.")
+        return
+
+    st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile} | **Mode:** {project_mode}")
 
     # ── Mode consentement ──────────────────────────────────────────
-    with st.expander("⚙️ Configuration & Consentement", expanded=True):
-        st.markdown("### Paramètres de l'audit")
-        st.markdown("L'audit est **défensif** : aucun test d'intrusion, respect de robots.txt, rate limiting.")
+    with st.expander("Configuration & Consentement", expanded=True):
+        st.markdown("### Parametres de l'audit")
+        st.markdown("L'audit est **defensif** : aucun test d'intrusion, respect de robots.txt, rate limiting.")
 
         col1, col2 = st.columns(2)
         with col1:
             mode_choice = st.selectbox(
-                "Mode qualité", options=list(MODE_LABELS.keys()),
+                "Mode qualite", options=list(MODE_LABELS.keys()),
                 format_func=lambda x: MODE_LABELS[x], index=1, key="tech_mode"
             )
             profile = st.selectbox(

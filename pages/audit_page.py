@@ -149,8 +149,19 @@ def render_audit_page():
     if "audit_result" not in st.session_state:
         st.session_state.audit_result = None
 
+    # Lire le projet partage
+    project_url = st.session_state.get("project_url", "")
+    project_profile = st.session_state.get("project_profile", "blog")
+    project_mode = st.session_state.get("project_mode", "standard")
+
     st.markdown('<p style="font-size:1.8rem;font-weight:700;">Audit de Contenu</p>', unsafe_allow_html=True)
     st.caption("Analysez vos pages existantes sur 7 dimensions SEO / AEO / GEO / EEAT / UX.")
+
+    if not project_url or not project_url.startswith("http"):
+        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour demarrer l'audit.")
+        return
+
+    st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile} | **Mode:** {project_mode}")
 
     mode_labels = {
         "single": "URL unique", "list": "Liste d'URLs",
