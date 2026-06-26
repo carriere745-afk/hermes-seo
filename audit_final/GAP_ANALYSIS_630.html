@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gap Analysis — Hermes SEO vs Méga-Référence 630</title>
+<style>
+body{max-width:1200px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px;color:#1E88E5}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.ok{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px}
+.warn{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px}
+.err{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px}
+.info{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px}
+.note{background:#f8fafc;border:1px solid #ddd;padding:12px 18px;margin:15px 0;border-radius:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.b-couvert{background:#e8f5e9;color:#2e7d32}.b-partiel{background:#fff3e0;color:#e65100}.b-manque{background:#fce4ec;color:#c62828}.b-fondation{background:#e3f2fd;color:#1565c0}
+.footer{text-align:center;color:#999;font-size:12px;padding:2rem 0 1rem 0;border-top:1px solid #eee;margin-top:3rem}
+.big-num{font-size:3rem;font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO vs Méga-Référence 630 — Gap Analysis</h1>
+<p class="meta">Genere le 27 juin 2026 | Comparaison systematique : ce qu'Hermes fait, ce qu'il fait partiellement, ce qu'il ne fait pas</p>
+
+<div class="ok">
+<strong>Contexte :</strong> le document "Mega-Reference SaaS SEO/AEO/GEO" liste <strong>630 micro-taches</strong> reparties sur 24 modules. C'est la spec ultime d'une plateforme SEO complete. Ci-dessous, le mapping exact de ce qu'Hermes SEO v3 couvre aujourd'hui.
+</div>
+
+<!-- ════════════════════════════════ -->
+<h2>1. Synthese</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin:20px 0">
+    <div style="background:#e8f5e9;border-radius:12px;padding:25px;text-align:center">
+        <div class="big-num" style="color:#2e7d32">~25%</div>
+        <div style="font-weight:600">Couvert</div>
+        <div style="font-size:0.9rem;color:#666">~155 / 630 taches</div>
+    </div>
+    <div style="background:#fff3e0;border-radius:12px;padding:25px;text-align:center">
+        <div class="big-num" style="color:#e65100">~20%</div>
+        <div style="font-weight:600">Partiel</div>
+        <div style="font-size:0.9rem;color:#666">~125 / 630 taches</div>
+    </div>
+    <div style="background:#fce4ec;border-radius:12px;padding:25px;text-align:center">
+        <div class="big-num" style="color:#c62828">~55%</div>
+        <div style="font-weight:600">Manquant</div>
+        <div style="font-size:0.9rem;color:#666">~350 / 630 taches</div>
+    </div>
+</div>
+
+<div class="note">
+<strong>Interpretation honnete :</strong> Hermes SEO est un excellent <strong>MVP technique</strong> (8 pipelines, 134 agents, architecture solide). Le document 630 represente <strong>des annees de developpement</strong> pour une plateforme complete. Personne n'a les 630 items aujourd'hui — ni Semrush, ni Ahrefs, ni aucun SaaS SEO.
+</div>
+
+<!-- ════════════════════════════ -->
+<h2>2. Mapping detaille par module</h2>
+
+<table>
+<tr><th>Module (630)</th><th>Items</th><th>Statut</th><th>Couvert par Hermes</th><th>Ce qui manque</th></tr>
+
+<tr>
+    <td><strong>1. Gestion projets</strong></td>
+    <td>20</td>
+    <td><span class="badge b-partiel">Partiel ~30%</span></td>
+    <td>Project model (hermes.db), onboarding 8 etapes, etat pipelines, scores consolides</td>
+    <td>Roles/permissions, SSO, archivage, duplication projet, webhooks, Zapier/Make, API SaaS entrante, verif propriete DNS/tag</td>
+</tr>
+
+<tr>
+    <td><strong>2. Crawl & Indexation</strong></td>
+    <td>40</td>
+    <td><span class="badge b-partiel">Partiel ~50%</span></td>
+    <td>P3 : crawl pages, 404/500, redirect chains, canonical, noindex, thin content, orphelines, robots.txt, sitemap validation, sitemap generation (P7)</td>
+    <td>Crawl incremental, crawl budget, mobile-first emulation, index bloat, sitemap auto-submit post-publication, historique indexation par URL, alertes desindexation</td>
+</tr>
+
+<tr>
+    <td><strong>3. SEO Technique</strong></td>
+    <td>55</td>
+    <td><span class="badge b-partiel">Partiel ~45%</span></td>
+    <td>P3 T01-T13 : CWV (T07), structure HTML (T05), HTTPS (T11), hreflang (T10), meta tags (T05), canonical, images alt, liens brises, profondeur, slugs</td>
+    <td>CSS/JS inutilise, hero preload, lazy loading, CDN check, optimisation images (WebP/AVIF), TTBF, encoding checks precis, comparaison CWV vs top 10</td>
+</tr>
+
+<tr>
+    <td><strong>4. Schemas</strong></td>
+    <td>28</td>
+    <td><span class="badge b-partiel">Partiel ~35%</span></td>
+    <td>P3 T09 : validation JSON-LD, detection schemas, P7 M04 : generation FAQ/Article/LocalBusiness/Product, free tools</td>
+    <td>Rich Results Test API, injection CMS, validation semantique auto, historique schemas, generation automatisee pour tous les types, alerte schema invalide</td>
+</tr>
+
+<tr>
+    <td><strong>5. SEO On-Page</strong></td>
+    <td>47</td>
+    <td><span class="badge b-partiel">Partiel ~30%</span></td>
+    <td>P2 : 7 dimensions scoring, P1 agent_10 SEO, word count, keyword density, lisibilite (textstat), structure Hn</td>
+    <td>LSI keywords, couverture topique, fingerprint semantique, adequation intention SERP, score qualite par type de contenu, bloqueurs publication</td>
+</tr>
+
+<tr>
+    <td><strong>6. AEO</strong></td>
+    <td>51</td>
+    <td><span class="badge b-partiel">Partiel ~25%</span></td>
+    <td>P1 agent_11 (En bref, FAQ, H2 questions, blocs extractables), P6 B16 (llms.txt, AI crawlers), free tools</td>
+    <td>PAA targeting, featured snippet tracking, score citation-readiness, reponses vocales 29-45 mots, adaptation SERP features, generation blocs PAA-ready</td>
+</tr>
+
+<tr>
+    <td><strong>7. GEO</strong></td>
+    <td>54</td>
+    <td><span class="badge b-partiel">Partiel ~20%</span></td>
+    <td>P1 agent_12 (entites nommees, citations IA), P6 B16 (entity authority, AI crawlers, llms.txt)</td>
+    <td>Score confiance source, citation tests (Perplexity/ChatGPT/Gemini), fraicheur peremption, coherence entites inter-articles, topical authority map, sources obligatoires</td>
+</tr>
+
+<tr>
+    <td><strong>8. E-E-A-T</strong></td>
+    <td>27</td>
+    <td><span class="badge b-partiel">Partiel ~35%</span></td>
+    <td>P1 agent_13 (score EEAT), P5 ST09 (YMYL flags), disclaimers, P3 (mentions legales check)</td>
+    <td>Bio auteur, page auteur, schema Person, coherence auteur/sujet, alertes YMYL sans expertise, score confiance site global</td>
+</tr>
+
+<tr>
+    <td><strong>9. Maillage Interne</strong></td>
+    <td>22</td>
+    <td><span class="badge b-partiel">Partiel ~40%</span></td>
+    <td>P3 T12 (graphe liens, orphelines, distribution Gini), P1 agent_16 (maillage interne), P5 ST07 (silos)</td>
+    <td>PageRank interne, suggestions de liens, RAG vectoriel, injection CMS, ancres optimisees, score maillage par silo</td>
+</tr>
+
+<tr>
+    <td><strong>10. Positions & SERP</strong></td>
+    <td>28</td>
+    <td><span class="badge b-couvert">Couvert ~70%</span></td>
+    <td>P4 : suivi GSC, quick wins, alertes perte/gain, correlations, SERP features, concurrents, analysis top 10 vs page</td>
+    <td>Core Update correlation, ecart contenu detaille (longueur, Hn, schemas vs top 10), rapport CTR faible</td>
+</tr>
+
+<tr>
+    <td><strong>11. Backlinks</strong></td>
+    <td>14</td>
+    <td><span class="badge b-couvert">Couvert ~65%</span></td>
+    <td>P6 : audit, toxicite, gap analysis, link reclamation, CRM, anchor strategy, portfolio optimizer</td>
+    <td>Import Ahrefs/Majestic, suivi liens gagnes/perdus, link reclamation broken links concurrents (B05b partiellement)</td>
+</tr>
+
+<tr>
+    <td><strong>12. Cannibalisation</strong></td>
+    <td>13</td>
+    <td><span class="badge b-couvert">Couvert ~70%</span></td>
+    <td>P5 ST02 : cannibalisation detection (P4 + ChromaDB), fusion/separation (ST08), anti-cannibalisation (agent_08)</td>
+    <td>Intervention CMS (modif title/H1/canonical depuis le SaaS), desoptimisation secondaire</td>
+</tr>
+
+<tr>
+    <td><strong>13. Pages Categories</strong></td>
+    <td>10</td>
+    <td><span class="badge b-manque">Manquant ~10%</span></td>
+    <td>— (pas de module specifique categories/taxonomies)</td>
+    <td>Tout : audit categories, thin content categories, FAQ categories, generation blocs editoriaux categories</td>
+</tr>
+
+<tr>
+    <td><strong>14. Suivi Post-Publication</strong></td>
+    <td>27</td>
+    <td><span class="badge b-partiel">Partiel ~30%</span></td>
+    <td>P1 agent_26 (audit post-publication GSC), P7 M07 (impact J+7/30/60/90), P7 M01 (content decay), P8 (predictions)</td>
+    <td>File de revision editoriale, changelog articles, alerte peremption automatique, revision declenchee par Core Update, rapport mensuel articles revises</td>
+</tr>
+
+<tr>
+    <td><strong>15. Qualite Linguistique</strong></td>
+    <td>15</td>
+    <td><span class="badge b-manque">Manquant ~15%</span></td>
+    <td>P1 validation (conformite, EEAT) couvre partiellement</td>
+    <td>Accents manquants, entites HTML visibles, guillemets, apostrophes, ponctuation francaise, anglicismes, coherence vouvoiement</td>
+</tr>
+
+<tr>
+    <td><strong>16. Images & Medias</strong></td>
+    <td>15</td>
+    <td><span class="badge b-manque">Manquant ~20%</span></td>
+    <td>P1 agent_22 (images plan), P3 (alt detection)</td>
+    <td>WebP/AVIF, poids images, hero preload, VideoObject, backfill images, og:image dimensions</td>
+</tr>
+
+<tr>
+    <td><strong>17. Business & ROI</strong></td>
+    <td>19</td>
+    <td><span class="badge b-partiel">Partiel ~30%</span></td>
+    <td>P5 ST05 (business score), ST05b (SEO economics), P4 S06 (quick wins + business score)</td>
+    <td>Tracking CTA/clics, attribution contenu->lead->conversion, A/B test CTA, rapport ROI, CTA dynamique par intention</td>
+</tr>
+
+<tr>
+    <td><strong>18. Automatisation & Pipeline</strong></td>
+    <td>31</td>
+    <td><span class="badge b-partiel">Partiel ~40%</span></td>
+    <td>P7 (execution engine, 4 categories, baseline auto, human-review gate), P1 (workflow 28 agents)</td>
+    <td>File attente publication, dry-run mode, synchronisation auto news->pilier, journal execution, dashboard temps reel, anti-cannibalisation pre-publication</td>
+</tr>
+
+<tr>
+    <td><strong>19. Intervention Directe</strong></td>
+    <td>25</td>
+    <td><span class="badge b-manque">Manquant ~20%</span></td>
+    <td>P7 M06 (WordPress XML-RPC, PrestaShop, IndexNow, CMS detection), M05 (page optimizer with diff)</td>
+    <td>Modif title/meta/H1/FAQ depuis SaaS, injection schema, canonical modif, rollback, preview avant application, log interventions</td>
+</tr>
+
+<tr>
+    <td><strong>20. Rapports</strong></td>
+    <td>19</td>
+    <td><span class="badge b-partiel">Partiel ~50%</span></td>
+    <td>P5 ST11 (CEO Summary HTML/JSON), P6 B11 (rapport HTML), P4 S10 (rapport SERP), admin dashboard</td>
+    <td>Dashboard multi-projets, dashboard par silo, dashboard business, vue calendrier, rapports automatises hebdo/mensuels, export CSV/PDF/JSON de tous les rapports</td>
+</tr>
+
+<tr>
+    <td><strong>21. Revue Strategique</strong></td>
+    <td>26</td>
+    <td><span class="badge b-couvert">Couvert ~55%</span></td>
+    <td>P5 (roadmap, forecast, kill list, silos sans pilier, GAPs semantiques, opportunites, topical authority), ST09 (YMYL flags)</td>
+    <td>SLA validation humaine, interface approve/reject, standalone edito gouverne</td>
+</tr>
+
+<tr>
+    <td><strong>22. International</strong></td>
+    <td>10</td>
+    <td><span class="badge b-partiel">Partiel ~30%</span></td>
+    <td>P3 T10 (hreflang validator polly)</td>
+    <td>Projets multilingues, liaison paires FR↔EN, qualite traduction, adaptation culturelle, couverture multilingue</td>
+</tr>
+
+<tr>
+    <td><strong>23. Securite & Conformite</strong></td>
+    <td>10</td>
+    <td><span class="badge b-partiel">Partiel ~40%</span></td>
+    <td>P3 T11 (security headers, HTTPS), SECURITY.md, disclaimers (8 types), YMYL flags</td>
+    <td>Cookie RGPD, affiliation tracking, mentions legales obligatoires, conformite CNIL</td>
+</tr>
+
+<tr>
+    <td><strong>24. SaaS Transversal</strong></td>
+    <td>20</td>
+    <td><span class="badge b-partiel">Partiel ~35%</span></td>
+    <td>Admin dashboard (conso API, couts), 12 outils gratuits, ARCHITECTURE_SAAS.md, Stripe documente, plans tarifaires documentes</td>
+    <td>Interface modulaire, recherche globale, mode sombre/clair, WCAG, responsive tablette, retention 24 mois, purge RGPD, facturation integree</td>
+</tr>
+
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>3. Top 10 des gaps les plus critiques</h2>
+
+<table>
+<tr><th>Rang</th><th>Gap</th><th>Module</th><th>Impact si implemente</th><th>Effort</th></tr>
+<tr>
+    <td>1</td>
+    <td><strong>P5→P1 automatique</strong> : la strategie dit "creer pilier" mais aucun article n'est cree</td>
+    <td>18</td>
+    <td>Production de contenu autonome — le flux critique manquant</td>
+    <td>2h</td>
+</tr>
+<tr>
+    <td>2</td>
+    <td><strong>Intervention CMS complete</strong> : modifier title/meta/H1/schema depuis le SaaS (P7 M06 est pret mais pas teste en reel)</td>
+    <td>19</td>
+    <td>Differenciation produit — aucun SaaS SEO ne fait ca nativement</td>
+    <td>4h</td>
+</tr>
+<tr>
+    <td>3</td>
+    <td><strong>Dashboard unifie "Mon Site"</strong> : 6 scores consolides + next action sur une seule page</td>
+    <td>20</td>
+    <td>Adoption utilisateur — c'est ce que le client voit en premier</td>
+    <td>6h (UX/UI)</td>
+</tr>
+<tr>
+    <td>4</td>
+    <td><strong>Analyse semantique concurrentielle</strong> : comparer contenu/page vs top 10 SERP (longueur, Hn, images, FAQ, mots-cles)</td>
+    <td>5, 10</td>
+    <td>Recommandations precises — "vous etes #8 parce que le #1 a 3x plus de contenu et une FAQ"</td>
+    <td>3h</td>
+</tr>
+<tr>
+    <td>5</td>
+    <td><strong>GEO : score confiance source</strong> — verifier que les articles citent des sources d'autorite (CNIL, ANSSI, NIST)</td>
+    <td>7</td>
+    <td>GEO readiness — facteur cle pour les citations IA</td>
+    <td>2h</td>
+</tr>
+<tr>
+    <td>6</td>
+    <td><strong>AEO : featured snippet / PAA tracking</strong> — suivre quelles pages capturent la position 0</td>
+    <td>6</td>
+    <td>Visibilite AI Overview — critiquer pour 2026</td>
+    <td>2h</td>
+</tr>
+<tr>
+    <td>7</td>
+    <td><strong>Pipeline editorial complet</strong> : file d'attente, dry-run, bloqueurs, journal d'execution</td>
+    <td>18</td>
+    <td>Industrialisation de la production de contenu</td>
+    <td>5h</td>
+</tr>
+<tr>
+    <td>8</td>
+    <td><strong>Controle qualite linguistique</strong> : accents, apostrophes, guillemets, anglicismes</td>
+    <td>15</td>
+    <td>Qualite percue du contenu — premier contact visiteur</td>
+    <td>2h</td>
+</tr>
+<tr>
+    <td>9</td>
+    <td><strong>Backlinks reels</strong> : DataForSEO backlinks endpoint + import Ahrefs/Semrush</td>
+    <td>11</td>
+    <td>Donnees backlinks reelles vs mock — fondation de P6</td>
+    <td>2h + $20/m</td>
+</tr>
+<tr>
+    <td>10</td>
+    <td><strong>Module SEO local (Google Business Profile)</strong> : coherence NAP, avis, Pack Local</td>
+    <td>—</td>
+    <td>40% des utilisateurs potentiels (TPE/PME locales)</td>
+    <td>4h</td>
+</tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>4. Forces d'Hermes SEO vs le document 630</h2>
+
+<div class="ok">
+<strong>Ce qu'Hermes fait DEJA que le document 630 ne decrit pas explicitement :</strong>
+<ul>
+    <li><strong>Architecture multi-agent LangGraph :</strong> 134 agents autonomes coordonnes, avec superviseur central et validation Pydantic a chaque transition. Le document 630 liste des taches, pas une architecture.</li>
+    <li><strong>Confidence Scoring + Decision Trace :</strong> chaque recommandation P5 est tracable (inputs → rules → calcul → decision). Le document 630 ne mentionne pas l'explicabilite des decisions.</li>
+    <li><strong>Observability Layer :</strong> hermes_events + predictions_history + campaign_results. Journalisation de chaque agent (tokens, cout, duree, succes). Le document 630 mentionne l'observabilite sans la specifier.</li>
+    <li><strong>Learning Engine (P8) :</strong> apprentissage continu cross-client avec calibration automatique des predictions. Le document 630 n'a pas de module apprentissage.</li>
+    <li><strong>Fallback DuckDuckGo gratuit</strong> pour le contexte SERP. Le document 630 part du principe que les APIs sont configurees.</li>
+    <li><strong>Fallback LLM intelligent</strong> : auth errors → modele suivant sans 3 retries inutiles.</li>
+    <li><strong>Baseline auto (sitemap + robots + llms)</strong> pour tout site des le premier run.</li>
+</ul>
+</div>
+
+<!-- ════════════════════════════ -->
+<h2>5. Feuille de route recommandee</h2>
+
+<table>
+<tr><th>Phase</th><th>Duree</th><th>Actions</th><th>Couverture 630</th></tr>
+<tr>
+    <td><strong>Phase 1 — Fondations SaaS</strong></td>
+    <td>2 semaines</td>
+    <td>Dashboard unifie, P5→P1 auto, intervention CMS (P7), SEO local (GBP)</td>
+    <td>25% → 35%</td>
+</tr>
+<tr>
+    <td><strong>Phase 2 — Intelligence editoriale</strong></td>
+    <td>2 semaines</td>
+    <td>Analyse semantique concurrentielle, GEO sources, AEO featured snippet tracking, qualite linguistique</td>
+    <td>35% → 45%</td>
+</tr>
+<tr>
+    <td><strong>Phase 3 — Industrialisation</strong></td>
+    <td>2 semaines</td>
+    <td>Pipeline editorial complet (files, bloqueurs, journal), DataForSEO backlinks, rapports automatiques</td>
+    <td>45% → 55%</td>
+</tr>
+<tr>
+    <td><strong>Phase 4 — Expansion</strong></td>
+    <td>2 semaines</td>
+    <td>International, categories, images/medias, securite/conformite, Stripe</td>
+    <td>55% → 65%</td>
+</tr>
+</table>
+
+<div class="info" style="margin-top:30px">
+<strong>Realite du marche :</strong> Aucun SaaS SEO — ni Semrush ($120/mois), ni Ahrefs ($99/mois), ni SE Ranking — ne couvre 100% des 630 items. La cible realiste pour Hermes SEO est <strong>55-65%</strong> avec un positionnement unique : <strong>le seul SaaS qui ne se contente pas d'auditer, mais qui execute.</strong>
+</div>
+
+<div class="footer">Hermes SEO v3 | Gap Analysis vs Mega-Reference 630 | 27 juin 2026 | FC Solutions</div>
+</body>
+</html>
