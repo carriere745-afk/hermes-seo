@@ -13,14 +13,16 @@ from hermes.agents.serp_visibility.sv07_alerts import run as sv07
 from hermes.agents.serp_visibility.sv08_aeo_ai import run as sv08
 from hermes.agents.serp_visibility.sv09_correlation import run as sv09
 from hermes.agents.serp_visibility.sv10_synthesis import run as sv10
+from hermes.agents.serp_visibility.sv11_aeo_snippets import run as sv11
 
 SERP_REGISTRY: dict[str, callable] = {
     "sv00": sv00, "sv01": sv01, "sv02": sv02, "sv02b": sv02b,
     "sv03": sv03, "sv04": sv04, "sv04b": sv04b, "sv05": sv05,
     "sv06": sv06, "sv07": sv07, "sv08": sv08, "sv09": sv09, "sv10": sv10,
+    "sv11": sv11,
 }
 
 SERP_ORDER: list[str] = [
     "sv00", "sv01", "sv02", "sv02b", "sv03", "sv04", "sv04b",
-    "sv05", "sv06", "sv07", "sv08", "sv09", "sv10",
+    "sv05", "sv06", "sv07", "sv08", "sv09", "sv10", "sv11",
 ]

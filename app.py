@@ -48,6 +48,7 @@ from pages.backlinks_page import render_backlinks_page
 from pages.maintenance_page import render_maintenance_page
 from pages.learning_page import render_learning_page
 from pages.free_tools_page import render_free_tools_page
+from pages.project_dashboard import render_project_dashboard
 from pages.admin_dashboard import render_admin_dashboard
 from pages.session_detail_page import render_session_detail
 
@@ -502,7 +503,7 @@ with st.sidebar:
     st.markdown("## Navigation")
     nav = st.radio(
         "Page",
-        options=["Generator", "Archive", "Outils SEO Gratuits", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
+        options=["Mon Site", "Generator", "Archive", "Outils SEO Gratuits", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
         label_visibility="collapsed",
         key="nav_page",
     )
@@ -703,7 +704,9 @@ with st.sidebar:
     else:
         # Sidebar minimale pour Archive et Session Detail
         st.markdown("---")
-        if nav == "Archive":
+        if nav == "Mon Site":
+            st.caption("Dashboard consolide — scores, KPIs, prochaine action.")
+        elif nav == "Archive":
             st.caption("Historique, stats et gestion des sessions.")
         elif nav == "Audit de Contenu":
             st.caption("Analysez vos pages existantes (SEO/AEO/GEO/EEAT/UX).")
@@ -737,6 +740,8 @@ if from_url:
         render_session_detail(sid)
     else:
         st.info("Session introuvable.")
+elif nav == "Mon Site":
+    render_project_dashboard()
 elif nav == "Archive":
     render_archive_page()
 elif nav == "Audit de Contenu":
