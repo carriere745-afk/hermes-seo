@@ -182,6 +182,7 @@ class SerpVisibilityState(BaseModel):
     # Synthese
     rapport_html: str = ""
     benchmark: dict = Field(default_factory=dict)  # SV12 competitive benchmark
+    backlinks_tracking: dict = Field(default_factory=dict)  # SV13 backlinks live
     resume_executif: list[str] = Field(default_factory=list)
     pipelines_to_trigger: list[dict[str, Any]] = Field(default_factory=list)
 
