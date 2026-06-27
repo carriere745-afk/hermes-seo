@@ -56,6 +56,9 @@ from hermes.agents.agent_44_crawl_avance import run as agent_44
 from hermes.agents.agent_45_postpub_alerts import run as agent_45
 from hermes.agents.agent_46_performance_cwv import run as agent_46
 from hermes.agents.agent_47_schemas_avances import run as agent_47
+from hermes.agents.agent_48_cwv_compare import run as agent_48
+from hermes.agents.agent_49_schemas_rich_results import run as agent_49
+from hermes.agents.agent_50_intl_multilingue import run as agent_50
 
 AGENT_REGISTRY: dict[str, callable] = {
     "agent_00": agent_00,
@@ -97,6 +100,7 @@ AGENT_REGISTRY: dict[str, callable] = {
     "agent_40": agent_40, "agent_41": agent_41, "agent_42": agent_42,
     "agent_43": agent_43, "agent_44": agent_44, "agent_45": agent_45,
     "agent_46": agent_46, "agent_47": agent_47,
+    "agent_48": agent_48, "agent_49": agent_49, "agent_50": agent_50,
 }
 
 __all__ = ["AGENT_REGISTRY"]
