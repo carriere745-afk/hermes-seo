@@ -324,7 +324,22 @@ def get_pending_actions(project_id: str) -> list[dict]:
         "ORDER BY CASE priority WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 ELSE 3 END",
         (project_id,)).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    results = []
+    for r in rows:
+        d = dict(r)
+        # Parse JSON fields stored as TEXT
+        for field in ["params_json", "conflicts_with", "snapshot_before", "snapshot_after",
+                      "impact_j7", "impact_j30", "impact_j60", "impact_j90",
+                      "correction_factor"]:
+            if isinstance(d.get(field), str):
+                try:
+                    d[field] = json.loads(d[field])
+                except Exception:
+                    d[field] = {}
+        # Convert integer booleans
+        d["human_approval_required"] = bool(d.get("human_approval_required", 0))
+        results.append(d)
+    return results
 
 
 # ─── Consolidated Recommendations ──────────────────────────────────────

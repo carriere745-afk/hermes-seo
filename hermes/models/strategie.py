@@ -227,8 +227,8 @@ class StrategieState(BaseModel):
     revue_humaine_flags: list[dict] = Field(default_factory=list)
     priorisation_config: dict[str, float] = Field(default_factory=dict)
     kill_list: list[KillListEntry] = Field(default_factory=list)
-    semantic_gaps: list[dict] = Field(default_factory=dict)  # ST12 — gap semantique vs SERP
-    source_scores: list[dict] = Field(default_factory=dict)  # ST13 — GEO source scores
+    semantic_gaps: list[dict] = Field(default_factory=list)  # ST12 — gap semantique vs SERP
+    source_scores: list[dict] = Field(default_factory=list)  # ST13 — GEO source scores
     pages_sans_source: int = 0
 
     # Phase 3 — Export
