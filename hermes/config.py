@@ -128,6 +128,12 @@ SQLITE_DB_PATH = _get("SQLITE_DB_PATH", "./data/sqlite/hermes.db")
 
 LOG_DIRECTORY = Path(_get("LOG_DIRECTORY", "./logs"))
 SESSION_DIRECTORY = Path(_get("SESSION_DIRECTORY", "./sessions"))
+
+# ─── Deploiement ─────────────────────────────────────────────────────
+
+HERMES_DEPLOY_MODE = _get("HERMES_DEPLOY_MODE", "local")  # "local" | "saas"
+HERMES_BLOG_URL = _get("HERMES_BLOG_URL", "https://hermes-seo.fr/blog")
+HERMES_HOMEPAGE_URL = _get("HERMES_HOMEPAGE_URL", "https://hermes-seo.fr")
 LOG_LEVEL = _get("LOG_LEVEL", "INFO")
 
 # ─── Budgets ────────────────────────────────────────────────────────

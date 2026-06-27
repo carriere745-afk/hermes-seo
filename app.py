@@ -63,15 +63,31 @@ st.set_page_config(
 # Styles CSS
 st.markdown("""
 <style>
-    .main-header { font-size: 2.5rem; font-weight: 700; margin-bottom: 0; }
-    .sub-header { color: #666; font-size: 1.1rem; margin-top: 0; }
-    .score-card { background: #f0f2f6; border-radius: 12px; padding: 1.5rem; text-align: center; }
-    .score-value { font-size: 3rem; font-weight: 700; }
-    .score-green { color: #28a745; }
-    .score-orange { color: #fd7e14; }
-    .score-red { color: #dc3545; }
-    .agent-row { padding: 0.3rem 0; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-    .fc-footer { text-align: center; color: #999; font-size: 0.8rem; padding: 2rem 0 1rem 0; border-top: 1px solid #eee; margin-top: 3rem; }
+    /* Hermes SEO — Design System v3 */
+    :root { --blue: #1E88E5; --green: #28a745; --orange: #fd7e14; --red: #dc3545;
+            --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0; --gray-600: #64748b; --gray-800: #1e293b; }
+    .main-header { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.2rem; letter-spacing: -0.02em; }
+    .sub-header { color: var(--gray-600); font-size: 1.05rem; margin-top: 0; }
+    .score-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1.25rem; text-align: center; transition: box-shadow .2s; }
+    .score-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .score-value { font-size: 2.2rem; font-weight: 700; }
+    .score-green { color: var(--green); } .score-orange { color: var(--orange); } .score-red { color: var(--red); }
+    .agent-row { padding: 0.3rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+    .pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.02em; }
+    .pill-free { background:#e8f5e9; color:#2e7d32; }
+    .pill-pro { background:#e3f2fd; color:#1565c0; }
+    .pill-beta { background:#f3e5f5; color:#6a1b9a; }
+    .pill-upgrade { background:linear-gradient(135deg,#1E88E5,#42a5f5); color:#fff;cursor:pointer; }
+    .divider { border-top:1px solid var(--gray-200); margin:0.8rem 0; }
+    .sidebar-project { background:linear-gradient(135deg,#f8fafc,#f1f5f9); border-radius:10px; padding:12px; margin-bottom:12px; border:1px solid var(--gray-200); }
+    .sidebar-welcome { background:linear-gradient(135deg,#e8f5e9,#e3f2fd); border-radius:10px; padding:16px; margin-bottom:12px; text-align:center; }
+    .fc-footer { text-align: center; color: #999; font-size: 0.8rem; padding: 1.5rem 0 0.5rem 0; border-top: 1px solid #eee; margin-top: 2rem; }
+    .empty-state { text-align:center; padding:3rem 1rem; color:var(--gray-600); }
+    .empty-state-icon { font-size:3rem; margin-bottom:1rem; }
+    .upgrade-banner { background:linear-gradient(135deg,#1E88E5,#1565c0); color:#fff; border-radius:10px; padding:1rem 1.2rem; margin:1rem 0; font-size:0.9rem; }
+    .upgrade-banner a { color:#fff; font-weight:700; text-decoration:underline; }
+    .nav-section-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gray-600); margin:1rem 0 0.3rem 0; padding-left:4px; font-weight:700; }
+    @media (max-width:768px) { .score-value { font-size:1.5rem; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -494,45 +510,30 @@ def _render_pipeline_error(error_summary: dict) -> None:
 # ─── Sidebar ──────────────────────────────────────────────────────────
 
 with st.sidebar:
-    # ─── HEADER ─────────────────────────────────────────────────────
-    domain_display = st.session_state.get("project_domain", "") or (st.session_state.get("project_url", "").replace("https://", "").replace("www.", ""))
+    # ─── LOGO ─────────────────────────────────────────────────────────
+    st.markdown('<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem"><div style="background:linear-gradient(135deg,#1E88E5,#42a5f5);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px">H</div><span style="font-weight:700;font-size:1.1rem">Hermes SEO</span></div>', unsafe_allow_html=True)
+
+    deploy_mode = "local"  # TODO: read from config._cfg
+    domain_display = (st.session_state.get("project_domain", "") or
+                     st.session_state.get("project_url", "").replace("https://", "").replace("www.", "").rstrip("/"))
     has_project = bool(st.session_state.get("project_url", "").startswith("http"))
 
     if has_project:
-        # ─── PROJET ACTIF ─────────────────────────────────────────────
-        st.markdown(f"### 🏢 {domain_display or 'Mon Projet'}")
-        st.caption(f"Profil: {st.session_state.get('project_profile', 'blog')} | Mode: {st.session_state.get('project_mode', 'standard')}")
+        # ─── PROJET ACTIF ────────────────────────────────────────────────
+        st.markdown(f"""<div class="sidebar-project">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="width:8px;height:8px;background:#28a745;border-radius:50%"></div>
+          <strong style="font-size:0.95rem">{domain_display or 'Mon Projet'}</strong>
+        </div>
+        <div style="font-size:0.75rem;color:#64748b">{st.session_state.get('project_profile','blog')} · {st.session_state.get('project_mode','standard')}</div>
+        </div>""", unsafe_allow_html=True)
 
-        # Scores rapides si disponibles
-        bl = st.session_state.get("bl_result", {}).get("state", None)
-        st_res = st.session_state.get("st_result", {}).get("state", None)
-        serp = st.session_state.get("sv_result", {})
-
-        if bl or st_res or serp:
-            with st.expander("📊 Scores"):
-                if st_res and hasattr(st_res, 'executive_summary') and st_res.executive_summary:
-                    s = st_res.executive_summary.sante_strategique
-                    st.metric("Strategie", f"{s}/100")
-                if bl and hasattr(bl, 'authority_score'):
-                    st.metric("Authority", f"{bl.authority_score}/100")
-                if serp and isinstance(serp, dict) and serp.get("health"):
-                    st.metric("SERP", f"{serp['health']}/100")
-
-        # Bouton diagnostic complet
-        if st.button("🔍 Diagnostic Complet", type="primary", use_container_width=True, help="Lance P4→P5→P6→P7 en sequence"):
-            st.session_state.launch_full_audit = True
-            st.rerun()
-
-        st.markdown("---")
-        st.caption(f"Projet: {st.session_state.get('project_url', '')[:40]}...")
-
-        # ─── NAVIGATION ───────────────────────────────────────────────
-        st.markdown("### 📋 Navigation")
-        nav = st.radio("Page", [
+        # ─── NAVIGATION unifiee ───────────────────────────────────────────
+        nav = st.radio("Navigation", [
             "🏠 Mon Site",
-            "📝 Generateur",
             "🔍 SERP & Visibilite",
             "🧠 Strategie",
+            "📝 Generateur",
             "🔗 Backlinks",
             "🛠️ Audit Technique",
             "📄 Audit Contenu",
@@ -543,39 +544,48 @@ with st.sidebar:
             "⚙️ Admin",
         ], label_visibility="collapsed", key="nav_page")
 
+        # Blog link (external)
+        st.markdown(f'<a href="https://hermes-seo.fr/blog" target="_blank" style="color:#64748b;text-decoration:none;font-size:0.85rem;display:block;padding:4px 8px;margin-top:0.5rem">📰 Blog SEO ↗</a>', unsafe_allow_html=True)
+
+        # Upgrade banner (if on free tier)
+        if deploy_mode == "saas":
+            st.markdown('<div class="upgrade-banner"><strong>Essai gratuit</strong> · 7 jours restants<br><a href="/pricing">Passer a Pro →</a></div>', unsafe_allow_html=True)
+
     else:
-        # ─── PAS DE PROJET ──────────────────────────────────────────
-        st.markdown("### 👋 Bienvenue")
-        st.caption("Hermes SEO — votre plateforme SEO/AEO/GEO")
+        # ─── PAS DE PROJET — Welcome Screen ──────────────────────────────
+        st.markdown("""<div class="sidebar-welcome">
+        <div style="font-size:2rem;margin-bottom:0.5rem">🚀</div>
+        <strong style="font-size:1rem">Bienvenue</strong>
+        <p style="font-size:0.8rem;color:#64748b;margin:0.5rem 0">Analysez et optimisez votre site en quelques clics.</p>
+        </div>""", unsafe_allow_html=True)
 
-        st.markdown("#### 🚀 Demarrer")
-        new_url = st.text_input("URL de votre site", placeholder="https://www.mon-site.fr", key="sidebar_new_project")
-        if st.button("✨ Creer mon projet", type="primary", use_container_width=True, disabled=not new_url.startswith("http")):
-            st.session_state.project_url = new_url.strip().rstrip("/")
-            from urllib.parse import urlparse
-            st.session_state.project_domain = urlparse(st.session_state.project_url).netloc.replace("www.", "")
-            st.session_state.project_autodetected = False
-            st.rerun()
+        new_url = st.text_input("URL de votre site", placeholder="https://www.mon-site.fr", key="sidebar_new_project", label_visibility="collapsed")
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            if st.button("✨ Creer mon projet", type="primary", use_container_width=True, disabled=not new_url.startswith("http")):
+                st.session_state.project_url = new_url.strip().rstrip("/")
+                from urllib.parse import urlparse
+                st.session_state.project_domain = urlparse(st.session_state.project_url).netloc.replace("www.", "")
+                st.session_state.project_autodetected = False
+                st.rerun()
+        with c2:
+            if st.button("🎥 Demo", use_container_width=True):
+                st.session_state.project_url = "https://www.cleantout37.fr"
+                st.session_state.project_domain = "cleantout37.fr"
+                st.session_state.project_profile = "local"
+                st.session_state.project_autodetected = False
+                st.rerun()
 
-        st.markdown("---")
-        nav = st.radio("Page", [
+        st.markdown('<br>', unsafe_allow_html=True)
+        nav = st.radio("Navigation", [
             "🧰 Outils SEO",
             "📦 Archive",
             "⚙️ Admin",
         ], label_visibility="collapsed", key="nav_page")
+        st.markdown(f'<a href="https://hermes-seo.fr/blog" target="_blank" style="color:#1E88E5;text-decoration:none;font-size:0.9rem;display:block;padding:6px 8px">📰 Blog SEO ↗</a>', unsafe_allow_html=True)
 
-    # ─── FOOTER SIDEBAR ────────────────────────────────────────────
-    st.markdown("---")
+    # ─── FOOTER ──────────────────────────────────────────────────────────
     st.caption("Hermes SEO v3 · FC Solutions")
-
-    # Sidebar Generateur rapide accessible depuis la page Generateur
-    if nav == "📝 Generateur":
-        st.markdown("---")
-        st.markdown("### ⚙️ Generateur")
-        mode_labels = {"fast": "⚡ Rapide", "standard": "⭐ Standard", "premium": "💎 Premium", "compliance": "🛡️ Conformité"}
-        st.selectbox("Qualité", options=list(mode_labels.keys()), format_func=lambda x: mode_labels[x], index=1, key="sidebar_mode")
-        st.text_area("Objectif (optionnel)", placeholder="Guide complet sur...", height=60, key="sidebar_objectif")
-        st.checkbox("Mode essai (gratuit)", value=True, key="sidebar_dry_run")
 
 
 # ─── Contenu principal ─────────────────────────────────────────────────
@@ -587,6 +597,57 @@ if from_url:
         render_session_detail(sid)
     else:
         st.info("Session introuvable.")
+
+# ─── Diagnostic Complet (One-Click) ────────────────────────────────────
+elif st.session_state.pop("launch_full_audit", False):
+    import asyncio as _asyncio
+
+    async def _launch():
+        from hermes.models.serp_visibility import SerpVisibilityState
+        from hermes.models.strategie import StrategieState
+        from hermes.models.backlinks import BacklinksState
+        from hermes.models.project import Project
+        from hermes.core.project_db import create_project, get_project, init_db
+
+        url = st.session_state.project_url
+        domain = st.session_state.project_domain
+        kw = st.session_state.project_keywords
+        comp = st.session_state.project_competitors
+        profile = st.session_state.project_profile
+        mode = st.session_state.get("project_mode", "standard")
+
+        from hermes.agents.serp_visibility import SERP_ORDER, SERP_REGISTRY
+        p4 = SerpVisibilityState(site_url=url, keywords=kw, competitors=comp, mode=mode)
+        for aid in SERP_ORDER:
+            if aid in SERP_REGISTRY: p4 = await SERP_REGISTRY[aid](p4)
+        st.session_state.sv_result = {"health": p4.health_score, "state": p4}
+
+        from hermes.agents.strategie import STRATEGIE_ORDER, STRATEGIE_REGISTRY
+        p5 = StrategieState(site_url=url, domain=domain, mode=mode, profile=profile, keywords_monitored=kw, competitors=comp)
+        for aid in STRATEGIE_ORDER:
+            if aid in STRATEGIE_REGISTRY: p5 = await STRATEGIE_REGISTRY[aid](p5)
+        st.session_state.st_result = {"state": p5}
+
+        from hermes.agents.backlinks import BACKLINKS_ORDER, BACKLINKS_REGISTRY
+        p6 = BacklinksState(site_url=url, domain=domain, mode=mode, profile=profile, competitors=comp, keywords_cibles=kw[:8] if kw else [])
+        for aid in BACKLINKS_ORDER:
+            if aid in BACKLINKS_REGISTRY: p6 = await BACKLINKS_REGISTRY[aid](p6)
+        st.session_state.bl_result = {"state": p6}
+
+        init_db()
+        existing = get_project(domain=domain)
+        pid = existing["id"] if existing else create_project({"nom": domain, "site_url": url, "domain": domain, "profile": profile, "secteur": "autre", "competitors": comp, "keywords_cibles": kw})
+        project = Project(id=pid, nom=domain, site_url=url, domain=domain, profile=profile, secteur="autre", mode_execution="semi-auto")
+        from hermes.agents.maintenance import MAINTENANCE_ORDER, MAINTENANCE_REGISTRY
+        for aid in MAINTENANCE_ORDER:
+            if aid in MAINTENANCE_REGISTRY: project = await MAINTENANCE_REGISTRY[aid](project)
+
+    with st.spinner("Diagnostic complet en cours... (4 pipelines, ~2 min)"):
+        _asyncio.run(_launch())
+    st.success("Diagnostic complet termine !")
+    st.balloons()
+    st.rerun()
+
 elif nav == "🏠 Mon Site":
     render_project_dashboard()
 elif nav == "📦 Archive":
@@ -607,6 +668,8 @@ elif nav == "🔧 Maintenance":
     render_maintenance_page()
 elif nav == "📚 Learning":
     render_learning_page()
+elif nav == "📝 Generateur":
+    pass  # Fall through to generator block below
 elif nav == "⚙️ Admin":
     render_admin_dashboard()
 elif nav == "Session Detail":
