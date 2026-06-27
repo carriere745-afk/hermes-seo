@@ -24,7 +24,9 @@ def render_maintenance_page():
     project_competitors = st.session_state.get("project_competitors", [])
 
     if not project_url or not project_url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour activer la maintenance.")
+        st.warning("Aucun projet actif.")
+        if st.button("✨ Creer un projet", key="maint_create_project", use_container_width=True):
+            st.session_state.nav_page = "🏠 Mon Site"; st.rerun()
         return
 
     st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile}")

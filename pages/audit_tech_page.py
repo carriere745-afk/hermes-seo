@@ -95,7 +95,9 @@ def render_audit_tech_page():
     st.caption("Scan complet du site sur 12 dimensions : SEO technique, performance, securite, AEO/GEO...")
 
     if not project_url or not project_url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour demarrer l'audit technique.")
+        st.warning("Aucun projet actif.")
+        if st.button("✨ Creer un projet", key="at_create_project", use_container_width=True):
+            st.session_state.nav_page = "🏠 Mon Site"; st.rerun()
         return
 
     st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile} | **Mode:** {project_mode}")

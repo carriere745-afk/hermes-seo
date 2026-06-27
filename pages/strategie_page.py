@@ -45,7 +45,9 @@ def render_strategie_page():
     profile = st.session_state.get("project_profile", "blog")
 
     if not site_url or not site_url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour commencer l'analyse.")
+        st.warning("Aucun projet actif.")
+        if st.button("✨ Creer un projet", key="st_create_project", use_container_width=True):
+            st.session_state.nav_page = "🏠 Mon Site"; st.rerun()
         return
 
     st.markdown(f"**Site:** {site_url} | **Mode:** {mode} | **Profil:** {profile}")

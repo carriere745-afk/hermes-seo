@@ -158,7 +158,9 @@ def render_audit_page():
     st.caption("Analysez vos pages existantes sur 7 dimensions SEO / AEO / GEO / EEAT / UX.")
 
     if not project_url or not project_url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour demarrer l'audit.")
+        st.warning("Aucun projet actif.")
+        if st.button("✨ Creer un projet", key="ac_create_project", use_container_width=True):
+            st.session_state.nav_page = "🏠 Mon Site"; st.rerun()
         return
 
     st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile} | **Mode:** {project_mode}")
@@ -378,7 +380,7 @@ def render_audit_page():
                         if brief_dict:
                             st.session_state.rewrite_brief = brief_dict
                             st.session_state.rewrite_url = page.url
-                            st.session_state.nav_page = "Generator"
+                            st.session_state.nav_page = "📝 Generateur"
                             st.rerun()
                 with rcol2:
                     import json as _json

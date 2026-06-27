@@ -18,7 +18,14 @@ def render_project_dashboard():
     keywords = st.session_state.get("project_keywords", [])
 
     if not url or not url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour voir le dashboard consolide.")
+        st.warning("Aucun projet actif. Creez votre premier projet pour commencer.")
+        url = st.text_input("URL de votre site", placeholder="https://www.mon-site.fr", key="pd_create_url")
+        if st.button("✨ Creer ce projet", type="primary", disabled=not url.startswith("http"), use_container_width=True):
+            st.session_state.project_url = url.strip()
+            from urllib.parse import urlparse
+            st.session_state.project_domain = urlparse(url).netloc.replace("www.", "")
+            st.session_state.project_autodetected = False
+            st.rerun()
         return
 
     # Header
@@ -75,15 +82,15 @@ def render_project_dashboard():
             st.session_state.launch_all = True
     with ca2:
         if st.button("Audit technique", use_container_width=True):
-            st.session_state.nav_page = "Audit Technique"
+            st.session_state.nav_page = "🛠️ Audit Technique"
             st.rerun()
     with ca3:
         if st.button("Strategie", use_container_width=True):
-            st.session_state.nav_page = "Strategie"
+            st.session_state.nav_page = "🧠 Strategie"
             st.rerun()
     with ca4:
         if st.button("Backlinks", use_container_width=True):
-            st.session_state.nav_page = "Backlinks"
+            st.session_state.nav_page = "🔗 Backlinks"
             st.rerun()
 
     # Statut des pipelines

@@ -20,7 +20,9 @@ def render_learning_page():
     project_profile = st.session_state.get("project_profile", "blog")
 
     if not project_url or not project_url.startswith("http"):
-        st.info("Renseignez l'URL de votre site dans la sidebar (Projet) pour activer l'apprentissage.")
+        st.warning("Aucun projet actif.")
+        if st.button("✨ Creer un projet", key="learn_create_project", use_container_width=True):
+            st.session_state.nav_page = "🏠 Mon Site"; st.rerun()
         return
 
     st.markdown(f"**Site:** {project_url} | **Profil:** {project_profile}")

@@ -89,7 +89,7 @@ if "scores" not in st.session_state:
 if "agent_results" not in st.session_state:
     st.session_state.agent_results = {}
 if "nav_page" not in st.session_state:
-    st.session_state.nav_page = "Generator"
+    st.session_state.nav_page = "📝 Generateur"
 if "selected_session_id" not in st.session_state:
     st.session_state.selected_session_id = None
 if "pipeline_error" not in st.session_state:
@@ -494,273 +494,120 @@ def _render_pipeline_error(error_summary: dict) -> None:
 # ─── Sidebar ──────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/document.png", width=60)
+    # ─── HEADER ─────────────────────────────────────────────────────
+    domain_display = st.session_state.get("project_domain", "") or (st.session_state.get("project_url", "").replace("https://", "").replace("www.", ""))
+    has_project = bool(st.session_state.get("project_url", "").startswith("http"))
 
-    # Navigation
-    st.markdown("## Navigation")
+    if has_project:
+        # ─── PROJET ACTIF ─────────────────────────────────────────────
+        st.markdown(f"### 🏢 {domain_display or 'Mon Projet'}")
+        st.caption(f"Profil: {st.session_state.get('project_profile', 'blog')} | Mode: {st.session_state.get('project_mode', 'standard')}")
 
-    # Navigation
-    st.markdown("## Navigation")
-    nav = st.radio(
-        "Page",
-        options=["Mon Site", "Generator", "Archive", "Outils SEO Gratuits", "Audit de Contenu", "Audit Technique", "SERP & Visibilite", "Strategie", "Backlinks", "Maintenance", "Learning", "Admin", "Session Detail"],
-        label_visibility="collapsed",
-        key="nav_page",
-    )
+        # Scores rapides si disponibles
+        bl = st.session_state.get("bl_result", {}).get("state", None)
+        st_res = st.session_state.get("st_result", {}).get("state", None)
+        serp = st.session_state.get("sv_result", {})
 
-    # Si ?session_id= dans l'URL, on stocke l'ID + flag (one-shot)
-    params = st.query_params
-    if "session_id" in params:
-        st.session_state.selected_session_id = params["session_id"]
-        # Flag one-shot: persiste jusqu'a consommation par le bloc principal
-        if "from_url_consumed" not in st.session_state:
-            st.session_state.from_url = True
-            st.session_state.from_url_consumed = True
+        if bl or st_res or serp:
+            with st.expander("📊 Scores"):
+                if st_res and hasattr(st_res, 'executive_summary') and st_res.executive_summary:
+                    s = st_res.executive_summary.sante_strategique
+                    st.metric("Strategie", f"{s}/100")
+                if bl and hasattr(bl, 'authority_score'):
+                    st.metric("Authority", f"{bl.authority_score}/100")
+                if serp and isinstance(serp, dict) and serp.get("health"):
+                    st.metric("SERP", f"{serp['health']}/100")
 
-    # ─── Projet Partagé (visible sur toutes les pages pipeline) ────────
-    pipeline_pages = ["Audit de Contenu", "Audit Technique", "SERP & Visibilite",
-                      "Strategie", "Backlinks", "Maintenance", "Learning"]
-    if nav in pipeline_pages or nav == "Generator":
-        st.markdown("---")
-        st.markdown("## Projet")
-        url = st.text_input(
-            "URL du site",
-            value=st.session_state.project_url or "https://",
-            key="shared_project_url",
-            placeholder="https://www.cleantout37.fr",
-        )
-
-        # Auto-detection quand l'URL change
-        if url and url != st.session_state.project_url and url.startswith("http"):
-            st.session_state.project_url = url
-            # Extraire le domaine
-            from urllib.parse import urlparse
-            parsed = urlparse(url)
-            domain = parsed.netloc.replace("www.", "")
-            st.session_state.project_domain = domain
-
-            # Auto-detecter keywords + competitors depuis la homepage
-            if not st.session_state.project_autodetected:
-                with st.spinner("Analyse du site..."):
-                    kws, comps, profile = _auto_detect_site(url, domain)
-                    if kws:
-                        st.session_state.project_keywords = kws
-                    if comps:
-                        st.session_state.project_competitors = comps
-                    if profile:
-                        st.session_state.project_profile = profile
-                    st.session_state.project_autodetected = True
-                st.rerun()
-
-        # Afficher les mots-cles auto-detectes
-        if st.session_state.project_keywords:
-            kw_text = "\n".join(st.session_state.project_keywords[:10])
-            keywords_raw = st.text_area(
-                "Mots-cles (auto-detectes, modifiables)",
-                value=kw_text,
-                key="shared_kw",
-                height=120,
-            )
-        else:
-            keywords_raw = st.text_area(
-                "Mots-cles (un par ligne)",
-                placeholder="Ajoutez vos mots-cles...",
-                key="shared_kw_empty",
-                height=100,
-            )
-
-        # Concurrents
-        if st.session_state.project_competitors:
-            comp_text = "\n".join(st.session_state.project_competitors[:5])
-            competitors_raw = st.text_area(
-                "Concurrents (suggeres)",
-                value=comp_text,
-                key="shared_comp",
-                height=100,
-            )
-        else:
-            competitors_raw = st.text_area(
-                "Concurrents (un par ligne)",
-                placeholder="concurrent1.com\nconcurrent2.fr",
-                key="shared_comp_empty",
-                height=80,
-            )
-
-        # Profil
-        profile = st.selectbox(
-            "Profil du site",
-            ["blog", "ecommerce", "saas", "local", "corporate"],
-            index=["blog", "ecommerce", "saas", "local", "corporate"].index(
-                st.session_state.project_profile
-            ) if st.session_state.project_profile in ["blog", "ecommerce", "saas", "local", "corporate"] else 0,
-            key="shared_profile",
-        )
-        st.session_state.project_profile = profile
-
-        # Mode
-        mode = st.selectbox(
-            "Mode qualite",
-            ["fast", "standard", "premium"],
-            index=1,
-            key="shared_mode",
-        )
-
-        # Stocker dans le state global
-        parsed_kw = [k.strip() for k in keywords_raw.split("\n") if k.strip()] if keywords_raw else []
-        parsed_comp = [c.strip() for c in competitors_raw.split("\n") if c.strip()] if competitors_raw else []
-        st.session_state.project_keywords = parsed_kw
-        st.session_state.project_competitors = parsed_comp
-        st.session_state.project_mode = mode
-
-        if st.session_state.project_domain:
-            st.caption(f"Domaine: {st.session_state.project_domain} | Profil: {profile}")
-            st.session_state.from_url = True
-            st.session_state.from_url_consumed = True
-
-    # Sidebar specifique a la page Generator
-    if nav == "Generator":
-        st.markdown("---")
-        st.markdown("## ⚙️ Configuration")
-
-        mode_labels = {
-            "fast": "⚡ Rapide — Essentiel seulement",
-            "standard": "⭐ Standard — Recommandé",
-            "premium": "💎 Premium — Complet",
-            "compliance": "🛡️ Conformité — Secteurs réglementés",
-        }
-        mode_choice = st.selectbox(
-            "Mode qualité",
-            options=list(mode_labels.keys()),
-            format_func=lambda x: mode_labels[x],
-            index=1,
-            key="sidebar_mode",
-        )
-
-        secteur_labels = {
-            "autre": "Généraliste",
-            "finance": "Finance / Assurance",
-            "sante": "Santé / Médical",
-            "droit": "Droit / Juridique",
-            "ecommerce": "E-commerce",
-            "saas": "SaaS / Logiciel",
-            "formation": "Formation",
-            "immobilier": "Immobilier",
-            "tourisme": "Tourisme",
-            "rh": "RH / Recrutement",
-            "cybersecurite": "Cybersécurité",
-            "enfants": "Enfants / Jeunesse",
-        }
-        secteur = st.selectbox(
-            "Secteur d'activité",
-            options=list(secteur_labels.keys()),
-            format_func=lambda x: secteur_labels[x],
-            key="sidebar_secteur",
-        )
+        # Bouton diagnostic complet
+        if st.button("🔍 Diagnostic Complet", type="primary", use_container_width=True, help="Lance P4→P5→P6→P7 en sequence"):
+            st.session_state.launch_full_audit = True
+            st.rerun()
 
         st.markdown("---")
-        st.markdown("### 🔗 Options")
-        site_url = st.text_input("URL du site (optionnel)", placeholder="https://mon-site.fr", key="sidebar_url")
-        objectif = st.text_area("Objectif (optionnel)", placeholder="Ex: Générer un guide complet sur...", height=80, key="sidebar_objectif")
+        st.caption(f"Projet: {st.session_state.get('project_url', '')[:40]}...")
 
-        st.markdown("---")
-        st.markdown("### 💰 Mode")
-        dry_run = st.checkbox("Mode essai (gratuit, sans API)", value=True,
-                              help="En mode essai, aucun appel API réel n'est effectué. "
-                                   "Idéal pour tester avant de consommer du budget.",
-                              key="sidebar_dry_run")
-        if not dry_run:
-            st.warning("⚠️ Le mode réel consomme du budget API. Vérifiez vos clés dans .env.")
-
-        st.markdown("---")
-        st.markdown("### 📊 Session")
-        if st.session_state.session_id:
-            st.success(f"Session: `{st.session_state.session_id}`")
-            if st.button("📋 Copier l'ID"):
-                st.code(st.session_state.session_id)
-
-        # Detection de sessions interrompues
-        sess_mgr = SessionManager(Path("sessions"))
-        all_sessions = sess_mgr.list_sessions()
-        interrupted = [
-            s for s in all_sessions
-            if s.get("status") in ("failed", "running")
-            and s.get("agent_count", 0) > 0
-        ]
-        if interrupted:
-            st.markdown("---")
-            st.warning(f"🔴 {len(interrupted)} session(s) interrompue(s)")
-            for s in interrupted[:5]:
-                last = s.get("session_id", "")[:12]
-                kw = s.get("keyword", "?")
-                agents = s.get("agent_count", 0)
-                if st.button(
-                    f"🔄 Reprendre '{kw}' ({agents} agents faits)",
-                    key=f"resume_{last}",
-                    use_container_width=True,
-                ):
-                    st.session_state.resume_session_id = last
-                    st.rerun()
+        # ─── NAVIGATION ───────────────────────────────────────────────
+        st.markdown("### 📋 Navigation")
+        nav = st.radio("Page", [
+            "🏠 Mon Site",
+            "📝 Generateur",
+            "🔍 SERP & Visibilite",
+            "🧠 Strategie",
+            "🔗 Backlinks",
+            "🛠️ Audit Technique",
+            "📄 Audit Contenu",
+            "🔧 Maintenance",
+            "📚 Learning",
+            "📦 Archive",
+            "🧰 Outils SEO",
+            "⚙️ Admin",
+        ], label_visibility="collapsed", key="nav_page")
 
     else:
-        # Sidebar minimale pour Archive et Session Detail
+        # ─── PAS DE PROJET ──────────────────────────────────────────
+        st.markdown("### 👋 Bienvenue")
+        st.caption("Hermes SEO — votre plateforme SEO/AEO/GEO")
+
+        st.markdown("#### 🚀 Demarrer")
+        new_url = st.text_input("URL de votre site", placeholder="https://www.mon-site.fr", key="sidebar_new_project")
+        if st.button("✨ Creer mon projet", type="primary", use_container_width=True, disabled=not new_url.startswith("http")):
+            st.session_state.project_url = new_url.strip().rstrip("/")
+            from urllib.parse import urlparse
+            st.session_state.project_domain = urlparse(st.session_state.project_url).netloc.replace("www.", "")
+            st.session_state.project_autodetected = False
+            st.rerun()
+
         st.markdown("---")
-        if nav == "Mon Site":
-            st.caption("Dashboard consolide — scores, KPIs, prochaine action.")
-        elif nav == "Archive":
-            st.caption("Historique, stats et gestion des sessions.")
-        elif nav == "Audit de Contenu":
-            st.caption("Analysez vos pages existantes (SEO/AEO/GEO/EEAT/UX).")
-        elif nav == "SERP & Visibilite":
-            st.caption("Surveillance positions, concurrence, AI visibility, alertes.")
-        elif nav == "Strategie":
-            st.caption("Roadmap editoriale, forecast, kill list, CEO summary.")
-        elif nav == "Backlinks":
-            st.caption("Audit backlinks, CRM netlinking, prospect discovery, anchor strategy.")
-        elif nav == "Outils SEO Gratuits":
-            st.caption("12+ outils SEO gratuits. Sans inscription. SERP preview, compteur de mots, schema markup, robots.txt...")
-        elif nav == "Maintenance":
-            st.caption("Content decay, Core Update recovery, execution engine.")
-        elif nav == "Learning":
-            st.caption("Apprentissage continu, calibration, patterns, retroaction.")
-        elif nav == "Admin":
-            st.caption("Consommation API, etat des connecteurs, couts.")
-        elif nav == "Session Detail":
-            st.caption("Detail d'une session.")
-            if st.session_state.get("selected_session_id"):
-                st.info(f"Session: `{st.session_state.selected_session_id}`")
+        nav = st.radio("Page", [
+            "🧰 Outils SEO",
+            "📦 Archive",
+            "⚙️ Admin",
+        ], label_visibility="collapsed", key="nav_page")
+
+    # ─── FOOTER SIDEBAR ────────────────────────────────────────────
+    st.markdown("---")
+    st.caption("Hermes SEO v3 · FC Solutions")
+
+    # Sidebar Generateur rapide accessible depuis la page Generateur
+    if nav == "📝 Generateur":
+        st.markdown("---")
+        st.markdown("### ⚙️ Generateur")
+        mode_labels = {"fast": "⚡ Rapide", "standard": "⭐ Standard", "premium": "💎 Premium", "compliance": "🛡️ Conformité"}
+        st.selectbox("Qualité", options=list(mode_labels.keys()), format_func=lambda x: mode_labels[x], index=1, key="sidebar_mode")
+        st.text_area("Objectif (optionnel)", placeholder="Guide complet sur...", height=60, key="sidebar_objectif")
+        st.checkbox("Mode essai (gratuit)", value=True, key="sidebar_dry_run")
 
 
 # ─── Contenu principal ─────────────────────────────────────────────────
 
 from_url = st.session_state.pop("from_url", False)
 if from_url:
-    # URL directe ?session_id= → force Session Detail
     sid = st.session_state.get("selected_session_id")
     if sid:
         render_session_detail(sid)
     else:
         st.info("Session introuvable.")
-elif nav == "Mon Site":
+elif nav == "🏠 Mon Site":
     render_project_dashboard()
-elif nav == "Archive":
+elif nav == "📦 Archive":
     render_archive_page()
-elif nav == "Audit de Contenu":
+elif nav == "📄 Audit Contenu":
     render_audit_page()
-elif nav == "Audit Technique":
+elif nav == "🛠️ Audit Technique":
     render_audit_tech_page()
-elif nav == "SERP & Visibilite":
+elif nav == "🔍 SERP & Visibilite":
     render_serp_visibility_page()
-elif nav == "Strategie":
+elif nav == "🧠 Strategie":
     render_strategie_page()
-elif nav == "Backlinks":
+elif nav == "🔗 Backlinks":
     render_backlinks_page()
-elif nav == "Outils SEO Gratuits":
+elif nav == "🧰 Outils SEO":
     render_free_tools_page()
-elif nav == "Maintenance":
+elif nav == "🔧 Maintenance":
     render_maintenance_page()
-elif nav == "Learning":
+elif nav == "📚 Learning":
     render_learning_page()
-elif nav == "Admin":
+elif nav == "⚙️ Admin":
     render_admin_dashboard()
 elif nav == "Session Detail":
     sid = st.session_state.get("selected_session_id")
