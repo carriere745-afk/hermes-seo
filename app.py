@@ -1082,6 +1082,9 @@ else:
 
 # ─── Footer ─────────────────────────────────────────────────────────
 
+st.markdown('<div style="height:1rem"></div>', unsafe_allow_html=True)
+from hermes.ui.disclaimers import get_disclaimer_footer
+st.markdown(get_disclaimer_footer(), unsafe_allow_html=True)
 st.markdown(
     '<div class="fc-footer">© 2026 FC Solutions — Hermes SEO v3. Tous droits reserves.</div>',
     unsafe_allow_html=True,
