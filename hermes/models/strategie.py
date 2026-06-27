@@ -235,6 +235,8 @@ class StrategieState(BaseModel):
     executive_summary: Optional[ExecutiveSummary] = None
     session_data: dict = Field(default_factory=dict)  # ST11b — articles auto-crees
     rapport_html: str = ""
+    ctr_suggestions: list[dict] = Field(default_factory=list)  # ST14 — CTR reformulation
+    content_gaps_detailed: list[dict] = Field(default_factory=list)  # ST15 — content gaps
     rapport_json: str = ""
     pipelines_to_trigger: list[dict[str, Any]] = Field(default_factory=list)
 

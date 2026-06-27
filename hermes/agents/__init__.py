@@ -44,6 +44,10 @@ from hermes.agents.agent_34_international import run as agent_34
 from hermes.agents.agent_35_reputation_social import run as agent_35
 from hermes.agents.agent_36_ab_test import run as agent_36
 from hermes.agents.agent_37_pagerank_maillage import run as agent_37
+from hermes.agents.agent_38_structure_types import run as agent_38
+from hermes.agents.agent_39_lsi_coverage import run as agent_39
+from hermes.agents.agent_11b_aeo_enrichi import run as agent_11b
+from hermes.agents.agent_28b_linguistique_avancee import run as agent_28b
 
 AGENT_REGISTRY: dict[str, callable] = {
     "agent_00": agent_00,
@@ -80,6 +84,8 @@ AGENT_REGISTRY: dict[str, callable] = {
     "agent_33": agent_33, "agent_34": agent_34, "agent_35": agent_35,
     "agent_36": agent_36,
     "agent_37": agent_37,
+    "agent_38": agent_38, "agent_39": agent_39,
+    "agent_11b": agent_11b, "agent_28b": agent_28b,
 }
 
 __all__ = ["AGENT_REGISTRY"]

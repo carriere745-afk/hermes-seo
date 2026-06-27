@@ -22,6 +22,8 @@ from hermes.agents.strategie.st11_export_routage import run as st11
 from hermes.agents.strategie.st11b_auto_creator import run as st11b
 from hermes.agents.strategie.st12_semantic_gap import run as st12
 from hermes.agents.strategie.st13_geo_sources import run as st13
+from hermes.agents.strategie.st14_ctr_reformulator import run as st14
+from hermes.agents.strategie.st15_content_gap_detail import run as st15
 
 STRATEGIE_REGISTRY: dict[str, callable] = {
     "st00": st00, "st01": st01, "st01b": st01b, "st02": st02,
@@ -29,7 +31,7 @@ STRATEGIE_REGISTRY: dict[str, callable] = {
     "st05": st05, "st05b": st05b, "st06": st06, "st06b": st06b,
     "st06c": st06c, "st07": st07, "st08": st08, "st09": st09,
     "st10": st10, "st10b": st10b, "st11": st11, "st11b": st11b,
-    "st12": st12, "st13": st13,
+    "st12": st12, "st13": st13, "st14": st14, "st15": st15,
 }
 
 STRATEGIE_ORDER: list[str] = [
@@ -37,7 +39,7 @@ STRATEGIE_ORDER: list[str] = [
     "st01", "st01b", "st02", "st07", "st08",
     "st03", "st04", "st04b", "st04c",
     "st05", "st05b",
-    "st06", "st06b", "st06c", "st12", "st13",
+    "st06", "st06b", "st06c", "st12", "st13", "st14", "st15",
     "st09", "st10", "st10b",
     "st11", "st11b",
 ]
