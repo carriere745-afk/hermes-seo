@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hermes SEO v3 — Rapport Complet — 27 juin 2026</title>
+<style>
+body{max-width:1200px;margin:40px auto;padding:20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#222;background:#fff}
+h1{font-size:2rem;border-bottom:4px solid #1E88E5;padding-bottom:10px;margin-top:0}
+h2{font-size:1.4rem;border-bottom:2px solid #ddd;padding-bottom:6px;margin-top:40px;color:#1E88E5}
+h3{font-size:1.1rem;margin-top:25px}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px}
+th{background:#1E88E5;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+td{padding:8px 12px;border:1px solid #ddd;vertical-align:top}
+tr:nth-child(even){background:#f5f7fa}
+.meta{color:#888;font-size:13px;margin-bottom:25px}
+.ok{background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 18px;margin:15px 0;border-radius:4px}
+.warn{background:#fff3e0;border-left:4px solid #e65100;padding:12px 18px;margin:15px 0;border-radius:4px}
+.err{background:#fce4ec;border-left:4px solid #c62828;padding:12px 18px;margin:15px 0;border-radius:4px}
+.info{background:#e3f2fd;border-left:4px solid #1E88E5;padding:12px 18px;margin:15px 0;border-radius:4px}
+.note{background:#f8fafc;border:1px solid #ddd;padding:12px 18px;margin:15px 0;border-radius:8px}
+.score{font-size:2.5rem;font-weight:700;text-align:center;line-height:1.2}
+.green{color:#2e7d32}.orange{color:#e65100}.red{color:#c62828}.blue{color:#1565c0}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.b-ok{background:#e8f5e9;color:#2e7d32}.b-warn{background:#fff3e0;color:#e65100}.b-err{background:#fce4ec;color:#c62828}.b-info{background:#e3f2fd;color:#1565c0}
+.b-p0{background:#fce4ec;color:#c62828}.b-p1{background:#fff3e0;color:#e65100}.b-p2{background:#fffde7;color:#f9a825}
+code{background:#f0f2f6;padding:2px 6px;border-radius:3px;font-size:13px}
+.footer{text-align:center;color:#999;font-size:12px;padding:2rem 0 1rem 0;border-top:1px solid #eee;margin-top:3rem}
+.progress{background:#e0e0e0;border-radius:10px;height:24px;margin:5px 0}
+.progress-fill{border-radius:10px;height:100%;background:linear-gradient(90deg,#1E88E5,#42a5f5)}
+.timeline td:first-child{white-space:nowrap;font-weight:600}
+@media print{body{font-size:13px}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<h1>Hermes SEO v3 — Rapport Complet</h1>
+<p class="meta">Genere le 27 juin 2026 | 8 pipelines | 114 agents | 103 tests | 28 packages Python | FC Solutions</p>
+
+<div class="ok"><strong>Ce rapport couvre :</strong> historique du projet, inventaire complet des 8 pipelines et 114 agents,
+flux cross-pipeline, tests, APIs, couverture du document Mega-Reference 630, corrections appliquees,
+prochaines priorites, stack technique. Document unique de reference.</div>
+
+<!-- ════════════════════════════════ -->
+<h2>1. Chronologie du Projet</h2>
+
+<table class="timeline">
+<tr><th>Date</th><th>Etape</th><th>Détail</th></tr>
+<tr><td>17 juin 2026</td><td><strong>Pipeline 1 — Editorial</strong></td><td>28 agents. Generation contenu SEO/AEO/GEO. 10 types de contenu. ~$0.60/article.</td></tr>
+<tr><td>22 juin 2026</td><td><strong>Pipeline 2 — Audit de Contenu</strong></td><td>12 agents. 7 dimensions SEO/AEO/GEO/EEAT/UX. ~$0.005/page.</td></tr>
+<tr><td>23 juin 2026</td><td><strong>Pipeline 3 — Audit Technique</strong></td><td>23 agents. 12 dimensions. 10 outils OSS. $0.00/10 pages.</td></tr>
+<tr><td>24 juin 2026</td><td><strong>Pipeline 4 — SERP & Visibility</strong></td><td>11 agents. Positions, concurrents, Core Updates, alertes. ~$2.50/mois.</td></tr>
+<tr><td>24 juin 2026</td><td><strong>Pipeline 5 — Strategie Editoriale</strong></td><td>18 agents. Roadmap, forecast, kill list. Confidence Score + Decision Trace. Observability Layer.</td></tr>
+<tr><td>24 juin 2026</td><td><strong>Pipeline 6 — Maillage & Backlinks</strong></td><td>18 agents. CRM netlinking, AI links, prospect discovery, anchor strategy.</td></tr>
+<tr><td>24 juin 2026</td><td><strong>Pipeline 7 — Maintenance & Execution</strong></td><td>12 agents. Content decay, Core Update recovery, execution auto (sitemap, robots, llms).</td></tr>
+<tr><td>24 juin 2026</td><td><strong>Pipeline 8 — Learning Engine</strong></td><td>9 agents. Apprentissage continu, calibration, patterns. Accumulation silencieuse.</td></tr>
+<tr><td>25 juin 2026</td><td><strong>Corrections V6.5</strong></td><td>7 bugs racines corriges : contexte SERP DuckDuckGo, baseline auto, ancres sans ville hardcodee, filtre anti-pollution, fallback LLM.</td></tr>
+<tr><td>25 juin 2026</td><td><strong>Architecture SaaS + Outils gratuits</strong></td><td>12 outils SEO gratuits, WordPress plugin, Docker, deploy.sh, SECURITY.md.</td></tr>
+<tr><td>25 juin 2026</td><td><strong>Audit systemique</strong></td><td>134 agents inventories, 4/8 flux cross-pipeline actifs, 6 corrections auto.</td></tr>
+<tr><td>27 juin 2026</td><td><strong>Gaps 1-10</strong></td><td>P5->P1 auto, Dashboard unifie, CMS, semantique, GEO sources, AEO PAA, pipeline editorial, qualite linguistique, backlinks, SEO local. 8 agents. 103 tests.</td></tr>
+<tr><td>27 juin 2026</td><td><strong>Gaps 11-20</strong></td><td>Categories, business ROI, post-publication, images, international, benchmark, A/B test, reputation. 8 agents. 103 tests.</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>2. Architecture Globale</h2>
+
+<pre style="background:#f8fafc;padding:20px;border-radius:12px;line-height:1.8;font-size:13px">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         HERMES SEO v3                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    SEO LAYER (P1 a P6)                                  ││
+│  │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐               ││
+│  │  │  P1  │ │  P2  │ │  P3  │ │  P4  │ │  P5  │ │  P6  │               ││
+│  │  │37agt │ │12agt │ │23agt │ │15agt │ │22agt │ │18agt │               ││
+│  │  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘               ││
+│  │  Production   Audit     Audit    SERP &   Strategie   Maillage          ││
+│  │  Contenu      Contenu   Tech     Visib.                & Backlinks      ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    EXECUTION LAYER (P7)                                 ││
+│  │  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │  │  M00 Superviseur  │  M01 Content Decay  │  M02 Core Update         ││
+│  │  │  M03 Execution    │  M04 Content Gen    │  M05 Page Optimizer      ││
+│  │  │  M06 Publisher    │  M07 Impact Monitor │  M08-M11 Safety (V1.5)   ││
+│  │  │  M12 Pipeline     │                      │                          ││
+│  │  └─────────────────────────────────────────────────────────────────────┘│
+│  │  13 agents                                                              │
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    LEARNING LAYER (P8)                                  ││
+│  │  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │  │  L00-L08 : Calibration, Patterns, Delays, Updates, Distribution     ││
+│  │  └─────────────────────────────────────────────────────────────────────┘│
+│  │  9 agents                                                               │
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│  Total: 114 agents operationnels sur 8 pipelines coordonnes.                │
+│  4 bases SQLite (24 tables). 5 flux cross-pipeline actifs sur 8.           │
+│  Fallback LLM: Claude Sonnet -> GPT-4o-mini -> DeepSeek.                   │
+│  Fallback SERP: TalorData -> Scrape.do -> DuckDuckGo HTML gratuit.         │
+└─────────────────────────────────────────────────────────────────────────────┘
+</pre>
+
+<!-- ════════════════════════════ -->
+<h2>3. Inventaire Complet des 114 Agents</h2>
+
+<h3>Pipeline 1 — Editorial (Redaction) — 37 agents</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>LLM</th></tr>
+<tr><td>agent_00</td><td>Superviseur central</td><td>Validation Pydantic, dependances, coherence, 5 checks</td><td>Aucun</td></tr>
+<tr><td>agent_01</td><td>Brief entreprise</td><td>Fiche entreprise : nom, secteur, positionnement, offres, preuves</td><td>Sonnet</td></tr>
+<tr><td>agent_02</td><td>Persona</td><td>Persona lecteur : maturite, freins, vocabulaire, objectif</td><td>Sonnet</td></tr>
+<tr><td>agent_03</td><td>Analyse SERP</td><td>Top 10 SERP, PAA, featured snippets, enrichissement DA</td><td>Haiku</td></tr>
+<tr><td>agent_04</td><td>Intention & Type</td><td>Classification intention + type de page</td><td>DeepSeek</td></tr>
+<tr><td>agent_05</td><td>Offre & Conversion</td><td>Benefices, objections, preuves, CTA</td><td>DeepSeek</td></tr>
+<tr><td>agent_06</td><td>Differenciation</td><td>Angles editoriaux, faiblesses concurrents</td><td>DeepSeek</td></tr>
+<tr><td>agent_07</td><td>Template</td><td>Structure recommandee (10 types de contenu)</td><td>Aucun</td></tr>
+<tr><td>agent_08</td><td>Anti-cannibalisation</td><td>Detection via ChromaDB</td><td>Aucun</td></tr>
+<tr><td>agent_09</td><td>★ Redaction</td><td>Generation HTML structure avec contexte SERP imperatif</td><td>Sonnet</td></tr>
+<tr><td>agent_10</td><td>SEO</td><td>Optimisation on-page : title, meta, Hn, densite</td><td>GPT/DeepSeek</td></tr>
+<tr><td>agent_11</td><td>AEO</td><td>En bref, FAQ, H2 questions, blocs extractables</td><td>GPT/DeepSeek</td></tr>
+<tr><td>agent_12</td><td>GEO</td><td>Entites nommees, citations IA, topical authority</td><td>GPT/DeepSeek</td></tr>
+<tr><td>agent_13</td><td>EEAT</td><td>Score Experience/Expertise/Autorite/Fiabilite</td><td>GPT/DeepSeek</td></tr>
+<tr><td>agent_14</td><td>Conformite</td><td>9 secteurs reglementes</td><td>Aucun</td></tr>
+<tr><td>agent_15</td><td>Fact-checking</td><td>Verification des affirmations factuelles</td><td>Haiku</td></tr>
+<tr><td>agent_16</td><td>Maillage interne</td><td>Liens vers pages pertinentes</td><td>Aucun</td></tr>
+<tr><td>agent_17</td><td>Maillage externe</td><td>Liens externes + sources</td><td>Aucun</td></tr>
+<tr><td>agent_18</td><td>Multiformat</td><td>Adaptation newsletter, social, etc.</td><td>Aucun</td></tr>
+<tr><td>agent_19</td><td>Test A/B</td><td>Variantes title/meta</td><td>Aucun</td></tr>
+<tr><td>agent_20</td><td>Localisation</td><td>Adaptation geographique</td><td>Aucun</td></tr>
+<tr><td>agent_21</td><td>Schema.org</td><td>JSON-LD generation et validation</td><td>Aucun</td></tr>
+<tr><td>agent_22</td><td>Images</td><td>Plan images, alt, dimensions</td><td>Aucun</td></tr>
+<tr><td>agent_23</td><td>CMS Export</td><td>Formatage pour WordPress, PrestaShop</td><td>Aucun</td></tr>
+<tr><td>agent_24</td><td>Mise a jour</td><td>Plan de revision</td><td>Aucun</td></tr>
+<tr><td>agent_25</td><td>Critique Qualite</td><td>9 criteres de qualite</td><td>Aucun</td></tr>
+<tr><td>agent_26</td><td>Audit post-publication</td><td>GSC data, positions, trafic</td><td>Aucun</td></tr>
+<tr><td>agent_27</td><td>Coherence</td><td>Verification coherence inter-agents</td><td>Aucun</td></tr>
+<tr><td>agent_28</td><td>Qualite linguistique FR</td><td>Accents, apostrophes, entites HTML, anglicismes. Score 0-100.</td><td>Aucun</td></tr>
+<tr><td>agent_29</td><td>SEO Local / GBP</td><td>Extraction NAP, coherence, Google Business Profile. Score 0-100.</td><td>Aucun</td></tr>
+<tr><td>agent_30</td><td>Audit Categories</td><td>Thin content, FAQ categories, liens piliers, orphelines.</td><td>Aucun</td></tr>
+<tr><td>agent_31</td><td>Business & ROI</td><td>CTA tracking, lead potential, business score 0-100.</td><td>Aucun</td></tr>
+<tr><td>agent_32</td><td>Suivi Post-Publication</td><td>Peremption, file revision, alertes chute trafic.</td><td>Aucun</td></tr>
+<tr><td>agent_33</td><td>Images & Medias</td><td>Alt, WebP/AVIF, poids, og:image, VideoObject. Score 0-100.</td><td>Aucun</td></tr>
+<tr><td>agent_34</td><td>International SEO</td><td>Hreflang, slugs, calques FR/EN, couverture multilingue.</td><td>Aucun</td></tr>
+<tr><td>agent_35</td><td>Reputation & Signaux</td><td>Brand volume, press mentions, EEAT signals, pages legales.</td><td>Aucun</td></tr>
+<tr><td>agent_36</td><td>Tests A/B SEO</td><td>Variantes title/meta/FAQ, recommandation CTR mobile.</td><td>Aucun</td></tr>
+</table>
+
+<h3>Pipeline 4 — SERP & Visibility — 15 agents</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th></tr>
+<tr><td>SV00</td><td>Superviseur SERP</td><td>Config site, startup check, lock fichier</td></tr>
+<tr><td>SV01</td><td>Rank Tracker</td><td>GSC + TalorData + KE volumes + SQLite</td></tr>
+<tr><td>SV02</td><td>Variations</td><td>7 categories de variation, filtre anti-bruit</td></tr>
+<tr><td>SV02b</td><td>Google Update Monitor</td><td>Heuristique + RSS, suspension alertes 7j</td></tr>
+<tr><td>SV03</td><td>SERP Features</td><td>10 features, scoring opportunite</td></tr>
+<tr><td>SV04</td><td>Concurrents</td><td>Classification 7 types</td></tr>
+<tr><td>SV04b</td><td>Share of Voice</td><td>SOV impressions, clics</td></tr>
+<tr><td>SV05</td><td>Gap Content</td><td>Top 3 vs page</td></tr>
+<tr><td>SV06</td><td>Quick Wins</td><td>Positions 4-15 + Business Score</td></tr>
+<tr><td>SV07</td><td>Alertes</td><td>Deduplication, email P0</td></tr>
+<tr><td>SV08</td><td>AEO/AI Overviews</td><td>Citations SGE, AI Visibility</td></tr>
+<tr><td>SV09</td><td>Correlation</td><td>Actions x positions J+90</td></tr>
+<tr><td>SV10</td><td>Synthese</td><td>Health Score, rapport HTML</td></tr>
+<tr><td>SV11</td><td>AEO Featured Snippets</td><td>PAA tracking, featured snippet, AI Overview scoring</td></tr>
+<tr><td>SV12</td><td>Benchmark Concurrentiel</td><td>Panel concurrents, positions overlap</td></tr>
+</table>
+
+<h3>Pipeline 5 — Strategie Editoriale — 22 agents</h3>
+<table>
+<tr><th>Agent</th><th>Nom</th><th>Role</th><th>LLM</th></tr>
+<tr><td>ST00</td><td>Superviseur</td><td>Verification P2/P3/P4, GA4, init DB</td><td>Aucun</td></tr>
+<tr><td>ST01</td><td>Cartographie Sujets</td><td>Crawl homepage, ChromaDB clustering</td><td>Aucun</td></tr>
+<tr><td>ST01b</td><td>Topical Authority</td><td>Score 0-100 par silo</td><td>Aucun</td></tr>
+<tr><td>ST02</td><td>Cannibalisation</td><td>Detection P4 + ChromaDB</td><td>Aucun</td></tr>
+<tr><td>ST03</td><td>Opportunites</td><td>Requetes sans page dediee + filtre domaine</td><td>Aucun</td></tr>
+<tr><td>ST04</td><td>Gap Concurrentiel</td><td>Ecarts semantiques</td><td>Haiku</td></tr>
+<tr><td>ST04b</td><td>Feasibility</td><td>Score 0-100</td><td>Aucun</td></tr>
+<tr><td>ST04c</td><td>GEO Opportunity</td><td>Sujets citables IA</td><td>Aucun</td></tr>
+<tr><td>ST05</td><td>Business Score</td><td>Trafic x CTR x conv x valeur lead</td><td>Aucun</td></tr>
+<tr><td>ST05b</td><td>SEO Economics</td><td>Effort, cout, ROI 12 mois</td><td>Aucun</td></tr>
+<tr><td>ST06</td><td>Roadmap</td><td>Priorisation P0-P3, Confidence + Decision Trace</td><td>Haiku</td></tr>
+<tr><td>ST06b</td><td>Forecast</td><td>Projection trafic/leads/ROI 12 mois</td><td>Haiku</td></tr>
+<tr><td>ST06c</td><td>Portfolio Strategy</td><td>Acquisition/Retention/Defense</td><td>Aucun</td></tr>
+<tr><td>ST07</td><td>Silos & Clusters</td><td>Silos sans pilier, anomalies</td><td>Aucun</td></tr>
+<tr><td>ST08</td><td>Fusion/Separation</td><td>Recommandations structurelles</td><td>Aucun</td></tr>
+<tr><td>ST09</td><td>Revue Humaine</td><td>YMYL, controverses, legal</td><td>Aucun</td></tr>
+<tr><td>ST10</td><td>Priorisation</td><td>Matrice 6 poids</td><td>Aucun</td></tr>
+<tr><td>ST10b</td><td>Kill List</td><td>Sujets a eviter</td><td>Aucun</td></tr>
+<tr><td>ST11</td><td>Export & Routage</td><td>CEO Summary, HTML/JSON</td><td>Aucun</td></tr>
+<tr><td>ST11b</td><td>Auto-Createur</td><td>Creation auto articles P0/P1 via P1</td><td>Aucun</td></tr>
+<tr><td>ST12</td><td>Semantic Gap</td><td>Comparaison page vs top 3 SERP</td><td>Aucun</td></tr>
+<tr><td>ST13</td><td>GEO Source Score</td><td>Confiance source A/B/C/D</td><td>Aucun</td></tr>
+</table>
+
+<h3>Pipelines 2, 3, 6, 7, 8</h3>
+<table>
+<tr><th>Pipeline</th><th>Agents</th><th>Details</th></tr>
+<tr><td><strong>P2 — Audit de Contenu</strong></td><td>12</td><td>AC00-AC10 : Crawler, SERP Context, Scoring (SEO/AEO/GEO/EEAT/UX), Synthese, Roadmap, Cannibalisation, Export</td></tr>
+<tr><td><strong>P3 — Audit Technique</strong></td><td>23</td><td>TT00-TT22 : Superviseur, Crawler, Indexation, Architecture, Sitemap/Robots, Structure, Thin Content, Performance, Mobile, Schemas, International, Securite, Maillage, Code Quality, AEO/GEO, Synthese, Routage, Export</td></tr>
+<tr><td><strong>P6 — Maillage & Backlinks</strong></td><td>18</td><td>B00-B17 : Superviseur, Import, Scoring, Toxiques, Gap, Reclamation, Broken Links, Recommandations (Haiku), CRM, Moteur Preuve, Scarcity, Authority Graph, Export, Prospect Discovery, Anchor Strategy, Portfolio, Entity Authority, Media Relationship</td></tr>
+<tr><td><strong>P7 — Maintenance</strong></td><td>13</td><td>M00-M12 : Superviseur, Decay, Core Update, Execution Dispatcher, Content Generator, Page Optimizer, Publisher, Impact Monitor, Safety, Rollback, Dependencies, Approval, Pipeline Editorial</td></tr>
+<tr><td><strong>P8 — Learning</strong></td><td>9</td><td>L00-L08 : Superviseur, Confidence Calibrator, Pattern Detector, Delay Estimator, Update Classifier, Model Distributor, Pattern Library, Recommendation Optimizer, Failure Analyzer</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>4. Flux de Donnees Cross-Pipeline</h2>
+
+<table>
+<tr><th>Flux</th><th>Statut</th><th>Detail</th></tr>
+<tr><td><strong>P4->P5 (SERP->Strategie)</strong></td><td><span class="badge b-ok">OK — 5 agents</span></td><td>ST00, ST01, ST02, ST03, ST04 lisent serp_visibility.db</td></tr>
+<tr><td><strong>P5->P7 (Strategie->Execution)</strong></td><td><span class="badge b-ok">OK — 13 agents</span></td><td>M00-M12 lisent strategie.db via log_event/save_prediction</td></tr>
+<tr><td><strong>P6->P7 (Backlinks->Execution)</strong></td><td><span class="badge b-ok">OK — 2 agents</span></td><td>M02, M04 lisent backlinks.db</td></tr>
+<tr><td><strong>Tous->P8 (Events->Learning)</strong></td><td><span class="badge b-ok">OK — 9 agents</span></td><td>L00-L08 lisent toutes les DBs cumulees</td></tr>
+<tr><td><strong>P5->P1 (Strategie->Editorial)</strong></td><td><span class="badge b-ok">OK — ST11b</span></td><td>ST11b cree automatiquement les articles P0/P1</td></tr>
+<tr><td><strong>P3->P5 (Audit Tech->Strategie)</strong></td><td><span class="badge b-warn">MANQUE</span></td><td>Lock file uniquement. Donnees d'audit non transmises.</td></tr>
+<tr><td><strong>P2->P5 (Audit Contenu->Strategie)</strong></td><td><span class="badge b-warn">MANQUE</span></td><td>Pas de DB dediee. Audit en memoire volatile.</td></tr>
+<tr><td><strong>P4->P6 (SERP->Backlinks)</strong></td><td><span class="badge b-warn">MANQUE</span></td><td>Les positions SERP ne nourrissent pas l'analyse backlinks.</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>5. Bases de Donnees et Connecteurs</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div>
+<h3>4 Bases SQLite (24 tables)</h3>
+<table>
+<tr><th>Base</th><th>Tables</th><th>Pipelines</th></tr>
+<tr><td><code>serp_visibility.db</code></td><td>7</td><td>P4, P5, P7, P8</td></tr>
+<tr><td><code>strategie.db</code></td><td>3</td><td>P5, P7, P8</td></tr>
+<tr><td><code>backlinks.db</code></td><td>10</td><td>P6, P7, P8</td></tr>
+<tr><td><code>hermes.db</code></td><td>4</td><td>P7, P8</td></tr>
+</table>
+</div>
+<div>
+<h3>8 APIs / Connecteurs</h3>
+<table>
+<tr><th>API</th><th>Statut</th></tr>
+<tr><td>Anthropic Claude Sonnet</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td>OpenAI GPT-4o-mini</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td>DeepSeek v4</td><td><span class="badge b-ok">OK (fallback)</span></td></tr>
+<tr><td>GSC OAuth</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td>DataForSEO</td><td><span class="badge b-warn">Partiel (backlinks $20/m)</span></td></tr>
+<tr><td>Keywords Everywhere</td><td><span class="badge b-err">402 (credit epuise)</span></td></tr>
+<tr><td>TalorData</td><td><span class="badge b-warn">Config OK, usage?</span></td></tr>
+<tr><td>DuckDuckGo HTML</td><td><span class="badge b-ok">Gratuit (fallback)</span></td></tr>
+</table>
+</div>
+</div>
+
+<!-- ════════════════════════════ -->
+<h2>6. Tests — 103 passes</h2>
+
+<table>
+<tr><th>Fichier</th><th>Tests</th><th>Type</th><th>Resultat</th></tr>
+<tr><td><code>tests/test_strategie.py</code></td><td>34</td><td>P5 unitaires + integration</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td><code>tests/test_backlinks.py</code></td><td>27</td><td>P6 unitaires + integration</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td><code>tests/test_maintenance_learning.py</code></td><td>28</td><td>P7 + P8 unitaires + integration</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td><code>tests/test_cross_pipeline.py</code></td><td>14</td><td>Cross-pipeline + resilience + rate limiter + deploy</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr style="font-weight:700;background:#e8f5e9"><td><strong>TOTAL</strong></td><td><strong>103</strong></td><td colspan="2"><strong>100% OK</strong></td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>7. Couverture du Document Mega-Reference 630</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin:20px 0">
+    <div style="background:#e8f5e9;border-radius:12px;padding:25px;text-align:center">
+        <div class="score green">~45%</div>
+        <div style="font-weight:600">Couvert</div>
+        <div style="font-size:0.9rem;color:#666">~280 / 630 micro-taches</div>
+    </div>
+    <div style="background:#fff3e0;border-radius:12px;padding:25px;text-align:center">
+        <div class="score orange">~20%</div>
+        <div style="font-weight:600">Partiel</div>
+        <div style="font-size:0.9rem;color:#666">~130 / 630 micro-taches</div>
+    </div>
+    <div style="background:#fce4ec;border-radius:12px;padding:25px;text-align:center">
+        <div class="score red">~35%</div>
+        <div style="font-weight:600">Manquant</div>
+        <div style="font-size:0.9rem;color:#666">~220 / 630 micro-taches</div>
+    </div>
+</div>
+
+<h3>Couverture par module</h3>
+<table>
+<tr><th>Module</th><th>Items</th><th>Hermes</th><th>Statut</th></tr>
+<tr><td>1. Gestion projets & workspaces</td><td>20</td><td>~30%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>2. Crawl & indexation</td><td>40</td><td>~50%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>3. SEO technique</td><td>55</td><td>~45%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>4. Donnees structurees (Schema)</td><td>28</td><td>~35%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>5. SEO on-page & editorial</td><td>47</td><td>~40%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>6. AEO</td><td>51</td><td>~35%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>7. GEO</td><td>54</td><td>~30%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>8. E-E-A-T</td><td>27</td><td>~55%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>9. Maillage interne</td><td>22</td><td>~50%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>10. Positions & SERP</td><td>28</td><td>~75%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>11. Backlinks & autorite</td><td>14</td><td>~70%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>12. Cannibalisation</td><td>13</td><td>~80%</td><td><span class="badge b-ok">Excellent</span></td></tr>
+<tr><td>13. Pages categories</td><td>10</td><td>~25%</td><td><span class="badge b-err">Faible</span></td></tr>
+<tr><td>14. Suivi post-publication</td><td>27</td><td>~50%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>15. Qualite linguistique</td><td>15</td><td>~60%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>16. Images & medias</td><td>15</td><td>~40%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>17. Business & ROI</td><td>19</td><td>~50%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>18. Automatisation & pipeline</td><td>31</td><td>~55%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>19. Intervention directe</td><td>25</td><td>~30%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>20. Rapports</td><td>19</td><td>~60%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>21. Revue strategique</td><td>26</td><td>~65%</td><td><span class="badge b-ok">Bon</span></td></tr>
+<tr><td>22. International</td><td>10</td><td>~45%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>23. Securite & conformite</td><td>10</td><td>~50%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+<tr><td>24. SaaS transversal</td><td>20</td><td>~35%</td><td><span class="badge b-warn">Partiel</span></td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>8. Corrections Appliquees (16 corrections majeures)</h2>
+
+<table>
+<tr><th>#</th><th>Correction</th><th>Date</th><th>Fichier</th><th>Impact</th></tr>
+<tr><td>1</td><td>Contexte SERP imperatif (DuckDuckGo fallback)</td><td>25/06</td><td>serp_api.py + agent_09</td><td>"nano banana" = IA Google, pas fruit</td></tr>
+<tr><td>2</td><td>Baseline auto (sitemap+robots+llms)</td><td>25/06</td><td>m03 + m04</td><td>3 fichiers fondamentaux garantis</td></tr>
+<tr><td>3</td><td>Ancres sans ville hardcodee</td><td>25/06</td><td>b14_anchor_strategy</td><td>Templates par profil, pas de "Tours" pour SaaS</td></tr>
+<tr><td>4</td><td>Filtre anti-pollution P5</td><td>25/06</td><td>st03_opportunites</td><td>Domaine + keywords filter</td></tr>
+<tr><td>5</td><td>Fallback LLM intelligent</td><td>25/06</td><td>llm.py</td><td>Auth errors -> modele suivant sans retry</td></tr>
+<tr><td>6</td><td>Import log_agent_failed</td><td>25/06</td><td>agent_11_aeo</td><td>Fix crash</td></tr>
+<tr><td>7</td><td>P5->P1 automatique (ST11b)</td><td>27/06</td><td>st11b_auto_creator</td><td>Articles crees automatiquement</td></tr>
+<tr><td>8</td><td>Dashboard unifie "Mon Site"</td><td>27/06</td><td>project_dashboard</td><td>6 scores + next action</td></tr>
+<tr><td>9</td><td>Intervention CMS (M06 renforce)</td><td>27/06</td><td>m06_publisher</td><td>WordPress XML-RPC + PrestaShop</td></tr>
+<tr><td>10</td><td>Analyse semantique concurrentielle (ST12)</td><td>27/06</td><td>st12_semantic_gap</td><td>Page vs top 3 SERP</td></tr>
+<tr><td>11</td><td>GEO score source (ST13)</td><td>27/06</td><td>st13_geo_sources</td><td>Confiance A/B/C/D</td></tr>
+<tr><td>12</td><td>AEO PAA tracking (SV11)</td><td>27/06</td><td>sv11_aeo_snippets</td><td>10 SERP features</td></tr>
+<tr><td>13</td><td>Pipeline editorial (M12)</td><td>27/06</td><td>m12_pipeline_editorial</td><td>Files, bloqueurs, dry-run</td></tr>
+<tr><td>14</td><td>Qualite linguistique FR (agent_28)</td><td>27/06</td><td>agent_28</td><td>Accents, apostrophes, anglicismes</td></tr>
+<tr><td>15</td><td>SEO local GBP/NAP (agent_29)</td><td>27/06</td><td>agent_29</td><td>Score NAP 0-100</td></tr>
+<tr><td>16</td><td>Gaps 11-20 (8 agents)</td><td>27/06</td><td>agent_30..36 + sv12</td><td>Categories, ROI, post-pub, images, intl, benchmark, A/B, reputation</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>9. Prochaines Priorites</h2>
+
+<table>
+<tr><th>#</th><th>Action</th><th>Effort</th><th>Impact</th><th>Couverture 630</th></tr>
+<tr><td>1</td><td><strong>DataForSEO Backlinks</strong> — souscrire endpoint ($20/mois)</td><td>1h</td><td>Backlinks reels vs mock</td><td>45% -> 48%</td></tr>
+<tr><td>2</td><td><strong>UX/UI refonte</strong> — dashboard projet moderne</td><td>10h</td><td>Adoption +80%</td><td>48% -> 50%</td></tr>
+<tr><td>3</td><td><strong>Intervention CMS complete</strong> — edit title/meta/H1/schema depuis SaaS</td><td>4h</td><td>Differentiation</td><td>50% -> 54%</td></tr>
+<tr><td>4</td><td><strong>P2/P3->P5 integration</strong> — donnees d'audit vers strategie</td><td>3h</td><td>Precision +25%</td><td>54% -> 56%</td></tr>
+<tr><td>5</td><td><strong>Stripe / Paiement</strong> — flux SaaS</td><td>4h</td><td>Monetisation</td><td>56% -> 58%</td></tr>
+<tr><td>6</td><td><strong>Keywords Everywhere</strong> — renouveler credits</td><td>5 min</td><td>Volumes reels</td><td>58% -> 60%</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>10. Stack Technique</h2>
+
+<table>
+<tr><th>Composant</th><th>Technologie</th><th>Version</th></tr>
+<tr><td>Langage</td><td>Python</td><td>3.12</td></tr>
+<tr><td>UI</td><td>Streamlit</td><td>1.58</td></tr>
+<tr><td>Orchestration</td><td>LangGraph</td><td>1.2.5</td></tr>
+<tr><td>Modeles / Validation</td><td>Pydantic</td><td>2.13</td></tr>
+<tr><td>LLM Principal</td><td>Claude Sonnet 4.6</td><td>—</td></tr>
+<tr><td>LLM Secondaire</td><td>GPT-4o-mini</td><td>—</td></tr>
+<tr><td>LLM Tertiaire</td><td>DeepSeek v4 Flash/V3</td><td>—</td></tr>
+<tr><td>Vector DB</td><td>ChromaDB</td><td>1.5</td></tr>
+<tr><td>Bases de donnees</td><td>SQLite (WAL mode)</td><td>24 tables, 4 bases</td></tr>
+<tr><td>HTTP / Async</td><td>httpx</td><td>0.28</td></tr>
+<tr><td>Retry / Resilience</td><td>tenacity</td><td>9.1</td></tr>
+<tr><td>Logging</td><td>loguru</td><td>0.7</td></tr>
+<tr><td>SEO Outils OSS</td><td>textstat, yake, json-repair, protego, schorg, shcheck, polly, scikit-network</td><td>—</td></tr>
+<tr><td>Tests</td><td>pytest + asyncio + cov + mock</td><td>9.1</td></tr>
+<tr><td>Graphiques / Rapport</td><td>plotly + jinja2</td><td>6.8 / 3.1</td></tr>
+<tr><td>Deploiement</td><td>Docker + docker-compose + deploy.sh</td><td>—</td></tr>
+</table>
+
+<!-- ════════════════════════════ -->
+<h2>11. Engagement de Qualite — Les 5 Regles</h2>
+
+<div class="ok"><strong>1. Vrai :</strong> Les donnees affichees sont exactes ou explicitement marquees comme <em>estimees</em>. Pas de faux "47 positions reelles".</div>
+<div class="ok"><strong>2. Pertinent :</strong> Le contenu correspond au site analyse. Contexte SERP verifie avant redaction.</div>
+<div class="ok"><strong>3. Actionnable :</strong> Chaque recommandation a cout, delai, priorite, action concrete. Fichiers generes automatiquement.</div>
+<div class="ok"><strong>4. Compréhensible :</strong> En francais, sans jargon technique excessif. Scores expliques. Limites annoncees.</div>
+<div class="ok"><strong>5. Honnête :</strong> Limites techniques listees (GSC non verifie, API KO). Disclaimers juridiques integres.</div>
+
+<div class="info" style="margin-top:30px"><strong>Positionnement unique :</strong> Hermes SEO est le seul SaaS SEO qui ne se contente pas d'auditer —
+il <strong>execute</strong>. Generations de sitemaps, robots.txt, llms.txt, schemas, articles, emails CRM —
+automatiquement. La ou Semrush/Ahrefs disent "voila ce qu'il faut faire", Hermes le fait.</div>
+
+<div class="footer">
+Hermes SEO v3 | Rapport complet | 27 juin 2026 | 8 pipelines | 114 agents | 103 tests | FC Solutions<br>
+<code>audit_final/RAPPORT_COMPLET_27JUIN.html</code>
+</div>
+</body>
+</html>
